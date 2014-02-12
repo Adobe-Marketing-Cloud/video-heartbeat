@@ -1,0 +1,9 @@
+Release Notes for Android VideoHeartbeat wrapper library version 1:
+
+Included are notes from the latest major revision to current.
+
+1.0.0 (20 Feb, 2014)
+ - Initial release to production of version 1.0 
+ - Works with version 4.0.2-AN of AppMeasurement Android library.
+
+
