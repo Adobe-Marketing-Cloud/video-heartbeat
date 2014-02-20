@@ -2,7 +2,14 @@ Release Notes for iOS VideoHeartbeat wrapper library version 1:
 
 Included are notes from the latest major revision to current.
 
-1.0.0 (20 Feb, 2014)
+1.1.0 (20 Feb, 2014)
+ - major re-factoring: the data-collection core logic is no longer part of the AppMeasurement lib. It is now inside the VideoHeartbeat lib.
+ - all the Heartbeat configuration params that were previously inside the ADBMobileConfig.json config file are now available to be set at run-time via the video-heartbeat configuration object.
+ - a new destroy selector is now part of the ADBVideoHeartbeat public interface. Since the data-collection core logic is no longer implemented as a singleton tear-down operations are now possible. 
+ - a new version static selector is now part of the ADBVideoHeartbeat public interface.
+ - Works with version 4.0.2 of AppMeasurement iOS library.
+
+1.0.0 (12 Feb, 2014)
  - Initial release to production of version 1.0
  - Works with version 4.0.1 of AppMeasurement iOS library.
 

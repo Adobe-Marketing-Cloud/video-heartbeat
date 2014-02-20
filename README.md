@@ -1,7 +1,7 @@
-VideoHeartbeat for AppMeasurement
+VideoHeartbeat for mobile
 =================================
 
-Mobile versions of the VideoHeartbeat wrapper library for AppMeasurement.
+Mobile versions of the VideoHeartbeat library.
 
 
 

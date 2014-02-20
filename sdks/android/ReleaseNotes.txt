@@ -2,7 +2,14 @@ Release Notes for Android VideoHeartbeat wrapper library version 1:
 
 Included are notes from the latest major revision to current.
 
-1.0.0 (20 Feb, 2014)
+1.1.0 (20 Feb, 2014)
+ - major re-factoring: the data-collection core logic is no longer part of the AppMeasurement lib. It is now inside the VideoHeartbeat lib.
+ - all the Heartbeat configuration params that were previously inside the ADBMobileConfig.json config file are now available to be set at run-time via the video-heartbeat configuration object.
+ - a new destroy() method is now part of the VideoHeartbeat public interface. Since the data-collection core logic is no longer implemented as a singleton tear-down operations are now possible. 
+ - a new getVersion() method is now part of the VideoHeartbeat public interface.
+ - Works with version 4.0.2-AN of AppMeasurement Android library.
+ 
+1.0.0 (12 Feb, 2014)
  - Initial release to production of version 1.0 
  - Works with version 4.0.2-AN of AppMeasurement Android library.
 

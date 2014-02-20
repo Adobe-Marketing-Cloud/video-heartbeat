@@ -18,38 +18,14 @@
  **************************************************************************/
 
 #import <Foundation/Foundation.h>
-#import "ADBMobile.h"
+#import "ADB_VHB_ConfigData.h"
+#import "ADB_VHB_QoSData.h"
 
-@protocol ADBVideoHeartbeatPlayerDelegate <NSObject>
+@protocol ADB_VHB_VideoHeartbeatProtocol <NSObject>
++ (NSString *)version;
 
-- (NSTimeInterval)getCurrentMainAssetPlayhead;
-- (NSTimeInterval)getCurrentAdPlayhead;
-
-@end
-
-@interface ADBVideoHeartbeatConfigData : NSObject
-
-@property(nonatomic, readonly) NSString *playerName;
-@property(nonatomic, readonly) NSString *channel;
-@property(nonatomic) BOOL debugTracking;
-@property(nonatomic) BOOL trackLocal;
-@property(nonatomic) BOOL debugLogging;
-
-- (id)initWithPlayerName:(NSString *)playerName
-              andChannel:(NSString *)channel;
-@end
-
-@interface ADBVideoHeartbeatQoSData : NSObject
-
-@property(nonatomic, readonly) NSUInteger bitrate;
-@property(nonatomic, readonly) NSUInteger fps;
-@property(nonatomic, readonly) NSUInteger droppedFrames;
-
-@end
-
-@protocol ADBVideoHeartbeatProtocol <NSObject>
-
-- (void)config:(ADBVideoHeartbeatConfigData *)configData;
+- (void)config:(ADB_VHB_ConfigData *)configData;
+- (void)destroy;
 
 - (void)trackMainVideoLoad:(NSString *)videoId length:(NSTimeInterval)length type:(NSString *)type;
 - (void)trackMainVideoClose;
@@ -62,7 +38,7 @@
 - (void)trackSeekComplete;
 
 - (void)trackBitrateChange:(NSUInteger)bitrate;
-- (void)trackQoSUpdate:(ADBVideoHeartbeatQoSData *)qosData;
+- (void)trackQoSUpdate:(ADB_VHB_QoSData *)qosData;
 
 - (void)trackAdBreakStart:(NSString *)podId;
 - (void)trackAdBreakComplete;
@@ -71,11 +47,5 @@
 
 - (void)trackVideoPlayerError:(NSString *)errorId;
 - (void)trackApplicationError:(NSString *)errorId;
-
-@end
-
-@interface ADBVideoHeartbeat : NSObject <ADBVideoHeartbeatProtocol>
-
-- (id)initWithPlayerDelegate:(id<ADBVideoHeartbeatPlayerDelegate>)playerDelegate;
 
 @end
