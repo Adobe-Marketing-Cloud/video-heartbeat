@@ -2,6 +2,10 @@ Release Notes for Android VideoHeartbeat wrapper library version 1:
 
 Included are notes from the latest major revision to current.
 
+1.1.1 (25 Feb, 2014)
+ - fixed the issue where the SC start call for ads was not actuallt sent over the wire.
+ - Works with version 4.0.4-AN of AppMeasurement Android library.
+
 1.1.0 (20 Feb, 2014)
  - major re-factoring: the data-collection core logic is no longer part of the AppMeasurement lib. It is now inside the VideoHeartbeat lib.
  - all the Heartbeat configuration params that were previously inside the ADBMobileConfig.json config file are now available to be set at run-time via the video-heartbeat configuration object.
