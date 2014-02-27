@@ -2,6 +2,9 @@ Release Notes for iOS VideoHeartbeat wrapper library version 1:
 
 Included are notes from the latest major revision to current.
 
+1.1.1 (27 Feb, 2014)
+ - fixed issue where the values in the settings.xml are not parsed correctly if the XML file is indented (VA-749).
+
 1.1.0 (20 Feb, 2014)
  - major re-factoring: the data-collection core logic is no longer part of the AppMeasurement lib. It is now inside the VideoHeartbeat lib.
  - all the Heartbeat configuration params that were previously inside the ADBMobileConfig.json config file are now available to be set at run-time via the video-heartbeat configuration object.
