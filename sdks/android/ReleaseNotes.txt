@@ -2,8 +2,11 @@ Release Notes for Android VideoHeartbeat wrapper library version 1:
 
 Included are notes from the latest major revision to current.
 
+1.1.2 (3 Apr, 2014)
+ - fixed incorrect parameter names for s:event:sid and s:sp:player_name (VA-843).
+
 1.1.1 (25 Feb, 2014)
- - fixed the issue where the SC start call for ads was not actuallt sent over the wire.
+ - fixed the issue where the SC start call for ads was not actually sent over the wire.
  - Works with version 4.0.4-AN of AppMeasurement Android library.
 
 1.1.0 (20 Feb, 2014)
@@ -16,5 +19,3 @@ Included are notes from the latest major revision to current.
 1.0.0 (12 Feb, 2014)
  - Initial release to production of version 1.0 
  - Works with version 4.0.2-AN of AppMeasurement Android library.
-
-
