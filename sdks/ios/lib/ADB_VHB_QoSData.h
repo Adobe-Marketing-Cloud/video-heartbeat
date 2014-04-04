@@ -22,8 +22,12 @@
 @interface ADB_VHB_QoSData : NSObject
 
 @property(nonatomic, readonly) NSUInteger bitrate;
-@property(nonatomic, readonly) NSUInteger fps;
+@property(nonatomic, readonly) double fps;
 @property(nonatomic, readonly) NSUInteger droppedFrames;
+
+- (id)initWithBitrate:(NSUInteger)bitrate
+               andFps:(double)fps
+     andDroppedFrames:(NSUInteger)droppedFrames;
 
 @end
 
