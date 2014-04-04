@@ -2,6 +2,9 @@ Release Notes for iOS VideoHeartbeat wrapper library version 1:
 
 Included are notes from the latest major revision to current.
 
+1.1.2 (4 Apr, 2014)
+ - fixed issue where the VideoHeartbeat keeps a strong reference to the player-delegate object, leading to possible memory leak issues (VA-852).
+
 1.1.1 (27 Feb, 2014)
  - fixed issue where the values in the settings.xml are not parsed correctly if the XML file is indented (VA-749).
 
@@ -15,5 +18,3 @@ Included are notes from the latest major revision to current.
 1.0.0 (12 Feb, 2014)
  - Initial release to production of version 1.0
  - Works with version 4.0.1 of AppMeasurement iOS library.
-
-
