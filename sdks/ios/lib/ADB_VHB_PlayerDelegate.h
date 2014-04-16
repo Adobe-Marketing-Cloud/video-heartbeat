@@ -19,9 +19,20 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol ADB_VHB_PlayerDelegate <NSObject>
+@class ADB_VHB_VideoInfo;
+@class ADB_VHB_AdBreakInfo;
+@class ADB_VHB_AdInfo;
+@class ADB_VHB_ChapterInfo;
+@class ADB_VHB_QoSInfo;
+@class ADB_VHB_ErrorInfo;
 
-- (NSTimeInterval)getCurrentMainAssetPlayhead;
-- (NSTimeInterval)getCurrentAdPlayhead;
+@interface ADB_VHB_PlayerDelegate : NSObject
+
+- (ADB_VHB_VideoInfo *) getVideoInfo;
+- (ADB_VHB_AdBreakInfo *) getAdBreakInfo;
+- (ADB_VHB_AdInfo *) getAdInfo;
+- (ADB_VHB_ChapterInfo *) getChapterInfo;
+- (ADB_VHB_QoSInfo *) getQoSInfo;
+- (void) onError:(ADB_VHB_ErrorInfo *)errorInfo;
 
 @end

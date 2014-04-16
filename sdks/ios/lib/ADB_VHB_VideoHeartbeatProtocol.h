@@ -19,32 +19,39 @@
 
 #import <Foundation/Foundation.h>
 #import "ADB_VHB_ConfigData.h"
-#import "ADB_VHB_QoSData.h"
 
 @protocol ADB_VHB_VideoHeartbeatProtocol <NSObject>
-+ (NSString *)version;
 
-- (void)config:(ADB_VHB_ConfigData *)configData;
+// -----------------[ Configuration & life-cycle management ]---------------------
+- (void)configure:(ADB_VHB_ConfigData *)configData;
 - (void)destroy;
 
-- (void)trackMainVideoLoad:(NSString *)videoId length:(NSTimeInterval)length type:(NSString *)type;
-- (void)trackMainVideoClose;
+// -----------------[ Video playback tracking ]---------------------
+- (void)trackVideoLoad;
+- (void)trackVideoUnload;
 - (void)trackPlay;
-- (void)trackStop;
-- (void)trackComplete;
+- (void)trackPause;
 - (void)trackBufferStart;
 - (void)trackBufferComplete;
 - (void)trackSeekStart;
 - (void)trackSeekComplete;
+- (void)trackComplete;
 
-- (void)trackBitrateChange:(NSUInteger)bitrate;
-- (void)trackQoSUpdate:(ADB_VHB_QoSData *)qosData;
+// -----------------[ Chapter tracking ]---------------------
+- (void)trackChapterStart;
+- (void)trackChapterComplete;
 
-- (void)trackAdBreakStart:(NSString *)podId;
+// -----------------[ Ad tracking ]---------------------
+- (void)trackAdBreakStart;
 - (void)trackAdBreakComplete;
-- (void)trackAdStart:(NSString *)adId length:(NSTimeInterval)length parentPodPosition:(NSUInteger)parentPodPosition cpm:(NSString *)cpm;
+- (void)trackAdStart;
 - (void)trackAdComplete;
 
+// -----------------[ QoS tracking ]---------------------
+- (void)trackBitrateChange;
+
+
+// -----------------[ Error tracking ]---------------------
 - (void)trackVideoPlayerError:(NSString *)errorId;
 - (void)trackApplicationError:(NSString *)errorId;
 

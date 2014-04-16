@@ -21,7 +21,6 @@
 
 @interface ADB_VHB_ConfigData : NSObject
 
-@property(nonatomic, readonly) NSString *playerName;
 @property(nonatomic, readonly) NSString *trackingServer;
 @property(nonatomic, readonly) NSString *jobId;
 @property(nonatomic, readonly) NSString *publisher;
@@ -30,16 +29,13 @@
 @property(nonatomic, retain) NSString *ovp;
 @property(nonatomic, retain) NSString *sdk;
 
-@property(nonatomic) BOOL debugTracking;
-@property(nonatomic) BOOL trackLocal;
+@property(nonatomic) BOOL quietMode;
 @property(nonatomic) BOOL debugLogging;
-@property(nonatomic) BOOL enableHeartbeat;
 
-@property(nonatomic) BOOL __isPrimetime;
+@property(nonatomic) BOOL __primetime;
 @property(nonatomic, retain) NSString *__psdkVersion;
 
-- (id)initWithPlayerName:(NSString *)playerName
-       andTrackingServer:(NSString *)trackingServer
-                andJobId:(NSString *)jobId
-              andPublisher:(NSString *)publisher;
+- (id)initWithTrackingServer:(NSString *)trackingServer
+                       jobId:(NSString *)jobId
+                   publisher:(NSString *)publisher;
 @end

@@ -3,7 +3,7 @@
  * ADOBE CONFIDENTIAL
  * ___________________
  *
- *  Copyright 2013 Adobe Systems Incorporated
+ *  Copyright 2014 Adobe Systems Incorporated
  *  All Rights Reserved.
  *
  * NOTICE:  All information contained herein is, and remains
@@ -18,12 +18,13 @@
  **************************************************************************/
 
 #import <Foundation/Foundation.h>
-#import "ADB_VHB_VideoHeartbeatProtocol.h"
-#import "ADB_VHB_PlayerDelegate.h"
 
 
-@interface ADB_VHB_VideoHeartbeat : NSObject <ADB_VHB_VideoHeartbeatProtocol>
+@interface ADB_VHB_Version : NSObject
 
-- (id)initWithPlayerDelegate:(ADB_VHB_PlayerDelegate *)playerDelegate;
++ (NSString *)getVersion;
++ (NSString *)getMajor;
++ (NSString *)getMinor;
++ (NSString *)getMicro;
 
 @end

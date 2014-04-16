@@ -1,13 +1,31 @@
-Release Notes for Android VideoHeartbeat wrapper library version 1:
+Release Notes for Android VideoHeartbeat SDK
+=============================================
+
 
 Included are notes from the latest major revision to current.
 
-1.1.2 (3 Apr, 2014)
- - fixed incorrect parameter names for s:event:sid and s:sp:player_name (VA-843).
+1.2.0 (17 Apr, 2014)
+New features:
+    - implemented VideoHeartbeat 1.2 API changes (VA-793)
+    - eliminate the dependency on the AppMeasurement's Media module (VA-869)
+
+Fixed issues:
+    - the video length must be an integer value on SC calls (VA-849)
+    - the total_duration parameter doesn't reset when replaying the same ad (VA-785)
+    - unable to track post-roll ad-breaks because complete event is sent too soon (VA-593)
+
+Known limitations:
+    - during buffering periods no VideoHeartbeat calls are issued over the network (VA-724)
+    - when seeking out of an ad the Complete event is sent for that ad (VA-778)
+    - VideoHeartbeat library automatically sends a COMPLETE event when a new video asset is open (VA-740)
+
+------------------------
 
 1.1.1 (25 Feb, 2014)
  - fixed the issue where the SC start call for ads was not actually sent over the wire.
  - Works with version 4.0.4-AN of AppMeasurement Android library.
+
+------------------------
 
 1.1.0 (20 Feb, 2014)
  - major re-factoring: the data-collection core logic is no longer part of the AppMeasurement lib. It is now inside the VideoHeartbeat lib.
@@ -15,7 +33,9 @@ Included are notes from the latest major revision to current.
  - a new destroy() method is now part of the VideoHeartbeat public interface. Since the data-collection core logic is no longer implemented as a singleton tear-down operations are now possible. 
  - a new getVersion() method is now part of the VideoHeartbeat public interface.
  - Works with version 4.0.2-AN of AppMeasurement Android library.
- 
+
+------------------------
+
 1.0.0 (12 Feb, 2014)
  - Initial release to production of version 1.0 
  - Works with version 4.0.2-AN of AppMeasurement Android library.

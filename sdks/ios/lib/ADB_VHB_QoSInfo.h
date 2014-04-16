@@ -3,7 +3,7 @@
  * ADOBE CONFIDENTIAL
  * ___________________
  *
- *  Copyright 2013 Adobe Systems Incorporated
+ *  Copyright 2014 Adobe Systems Incorporated
  *  All Rights Reserved.
  *
  * NOTICE:  All information contained herein is, and remains
@@ -18,12 +18,12 @@
  **************************************************************************/
 
 #import <Foundation/Foundation.h>
-#import "ADB_VHB_VideoHeartbeatProtocol.h"
-#import "ADB_VHB_PlayerDelegate.h"
 
 
-@interface ADB_VHB_VideoHeartbeat : NSObject <ADB_VHB_VideoHeartbeatProtocol>
+@interface ADB_VHB_QoSInfo : NSObject
 
-- (id)initWithPlayerDelegate:(ADB_VHB_PlayerDelegate *)playerDelegate;
+@property(nonatomic, retain) NSNumber *bitrate;
+@property(nonatomic, retain) NSNumber *fps;
+@property(nonatomic, retain) NSNumber *droppedFrames;
 
 @end

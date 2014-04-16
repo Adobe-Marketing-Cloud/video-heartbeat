@@ -1,12 +1,30 @@
-Release Notes for iOS VideoHeartbeat wrapper library version 1:
+Release Notes for iOS VideoHeartbeat SDK
+==========================================
+
 
 Included are notes from the latest major revision to current.
 
-1.1.2 (4 Apr, 2014)
- - fixed issue where the VideoHeartbeat keeps a strong reference to the player-delegate object, leading to possible memory leak issues (VA-852).
+1.2.0 (17 Apr, 2014)
+New features:
+    - implemented VideoHeartbeat 1.2 API changes (VA-793)
+    - eliminate the dependency on the AppMeasurement's Media module (VA-869)
+
+Fixed issues:
+    - the video length must be an integer value on SC calls (VA-849)
+    - the total_duration parameter doesn't reset when replaying the same ad (VA-785)
+    - unable to track post-roll ad-breaks because complete event is sent too soon (VA-593)
+
+Known limitations:
+    - during buffering periods no VideoHeartbeat calls are issued over the network (VA-724)
+    - when seeking out of an ad the Complete event is sent for that ad (VA-778)
+    - VideoHeartbeat library automatically sends a COMPLETE event when a new video asset is open (VA-740)
+
+------------------------
 
 1.1.1 (27 Feb, 2014)
  - fixed issue where the values in the settings.xml are not parsed correctly if the XML file is indented (VA-749).
+
+------------------------
 
 1.1.0 (20 Feb, 2014)
  - major re-factoring: the data-collection core logic is no longer part of the AppMeasurement lib. It is now inside the VideoHeartbeat lib.
@@ -14,6 +32,8 @@ Included are notes from the latest major revision to current.
  - a new destroy selector is now part of the ADBVideoHeartbeat public interface. Since the data-collection core logic is no longer implemented as a singleton tear-down operations are now possible. 
  - a new version static selector is now part of the ADBVideoHeartbeat public interface.
  - Works with version 4.0.2 of AppMeasurement iOS library.
+
+------------------------
 
 1.0.0 (12 Feb, 2014)
  - Initial release to production of version 1.0

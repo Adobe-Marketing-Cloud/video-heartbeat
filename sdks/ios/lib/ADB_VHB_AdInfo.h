@@ -3,7 +3,7 @@
  * ADOBE CONFIDENTIAL
  * ___________________
  *
- *  Copyright 2013 Adobe Systems Incorporated
+ *  Copyright 2014 Adobe Systems Incorporated
  *  All Rights Reserved.
  *
  * NOTICE:  All information contained herein is, and remains
@@ -19,15 +19,14 @@
 
 #import <Foundation/Foundation.h>
 
-@interface ADB_VHB_QoSData : NSObject
 
-@property(nonatomic, readonly) NSUInteger bitrate;
-@property(nonatomic, readonly) double fps;
-@property(nonatomic, readonly) NSUInteger droppedFrames;
+@interface ADB_VHB_AdInfo : NSObject
 
-- (id)initWithBitrate:(NSUInteger)bitrate
-               andFps:(double)fps
-     andDroppedFrames:(NSUInteger)droppedFrames;
+@property(nonatomic, retain) NSString *id;
+@property(nonatomic, retain) NSString *name;
+@property(nonatomic, retain) NSNumber *length;
+@property(nonatomic, retain) NSNumber *playhead;
+@property(nonatomic, retain) NSNumber *position;
+@property(nonatomic, retain) NSString *cpm;
 
 @end
-
