@@ -20,7 +20,7 @@
  */
 
 /*
- * video heartbeats - v1.2.0 - 2014-04-16
+ * video heartbeats - v1.2.0 - 2014-04-17
  * Copyright (c) 2014 Adobe Systems, Inc. All Rights Reserved.
  */
 (function(global) {
@@ -4915,6 +4915,7 @@ heartbeat.clock || (heartbeat.clock = {});
         delete this._appMeasurement.contextData["a.media.ad.length"];
         delete this._appMeasurement.contextData["a.media.ad.playerName"];
         delete this._appMeasurement.contextData["a.media.ad.pod"];
+        delete this._appMeasurement.contextData["a.media.ad.podPosition"];
         delete this._appMeasurement.contextData["a.media.ad.CPM"];
         delete this._appMeasurement.contextData["a.media.ad.view"];
     };
