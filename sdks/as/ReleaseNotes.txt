@@ -5,22 +5,23 @@ Release Notes for Flash/AS3 VideoHeartbeat SDK
 Included are notes from the latest major revision to current.
 
 1.2.0 (17 Apr, 2014)
-New features:
-    - implemented VideoHeartbeat 1.2 API changes (VA-793)
-    - eliminate the dependency on the AppMeasurement's Media module (VA-869)
-    - the VideoHeartbeat library now supports the marketing cloud visitor ID value (VA-729)
 
-Fixed issues:
-    - the heartbeat tracking is not enabled when the user plays a video in a new browser instance (no cookies) (VA-424)
-    - only the first AD is tracked during playback (VA-791)
-    - the video length must be an integer value on SC calls (VA-849)
-    - the total_duration parameter doesn't reset when replaying the same ad (VA-785)
-    - unable to track post-roll ad-breaks because complete event is sent too soon (VA-593)
+New features
+    - New API changes
+    - Eliminate the dependency on AppMeasurement's Media Module
+    - Support for Marketing Cloud Visitor ID
 
-Known limitations:
-    - during buffering periods no VideoHeartbeat calls are issued over the network (VA-724)
-    - when seeking out of an ad the Complete event is sent for that ad (VA-778)
-    - VideoHeartbeat library automatically sends a COMPLETE event when a new video asset is open (VA-740)
+Fixed issues
+    - Tracking is not enabled when the user plays a video in a new browser instance
+    - Only the first AD is tracked during playback
+    - Video length must be an integer
+    - Total duration parameter wasn’t being reset when playing the same ad
+    - Post-roll ad breaks not associated with the appropriate video
+
+Known limitations
+    - No heartbeats are sent during buffering events although time spent calculation does not include buffering time
+    - When seeking outside the ad content, the COMPLETE event is sent for that particular ad
+    - COMPLETE event is sent into Adobe Analytics for the initial video asset when another video asset is loaded
 
 ------------------------
 

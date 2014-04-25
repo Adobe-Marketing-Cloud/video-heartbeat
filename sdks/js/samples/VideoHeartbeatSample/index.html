@@ -1,0 +1,38 @@
+<!doctype html>
+
+<html>
+    <head>
+        <title>Video Samples: HTML5 Heartbeat Sample</title>
+
+        <link rel="stylesheet" href="style/base.css" />
+
+        <script src="script/lib/jquery.min.js"></script>
+
+        <script src="script/lib/VisitorAPI.js"></script>
+        <script src="script/lib/AppMeasurement.js"></script>
+        <script src="script/lib/VideoHeartbeat.js"></script>
+
+        <script src="script/app/configuration.js"></script>
+        <script src="script/app/video.player.js"></script>
+        <script src="script/app/sample.player.delegate.js"></script>
+        <script src="script/app/analytics.provider.js"></script>
+
+        <script src="script/main.js"></script>
+    </head>
+
+    <body>
+
+    <h2>Heartbeat HTML5 Sample Player</h2>
+
+    <video id="movie" width="600" preload controls>
+        <source src="vid/fortune-teller-low.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+        <source src="vid/fortune-teller-low.webm" type='video/webm; codecs="vp8, vorbis"'>
+        <source src="vid/fortune-teller-low.ogv" type='video/ogg; codes="theora, vorbis"'>
+    </video>
+
+    <p>
+        More info. about media events in html5 players can be found at <a href="http://www.w3.org/2010/05/video/mediaevents.html">the w3c</a>
+    </p>
+
+    </body>
+</html>

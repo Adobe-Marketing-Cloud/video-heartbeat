@@ -1,0 +1,13 @@
+VideoHeartbeatSample (iOS)
+=========================
+
+1. Opening the project
+To open the project, you use the XCode IDE. Load the project from the project/ folder.
+
+2. Building and running
+The project embeds the required libraries and assets, so you should be able to build in the IDE.
+
+To run the sample, just press the play button inside XCode. The sample should work fine in the simulator.
+
+The sample comes with dummy values for all the configuration options (see Configuration.m and the ADBMobileConfig.json configuration files). 
+In order to actually see the demo working, you need to fill-in the configuration options with valid values, provided by Adobe.

@@ -1,0 +1,21 @@
+{
+    "version" : "1.0",
+    "analytics" : {
+        "rsids" : "sample-account",
+        "server" : "example.com",
+        "charset" : "UTF-8",
+        "ssl" : false,
+        "offlineEnabled" : false,
+        "lifecycleTimeout" : 30,
+        "batchLimit" : 50,
+        "privacyDefault" : "optedin",
+        "poi" : []
+    },
+    "target" : {
+        "clientCode" : "amsdk",
+        "timeout" : 5
+    },
+    "audienceManager" : {
+        "server" : ""
+    }
+}

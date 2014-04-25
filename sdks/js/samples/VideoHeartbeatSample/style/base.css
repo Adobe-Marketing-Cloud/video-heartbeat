@@ -1,0 +1,38 @@
+body {
+	background-color: #fff;
+}
+
+a {
+	color: #7d7d7d;
+}
+
+a:hover {
+	color: #f00;
+}
+
+section {
+	padding: 10px;
+	font: 14px Garamond, Georgia, Times New Roman, serif; 
+}
+
+header {
+}
+
+h1 {
+	font: 16px;
+}
+
+nav {
+}
+
+ul {
+	text-decoration: none;
+}
+
+ul li {
+	text-decoration: none;
+}
+
+footer {
+	
+}

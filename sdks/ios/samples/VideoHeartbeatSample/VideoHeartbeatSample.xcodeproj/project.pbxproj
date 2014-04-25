@@ -1,0 +1,615 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		220B935336C67D104DA2120E /* VideoPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 220B99EC8D9567F7B305991B /* VideoPlayer.m */; };
+		220B9846EE22DA1B20C7C1AC /* VideoPlayerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 220B9B7DC04CE47FDEA880F1 /* VideoPlayerDelegate.m */; };
+		220B9AB54F7BF11F7B4ED6FF /* VideoAnalyticsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 220B9DF3116B8DABAA210F18 /* VideoAnalyticsProvider.m */; };
+		220B9DE446C672E847CFF1C1 /* Configuration.m in Sources */ = {isa = PBXBuildFile; fileRef = 220B942C2BA1491D1C590F39 /* Configuration.m */; };
+		C93A866E190A78AE006D2AF7 /* clickbaby.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = C93A866D190A78A4006D2AF7 /* clickbaby.mp4 */; };
+		C9606AEC18D9E22B00A8F275 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606AEB18D9E22B00A8F275 /* Foundation.framework */; };
+		C9606AEE18D9E22B00A8F275 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606AED18D9E22B00A8F275 /* CoreGraphics.framework */; };
+		C9606AF018D9E22B00A8F275 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606AEF18D9E22B00A8F275 /* UIKit.framework */; };
+		C9606AF618D9E22B00A8F275 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C9606AF418D9E22B00A8F275 /* InfoPlist.strings */; };
+		C9606AF818D9E22B00A8F275 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9606AF718D9E22B00A8F275 /* main.m */; };
+		C9606AFC18D9E22B00A8F275 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9606AFB18D9E22B00A8F275 /* AppDelegate.m */; };
+		C9606AFF18D9E22B00A8F275 /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9606AFD18D9E22B00A8F275 /* Main_iPhone.storyboard */; };
+		C9606B0218D9E22B00A8F275 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9606B0018D9E22B00A8F275 /* Main_iPad.storyboard */; };
+		C9606B0518D9E22B00A8F275 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9606B0418D9E22B00A8F275 /* ViewController.m */; };
+		C9606B0718D9E22B00A8F275 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9606B0618D9E22B00A8F275 /* Images.xcassets */; };
+		C9606B0E18D9E22B00A8F275 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B0D18D9E22B00A8F275 /* XCTest.framework */; };
+		C9606B0F18D9E22B00A8F275 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606AEB18D9E22B00A8F275 /* Foundation.framework */; };
+		C9606B1018D9E22B00A8F275 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606AEF18D9E22B00A8F275 /* UIKit.framework */; };
+		C9606B1818D9E22B00A8F275 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C9606B1618D9E22B00A8F275 /* InfoPlist.strings */; };
+		C9606B1A18D9E22B00A8F275 /* VideoHeartbeatSampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9606B1918D9E22B00A8F275 /* VideoHeartbeatSampleTests.m */; };
+		C9606B2718D9E25600A8F275 /* ADBMobileConfig.json in Resources */ = {isa = PBXBuildFile; fileRef = C9606B2518D9E25600A8F275 /* ADBMobileConfig.json */; };
+		C9606B2818D9E25600A8F275 /* AdobeMobileLibrary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B2618D9E25600A8F275 /* AdobeMobileLibrary.a */; };
+		C9606B3318D9E6E300A8F275 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B3218D9E6E300A8F275 /* MediaPlayer.framework */; };
+		C9606B3518D9E6EE00A8F275 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B3418D9E6EE00A8F275 /* SystemConfiguration.framework */; };
+		C9606B3718D9E6FF00A8F275 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B3618D9E6FF00A8F275 /* libsqlite3.dylib */; };
+		C9F3B50318E07E2200B0C0EC /* VideoHeartbeat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B3018D9E25F00A8F275 /* VideoHeartbeat.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C9606B1118D9E22B00A8F275 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C9606AE018D9E22B00A8F275 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C9606AE718D9E22B00A8F275;
+			remoteInfo = VideoHeartbeatSample;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		220B90BF2703DE450CCEE4BF /* VideoPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoPlayer.h; sourceTree = "<group>"; };
+		220B942C2BA1491D1C590F39 /* Configuration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Configuration.m; sourceTree = "<group>"; };
+		220B961DECA15A6D1B9D88BD /* VideoAnalyticsProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoAnalyticsProvider.h; sourceTree = "<group>"; };
+		220B96738039B7E84EA032F2 /* VideoPlayerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoPlayerDelegate.h; sourceTree = "<group>"; };
+		220B99EC8D9567F7B305991B /* VideoPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoPlayer.m; sourceTree = "<group>"; };
+		220B9AA0A59046C6562CC671 /* Configuration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Configuration.h; sourceTree = "<group>"; };
+		220B9B7DC04CE47FDEA880F1 /* VideoPlayerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoPlayerDelegate.m; sourceTree = "<group>"; };
+		220B9DF3116B8DABAA210F18 /* VideoAnalyticsProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoAnalyticsProvider.m; sourceTree = "<group>"; };
+		C93A866D190A78A4006D2AF7 /* clickbaby.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = clickbaby.mp4; sourceTree = "<group>"; };
+		C9606AE818D9E22B00A8F275 /* VideoHeartbeatSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoHeartbeatSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9606AEB18D9E22B00A8F275 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		C9606AED18D9E22B00A8F275 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		C9606AEF18D9E22B00A8F275 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		C9606AF318D9E22B00A8F275 /* VideoHeartbeatSample-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VideoHeartbeatSample-Info.plist"; sourceTree = "<group>"; };
+		C9606AF518D9E22B00A8F275 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C9606AF718D9E22B00A8F275 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C9606AF918D9E22B00A8F275 /* VideoHeartbeatSample-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "VideoHeartbeatSample-Prefix.pch"; sourceTree = "<group>"; };
+		C9606AFA18D9E22B00A8F275 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		C9606AFB18D9E22B00A8F275 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		C9606AFE18D9E22B00A8F275 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPhone.storyboard; sourceTree = "<group>"; };
+		C9606B0118D9E22B00A8F275 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main_iPad.storyboard; sourceTree = "<group>"; };
+		C9606B0318D9E22B00A8F275 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		C9606B0418D9E22B00A8F275 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		C9606B0618D9E22B00A8F275 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		C9606B0C18D9E22B00A8F275 /* VideoHeartbeatSampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoHeartbeatSampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9606B0D18D9E22B00A8F275 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		C9606B1518D9E22B00A8F275 /* VideoHeartbeatSampleTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "VideoHeartbeatSampleTests-Info.plist"; sourceTree = "<group>"; };
+		C9606B1718D9E22B00A8F275 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C9606B1918D9E22B00A8F275 /* VideoHeartbeatSampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoHeartbeatSampleTests.m; sourceTree = "<group>"; };
+		C9606B2418D9E25600A8F275 /* ADBMobile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADBMobile.h; sourceTree = "<group>"; };
+		C9606B2518D9E25600A8F275 /* ADBMobileConfig.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ADBMobileConfig.json; sourceTree = "<group>"; };
+		C9606B2618D9E25600A8F275 /* AdobeMobileLibrary.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = AdobeMobileLibrary.a; sourceTree = "<group>"; };
+		C9606B3018D9E25F00A8F275 /* VideoHeartbeat.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = VideoHeartbeat.a; sourceTree = "<group>"; };
+		C9606B3218D9E6E300A8F275 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		C9606B3418D9E6EE00A8F275 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		C9606B3618D9E6FF00A8F275 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		C9ACE6DB18FFA91400B472FC /* ADB_VHB_AdBreakInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdBreakInfo.h; sourceTree = "<group>"; };
+		C9ACE6DC18FFA91400B472FC /* ADB_VHB_AdInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdInfo.h; sourceTree = "<group>"; };
+		C9ACE6DD18FFA91400B472FC /* ADB_VHB_AssetType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AssetType.h; sourceTree = "<group>"; };
+		C9ACE6DE18FFA91400B472FC /* ADB_VHB_ChapterInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_ChapterInfo.h; sourceTree = "<group>"; };
+		C9ACE6DF18FFA91400B472FC /* ADB_VHB_ConfigData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_ConfigData.h; sourceTree = "<group>"; };
+		C9ACE6E018FFA91400B472FC /* ADB_VHB_ErrorInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_ErrorInfo.h; sourceTree = "<group>"; };
+		C9ACE6E118FFA91400B472FC /* ADB_VHB_PlayerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_PlayerDelegate.h; sourceTree = "<group>"; };
+		C9ACE6E218FFA91400B472FC /* ADB_VHB_QoSInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_QoSInfo.h; sourceTree = "<group>"; };
+		C9ACE6E318FFA91400B472FC /* ADB_VHB_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_Version.h; sourceTree = "<group>"; };
+		C9ACE6E418FFA91400B472FC /* ADB_VHB_VideoHeartbeat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_VideoHeartbeat.h; sourceTree = "<group>"; };
+		C9ACE6E518FFA91400B472FC /* ADB_VHB_VideoHeartbeatProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_VideoHeartbeatProtocol.h; sourceTree = "<group>"; };
+		C9ACE6E618FFA91400B472FC /* ADB_VHB_VideoInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_VideoInfo.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C9606AE518D9E22B00A8F275 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9606B3718D9E6FF00A8F275 /* libsqlite3.dylib in Frameworks */,
+				C9606B3518D9E6EE00A8F275 /* SystemConfiguration.framework in Frameworks */,
+				C9606B3318D9E6E300A8F275 /* MediaPlayer.framework in Frameworks */,
+				C9606AEE18D9E22B00A8F275 /* CoreGraphics.framework in Frameworks */,
+				C9606AF018D9E22B00A8F275 /* UIKit.framework in Frameworks */,
+				C9606AEC18D9E22B00A8F275 /* Foundation.framework in Frameworks */,
+				C9F3B50318E07E2200B0C0EC /* VideoHeartbeat.a in Frameworks */,
+				C9606B2818D9E25600A8F275 /* AdobeMobileLibrary.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C9606B0918D9E22B00A8F275 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9606B0E18D9E22B00A8F275 /* XCTest.framework in Frameworks */,
+				C9606B1018D9E22B00A8F275 /* UIKit.framework in Frameworks */,
+				C9606B0F18D9E22B00A8F275 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		220B94B8BE0E3A8AA4BAA1D4 /* player */ = {
+			isa = PBXGroup;
+			children = (
+				220B99EC8D9567F7B305991B /* VideoPlayer.m */,
+				220B90BF2703DE450CCEE4BF /* VideoPlayer.h */,
+			);
+			path = player;
+			sourceTree = "<group>";
+		};
+		220B9787936C28E006AB12C3 /* analytics */ = {
+			isa = PBXGroup;
+			children = (
+				220B961DECA15A6D1B9D88BD /* VideoAnalyticsProvider.h */,
+				220B9DF3116B8DABAA210F18 /* VideoAnalyticsProvider.m */,
+				220B96738039B7E84EA032F2 /* VideoPlayerDelegate.h */,
+				220B9B7DC04CE47FDEA880F1 /* VideoPlayerDelegate.m */,
+			);
+			path = analytics;
+			sourceTree = "<group>";
+		};
+		C93A866C190A78A4006D2AF7 /* video */ = {
+			isa = PBXGroup;
+			children = (
+				C93A866D190A78A4006D2AF7 /* clickbaby.mp4 */,
+			);
+			path = video;
+			sourceTree = "<group>";
+		};
+		C9606ADF18D9E22B00A8F275 = {
+			isa = PBXGroup;
+			children = (
+				C93A866C190A78A4006D2AF7 /* video */,
+				C9606AF118D9E22B00A8F275 /* VideoHeartbeatSample */,
+				C9606B1318D9E22B00A8F275 /* VideoHeartbeatSampleTests */,
+				C9606AEA18D9E22B00A8F275 /* Frameworks */,
+				C9606AE918D9E22B00A8F275 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C9606AE918D9E22B00A8F275 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C9606AE818D9E22B00A8F275 /* VideoHeartbeatSample.app */,
+				C9606B0C18D9E22B00A8F275 /* VideoHeartbeatSampleTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C9606AEA18D9E22B00A8F275 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C9606B3618D9E6FF00A8F275 /* libsqlite3.dylib */,
+				C9606B3418D9E6EE00A8F275 /* SystemConfiguration.framework */,
+				C9606B3218D9E6E300A8F275 /* MediaPlayer.framework */,
+				C9606B2918D9E25F00A8F275 /* VideoHeartbeat */,
+				C9606B2318D9E25600A8F275 /* AdobeMobile */,
+				C9606AEB18D9E22B00A8F275 /* Foundation.framework */,
+				C9606AED18D9E22B00A8F275 /* CoreGraphics.framework */,
+				C9606AEF18D9E22B00A8F275 /* UIKit.framework */,
+				C9606B0D18D9E22B00A8F275 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C9606AF118D9E22B00A8F275 /* VideoHeartbeatSample */ = {
+			isa = PBXGroup;
+			children = (
+				C9606AFA18D9E22B00A8F275 /* AppDelegate.h */,
+				C9606AFB18D9E22B00A8F275 /* AppDelegate.m */,
+				C9606AFD18D9E22B00A8F275 /* Main_iPhone.storyboard */,
+				C9606B0018D9E22B00A8F275 /* Main_iPad.storyboard */,
+				C9606B0318D9E22B00A8F275 /* ViewController.h */,
+				C9606B0418D9E22B00A8F275 /* ViewController.m */,
+				C9606B0618D9E22B00A8F275 /* Images.xcassets */,
+				C9606AF218D9E22B00A8F275 /* Supporting Files */,
+				220B94B8BE0E3A8AA4BAA1D4 /* player */,
+				220B9787936C28E006AB12C3 /* analytics */,
+				220B942C2BA1491D1C590F39 /* Configuration.m */,
+				220B9AA0A59046C6562CC671 /* Configuration.h */,
+			);
+			path = VideoHeartbeatSample;
+			sourceTree = "<group>";
+		};
+		C9606AF218D9E22B00A8F275 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C9606AF318D9E22B00A8F275 /* VideoHeartbeatSample-Info.plist */,
+				C9606AF418D9E22B00A8F275 /* InfoPlist.strings */,
+				C9606AF718D9E22B00A8F275 /* main.m */,
+				C9606AF918D9E22B00A8F275 /* VideoHeartbeatSample-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		C9606B1318D9E22B00A8F275 /* VideoHeartbeatSampleTests */ = {
+			isa = PBXGroup;
+			children = (
+				C9606B1918D9E22B00A8F275 /* VideoHeartbeatSampleTests.m */,
+				C9606B1418D9E22B00A8F275 /* Supporting Files */,
+			);
+			path = VideoHeartbeatSampleTests;
+			sourceTree = "<group>";
+		};
+		C9606B1418D9E22B00A8F275 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C9606B1518D9E22B00A8F275 /* VideoHeartbeatSampleTests-Info.plist */,
+				C9606B1618D9E22B00A8F275 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		C9606B2318D9E25600A8F275 /* AdobeMobile */ = {
+			isa = PBXGroup;
+			children = (
+				C9606B2418D9E25600A8F275 /* ADBMobile.h */,
+				C9606B2518D9E25600A8F275 /* ADBMobileConfig.json */,
+				C9606B2618D9E25600A8F275 /* AdobeMobileLibrary.a */,
+			);
+			path = AdobeMobile;
+			sourceTree = "<group>";
+		};
+		C9606B2918D9E25F00A8F275 /* VideoHeartbeat */ = {
+			isa = PBXGroup;
+			children = (
+				C9ACE6DB18FFA91400B472FC /* ADB_VHB_AdBreakInfo.h */,
+				C9ACE6DC18FFA91400B472FC /* ADB_VHB_AdInfo.h */,
+				C9ACE6DD18FFA91400B472FC /* ADB_VHB_AssetType.h */,
+				C9ACE6DE18FFA91400B472FC /* ADB_VHB_ChapterInfo.h */,
+				C9ACE6DF18FFA91400B472FC /* ADB_VHB_ConfigData.h */,
+				C9ACE6E018FFA91400B472FC /* ADB_VHB_ErrorInfo.h */,
+				C9ACE6E118FFA91400B472FC /* ADB_VHB_PlayerDelegate.h */,
+				C9ACE6E218FFA91400B472FC /* ADB_VHB_QoSInfo.h */,
+				C9ACE6E318FFA91400B472FC /* ADB_VHB_Version.h */,
+				C9ACE6E418FFA91400B472FC /* ADB_VHB_VideoHeartbeat.h */,
+				C9ACE6E518FFA91400B472FC /* ADB_VHB_VideoHeartbeatProtocol.h */,
+				C9ACE6E618FFA91400B472FC /* ADB_VHB_VideoInfo.h */,
+				C9606B3018D9E25F00A8F275 /* VideoHeartbeat.a */,
+			);
+			path = VideoHeartbeat;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C9606AE718D9E22B00A8F275 /* VideoHeartbeatSample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C9606B1D18D9E22B00A8F275 /* Build configuration list for PBXNativeTarget "VideoHeartbeatSample" */;
+			buildPhases = (
+				C9606AE418D9E22B00A8F275 /* Sources */,
+				C9606AE518D9E22B00A8F275 /* Frameworks */,
+				C9606AE618D9E22B00A8F275 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VideoHeartbeatSample;
+			productName = VideoHeartbeatSample;
+			productReference = C9606AE818D9E22B00A8F275 /* VideoHeartbeatSample.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C9606B0B18D9E22B00A8F275 /* VideoHeartbeatSampleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C9606B2018D9E22B00A8F275 /* Build configuration list for PBXNativeTarget "VideoHeartbeatSampleTests" */;
+			buildPhases = (
+				C9606B0818D9E22B00A8F275 /* Sources */,
+				C9606B0918D9E22B00A8F275 /* Frameworks */,
+				C9606B0A18D9E22B00A8F275 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C9606B1218D9E22B00A8F275 /* PBXTargetDependency */,
+			);
+			name = VideoHeartbeatSampleTests;
+			productName = VideoHeartbeatSampleTests;
+			productReference = C9606B0C18D9E22B00A8F275 /* VideoHeartbeatSampleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C9606AE018D9E22B00A8F275 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = Adobe;
+				TargetAttributes = {
+					C9606B0B18D9E22B00A8F275 = {
+						TestTargetID = C9606AE718D9E22B00A8F275;
+					};
+				};
+			};
+			buildConfigurationList = C9606AE318D9E22B00A8F275 /* Build configuration list for PBXProject "VideoHeartbeatSample" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = C9606ADF18D9E22B00A8F275;
+			productRefGroup = C9606AE918D9E22B00A8F275 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C9606AE718D9E22B00A8F275 /* VideoHeartbeatSample */,
+				C9606B0B18D9E22B00A8F275 /* VideoHeartbeatSampleTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C9606AE618D9E22B00A8F275 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C93A866E190A78AE006D2AF7 /* clickbaby.mp4 in Resources */,
+				C9606B0218D9E22B00A8F275 /* Main_iPad.storyboard in Resources */,
+				C9606B0718D9E22B00A8F275 /* Images.xcassets in Resources */,
+				C9606AFF18D9E22B00A8F275 /* Main_iPhone.storyboard in Resources */,
+				C9606AF618D9E22B00A8F275 /* InfoPlist.strings in Resources */,
+				C9606B2718D9E25600A8F275 /* ADBMobileConfig.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C9606B0A18D9E22B00A8F275 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9606B1818D9E22B00A8F275 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C9606AE418D9E22B00A8F275 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9606B0518D9E22B00A8F275 /* ViewController.m in Sources */,
+				C9606AFC18D9E22B00A8F275 /* AppDelegate.m in Sources */,
+				C9606AF818D9E22B00A8F275 /* main.m in Sources */,
+				220B935336C67D104DA2120E /* VideoPlayer.m in Sources */,
+				220B9AB54F7BF11F7B4ED6FF /* VideoAnalyticsProvider.m in Sources */,
+				220B9846EE22DA1B20C7C1AC /* VideoPlayerDelegate.m in Sources */,
+				220B9DE446C672E847CFF1C1 /* Configuration.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C9606B0818D9E22B00A8F275 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9606B1A18D9E22B00A8F275 /* VideoHeartbeatSampleTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C9606B1218D9E22B00A8F275 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C9606AE718D9E22B00A8F275 /* VideoHeartbeatSample */;
+			targetProxy = C9606B1118D9E22B00A8F275 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		C9606AF418D9E22B00A8F275 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C9606AF518D9E22B00A8F275 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		C9606AFD18D9E22B00A8F275 /* Main_iPhone.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C9606AFE18D9E22B00A8F275 /* Base */,
+			);
+			name = Main_iPhone.storyboard;
+			sourceTree = "<group>";
+		};
+		C9606B0018D9E22B00A8F275 /* Main_iPad.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C9606B0118D9E22B00A8F275 /* Base */,
+			);
+			name = Main_iPad.storyboard;
+			sourceTree = "<group>";
+		};
+		C9606B1618D9E22B00A8F275 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C9606B1718D9E22B00A8F275 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C9606B1B18D9E22B00A8F275 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C9606B1C18D9E22B00A8F275 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C9606B1E18D9E22B00A8F275 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VideoHeartbeatSample/VideoHeartbeatSample-Prefix.pch";
+				INFOPLIST_FILE = "VideoHeartbeatSample/VideoHeartbeatSample-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/AdobeMobile",
+					"$(PROJECT_DIR)/VideoHeartbeat",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		C9606B1F18D9E22B00A8F275 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VideoHeartbeatSample/VideoHeartbeatSample-Prefix.pch";
+				INFOPLIST_FILE = "VideoHeartbeatSample/VideoHeartbeatSample-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/AdobeMobile",
+					"$(PROJECT_DIR)/VideoHeartbeat",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		C9606B2118D9E22B00A8F275 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/VideoHeartbeatSample.app/VideoHeartbeatSample";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VideoHeartbeatSample/VideoHeartbeatSample-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "VideoHeartbeatSampleTests/VideoHeartbeatSampleTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		C9606B2218D9E22B00A8F275 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/VideoHeartbeatSample.app/VideoHeartbeatSample";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "VideoHeartbeatSample/VideoHeartbeatSample-Prefix.pch";
+				INFOPLIST_FILE = "VideoHeartbeatSampleTests/VideoHeartbeatSampleTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C9606AE318D9E22B00A8F275 /* Build configuration list for PBXProject "VideoHeartbeatSample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C9606B1B18D9E22B00A8F275 /* Debug */,
+				C9606B1C18D9E22B00A8F275 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C9606B1D18D9E22B00A8F275 /* Build configuration list for PBXNativeTarget "VideoHeartbeatSample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C9606B1E18D9E22B00A8F275 /* Debug */,
+				C9606B1F18D9E22B00A8F275 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C9606B2018D9E22B00A8F275 /* Build configuration list for PBXNativeTarget "VideoHeartbeatSampleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C9606B2118D9E22B00A8F275 /* Debug */,
+				C9606B2218D9E22B00A8F275 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C9606AE018D9E22B00A8F275 /* Project object */;
+}
