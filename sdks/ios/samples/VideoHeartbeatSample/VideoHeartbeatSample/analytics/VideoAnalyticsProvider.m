@@ -59,10 +59,7 @@
 }
 
 - (void)dealloc {
-    [_videoHeartbeat destroy];
-
-    [_playerDelegate release]; _playerDelegate = nil;
-    [_videoHeartbeat release]; _videoHeartbeat = nil;
+    [self tearDown];
 
     [super dealloc];
 }
@@ -140,6 +137,16 @@
                                              selector:@selector(onComplete:)
                                                  name:PLAYER_EVENT_COMPLETE
                                                object:self.player];
+}
+
+- (void)tearDown {
+    // Detach from the notification center.
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+
+    [_videoHeartbeat destroy];
+
+    [_videoHeartbeat release]; _videoHeartbeat = nil;
+    [_playerDelegate release]; _playerDelegate = nil;
 }
 
 @end

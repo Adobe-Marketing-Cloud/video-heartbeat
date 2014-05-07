@@ -15,4 +15,5 @@
 
 @interface VideoAnalyticsProvider : NSObject
 - (id)initWithPlayer:(VideoPlayer *)player;
+- (void)tearDown;
 @end
