@@ -4,6 +4,19 @@ Release Notes for Flash/AS3 VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+1.3.0 (22 Apr, 2014)
+
+New features
+    - Chapter tracking APIs are now available.
+    - API change: the AdBreakInfo now has an additional property called "startTime". This change is backwards-compatible with API v1.2.
+
+Fixed issues:
+    - Heartbeat calls are now being sent during the buffering periods.
+    - COMPLETE event is no longer sent for the initial video asset when another video asset is loaded
+    - COMPLETE event is no longer sent for an ad when seeking outside that particular ad.
+
+------------------------
+
 1.2.0 (17 Apr, 2014)
 
 New features
