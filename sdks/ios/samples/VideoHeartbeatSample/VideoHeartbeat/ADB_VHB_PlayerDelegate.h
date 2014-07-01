@@ -33,6 +33,8 @@
 - (ADB_VHB_AdInfo *) getAdInfo;
 - (ADB_VHB_ChapterInfo *) getChapterInfo;
 - (ADB_VHB_QoSInfo *) getQoSInfo;
+
 - (void) onError:(ADB_VHB_ErrorInfo *)errorInfo;
+- (void) onVideoUnloaded;
 
 @end

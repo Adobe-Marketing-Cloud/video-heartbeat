@@ -25,5 +25,6 @@
 @property(nonatomic, retain) NSString *playerName;
 @property(nonatomic, retain) NSString *name;
 @property(nonatomic, retain) NSNumber *position;
+@property(nonatomic, retain) NSNumber *startTime;
 
 @end

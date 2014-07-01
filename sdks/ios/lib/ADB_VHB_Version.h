@@ -26,5 +26,7 @@
 + (NSString *)getMajor;
 + (NSString *)getMinor;
 + (NSString *)getMicro;
++ (NSString *)getBuild;
++ (NSNumber *)getApiLevel;
 
 @end

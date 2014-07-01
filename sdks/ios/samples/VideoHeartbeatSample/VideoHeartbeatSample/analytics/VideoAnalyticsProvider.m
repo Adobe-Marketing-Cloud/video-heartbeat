@@ -14,11 +14,9 @@
 #import "ADB_VHB_VideoHeartbeat.h"
 #import "VideoPlayer.h"
 #import "VideoPlayerDelegate.h"
-#import "ADBMobile.h"
 #import "Configuration.h"
 
-
-@interface VideoAnalyticsProvider()
+@interface VideoAnalyticsProvider ()
 
 @property(nonatomic, assign) VideoPlayer *player;
 @property(nonatomic, retain) ADB_VHB_VideoHeartbeat *videoHeartbeat;
@@ -29,7 +27,8 @@
 @implementation VideoAnalyticsProvider
 
 #pragma mark - Allocation/de-allocation
-- (id) init {
+
+- (id)init {
     self = [super init];
     if (self) {
         [NSException raise:@"Illegal invocation." format:@"Use the initWithPlayer: selector."];
@@ -40,13 +39,13 @@
 
 - (id)initWithPlayer:(VideoPlayer *)player {
     self = [super init];
-    
+
     if (self) {
         if (!player) {
             [NSException raise:@"Illegal argument." format:@"Player reference cannot be NULL."];
         }
 
-        _playerDelegate = [[VideoPlayerDelegate alloc] initWithPlayer:player];
+        _playerDelegate = [[VideoPlayerDelegate alloc] initWithPlayer:player provider:self];
         _videoHeartbeat = [[ADB_VHB_VideoHeartbeat alloc] initWithPlayerDelegate:_playerDelegate];
 
         _player = player;
@@ -54,7 +53,7 @@
         [self setupVideoHeartbeat];
         [self setupPlayerNotifications];
     }
-    
+
     return self;
 }
 
@@ -65,8 +64,13 @@
 }
 
 #pragma mark - VideoPlayer notification handlers.
+
 - (void)onMainVideoLoaded:(NSNotification *)notification {
     [self.videoHeartbeat trackVideoLoad];
+}
+
+- (void)onMainVideoUnloaded:(NSNotification *)notification {
+    [self.videoHeartbeat trackVideoUnload];
 }
 
 - (void)onPlay:(NSNotification *)notification {
@@ -87,18 +91,32 @@
 
 - (void)onComplete:(NSNotification *)notification {
     [self.videoHeartbeat trackComplete];
-    [self.videoHeartbeat trackVideoUnload];
+}
+
+- (void)onChapterStart:(NSNotification *)notification {
+    [self.videoHeartbeat trackChapterStart];
+}
+
+- (void)onAdChapterComplete:(NSNotification *)notification {
+    [self.videoHeartbeat trackChapterComplete];
+}
+
+- (void)onAdStart:(NSNotification *)notification {
+    [self.videoHeartbeat trackAdStart];
+}
+
+- (void)onAdComplete:(NSNotification *)notification {
+    [self.videoHeartbeat trackAdComplete];
 }
 
 #pragma mark - Private helper methods
-- (void)setupVideoHeartbeat {
-    // Also activate the logging features of the AppMeasurement library.
-    // NOTE: remove this in production code.
-    [ADBMobile setDebugLogging:NO];
 
+- (void)setupVideoHeartbeat {
     ADB_VHB_ConfigData *videoHeartbeatConfig = [[[ADB_VHB_ConfigData alloc] initWithTrackingServer:TRACKING_SERVER
                                                                                              jobId:JOB_ID
                                                                                          publisher:PUBLISHER] autorelease];
+
+    videoHeartbeatConfig.channel = @"test_channel";
 
     // Set this to true to activate the debug tracing.
     // NOTE: remove this in production code.
@@ -111,6 +129,11 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(onMainVideoLoaded:)
                                                  name:PLAYER_EVENT_VIDEO_LOAD
+                                               object:self.player];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onMainVideoUnloaded:)
+                                                 name:PLAYER_EVENT_VIDEO_UNLOAD
                                                object:self.player];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -137,16 +160,36 @@
                                              selector:@selector(onComplete:)
                                                  name:PLAYER_EVENT_COMPLETE
                                                object:self.player];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onChapterStart:)
+                                                 name:PLAYER_EVENT_CHAPTER_START
+                                               object:self.player];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onAdChapterComplete:)
+                                                 name:PLAYER_EVENT_CHAPTER_COMPLETE
+                                               object:self.player];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onAdStart:)
+                                                 name:PLAYER_EVENT_AD_START
+                                               object:self.player];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onAdComplete:)
+                                                 name:PLAYER_EVENT_AD_COMPLETE
+                                               object:self.player];
 }
 
 - (void)tearDown {
     // Detach from the notification center.
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-    [_videoHeartbeat destroy];
-
-    [_videoHeartbeat release]; _videoHeartbeat = nil;
-    [_playerDelegate release]; _playerDelegate = nil;
+    [_videoHeartbeat release];
+    _videoHeartbeat = nil;
+    [_playerDelegate release];
+    _playerDelegate = nil;
 }
 
 @end

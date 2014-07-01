@@ -13,16 +13,21 @@
 #import "VideoPlayer.h"
 #import "ADB_VHB_ErrorInfo.h"
 #import "ADB_VHB_VideoInfo.h"
-#import "Configuration.h"
+#import "ADB_VHB_AdBreakInfo.h"
+#import "ADB_VHB_AdInfo.h"
+#import "ADB_VHB_VideoHeartbeat.h"
+#import "VideoAnalyticsProvider.h"
 
-@interface VideoPlayerDelegate()
+@interface VideoPlayerDelegate ()
 @property(nonatomic, assign) VideoPlayer *player;
+@property(nonatomic, assign) VideoAnalyticsProvider *provider;
 @end
 
 @implementation VideoPlayerDelegate
 
 #pragma mark - Allocation/de-allocation
-- (id) init {
+
+- (id)init {
     self = [super init];
     if (self) {
         [NSException raise:@"Illegal invocation." format:@"Use the initWithPlayer: selector."];
@@ -31,50 +36,45 @@
     return self;
 }
 
-- (id) initWithPlayer:(VideoPlayer *)player {
+- (id)initWithPlayer:(VideoPlayer *)player provider:(VideoAnalyticsProvider *)provider {
     self = [super init];
     if (self) {
         _player = player;
+        _provider = provider;
     }
 
     return self;
 }
 
 #pragma mark - Player delegate implementation
-- (ADB_VHB_VideoInfo *) getVideoInfo {
-    ADB_VHB_VideoInfo *videoInfo = [[[ADB_VHB_VideoInfo alloc] init] autorelease];
 
-    videoInfo.id = self.player.videoId;
-    videoInfo.playerName = PLAYER_NAME;
-    videoInfo.length = self.player.videoDuration;
-    videoInfo.streamType = self.player.streamType;
-    videoInfo.playhead = self.player.playhead;
-
-    return videoInfo;
+- (ADB_VHB_VideoInfo *)getVideoInfo {
+    return self.player.videoInfo;
 }
 
-- (ADB_VHB_AdBreakInfo *) getAdBreakInfo {
-    // This sample app. does not support ad-tracking workflows.
-    return nil;
+- (ADB_VHB_AdBreakInfo *)getAdBreakInfo {
+    return self.player.adBreakInfo;
 }
 
-- (ADB_VHB_AdInfo *) getAdInfo {
-    // This sample app. does not support ad-tracking workflows.
-    return nil;
+- (ADB_VHB_AdInfo *)getAdInfo {
+    return self.player.adInfo;
 }
 
-- (ADB_VHB_ChapterInfo *) getChapterInfo {
-    // This sample app. does not support chapter-tracking workflows.
-    return nil;
+- (ADB_VHB_ChapterInfo *)getChapterInfo {
+    return self.player.chapterInfo;
 }
 
-- (ADB_VHB_QoSInfo *) getQoSInfo {
+- (ADB_VHB_QoSInfo *)getQoSInfo {
     // This sample app. does not support QoS-tracking workflows.
     return nil;
 }
 
-- (void) onError:(ADB_VHB_ErrorInfo *)errorInfo {
+- (void)onError:(ADB_VHB_ErrorInfo *)errorInfo {
     NSLog(@"VideoAnalytics error. Message: %@. Details: %@", errorInfo.message, errorInfo.details);
+}
+
+- (void)onVideoUnloaded {
+    [self.provider.videoHeartbeat destroy];
 }
 
 @end

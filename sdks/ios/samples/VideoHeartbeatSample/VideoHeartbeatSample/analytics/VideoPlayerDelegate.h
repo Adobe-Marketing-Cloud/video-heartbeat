@@ -13,8 +13,9 @@
 #import "ADB_VHB_PlayerDelegate.h"
 
 @class VideoPlayer;
+@class VideoAnalyticsProvider;
 
 
 @interface VideoPlayerDelegate : ADB_VHB_PlayerDelegate
-- (id) initWithPlayer:(VideoPlayer *)player;
+- (id)initWithPlayer:(VideoPlayer *)player provider:(VideoAnalyticsProvider *)provider;
 @end

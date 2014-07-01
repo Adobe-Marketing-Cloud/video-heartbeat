@@ -12,8 +12,12 @@
 #import <Foundation/Foundation.h>
 
 @class VideoPlayer;
+@class ADB_VHB_VideoHeartbeat;
 
 @interface VideoAnalyticsProvider : NSObject
+@property(nonatomic, readonly, retain) ADB_VHB_VideoHeartbeat *videoHeartbeat;
+
 - (id)initWithPlayer:(VideoPlayer *)player;
+
 - (void)tearDown;
 @end

@@ -12,18 +12,29 @@
 #import <Foundation/Foundation.h>
 #import <MediaPlayer/MediaPlayer.h>
 
+@class ADB_VHB_AdBreakInfo;
+@class ADB_VHB_AdInfo;
+@class ADB_VHB_VideoInfo;
+@class ADB_VHB_ChapterInfo;
+
 FOUNDATION_EXPORT NSString *const PLAYER_EVENT_VIDEO_LOAD;
+FOUNDATION_EXPORT NSString *const PLAYER_EVENT_VIDEO_UNLOAD;
 FOUNDATION_EXPORT NSString *const PLAYER_EVENT_PLAY;
 FOUNDATION_EXPORT NSString *const PLAYER_EVENT_PAUSE;
 FOUNDATION_EXPORT NSString *const PLAYER_EVENT_COMPLETE;
 FOUNDATION_EXPORT NSString *const PLAYER_EVENT_SEEK_START;
 FOUNDATION_EXPORT NSString *const PLAYER_EVENT_SEEK_COMPLETE;
+FOUNDATION_EXPORT NSString *const PLAYER_EVENT_AD_START;
+FOUNDATION_EXPORT NSString *const PLAYER_EVENT_AD_COMPLETE;
+FOUNDATION_EXPORT NSString *const PLAYER_EVENT_CHAPTER_START;
+FOUNDATION_EXPORT NSString *const PLAYER_EVENT_CHAPTER_COMPLETE;
+
 
 @interface VideoPlayer : MPMoviePlayerController
 
-@property(nonatomic, readonly, retain) NSString *videoId;
-@property(nonatomic, readonly, retain) NSNumber *videoDuration;
-@property(nonatomic, readonly, retain) NSString *streamType;
-@property(nonatomic, readonly) NSNumber *playhead;
+@property(nonatomic, readonly, retain) ADB_VHB_AdBreakInfo *adBreakInfo;
+@property(nonatomic, readonly, retain) ADB_VHB_AdInfo *adInfo;
+@property(nonatomic, readonly, retain) ADB_VHB_VideoInfo *videoInfo;
+@property(nonatomic, readonly, retain) ADB_VHB_ChapterInfo *chapterInfo;
 
 @end
