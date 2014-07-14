@@ -20,7 +20,7 @@
  */
 
 /*
- * video heartbeats - v1.2.0 - 2014-04-25
+ * video heartbeats - v1.2.0 - 2014-07-14
  * Copyright (c) 2014 Adobe Systems, Inc. All Rights Reserved.
  */
 (function(global) {
@@ -331,8 +331,11 @@ heartbeat.clock || (heartbeat.clock = {});
     var PLATFORM = "js";
 
     var MAJOR = "1";
-    var MINOR = "2";
-    var MICRO = "0";
+    var MINOR = "3";
+    var MICRO = "1";
+    var PATCH = "0";
+    var BUILD = "33ea934";
+    var API_LEVEL = 1;
 
     /**
      * Container for library version information.
@@ -344,10 +347,10 @@ heartbeat.clock || (heartbeat.clock = {});
     /**
      * The current version of the library.
      *
-     * This has the following format: $major.$minor.$micro
+     * This has the following format: $platform-$major.$minor.$micro.$patch-$build
      */
     Version.getVersion = function() {
-        return PLATFORM + "-" + MAJOR + "." + MINOR + "." + MICRO;
+        return PLATFORM + "-" + MAJOR + "." + MINOR + "." + MICRO + "." + PATCH + "-" + BUILD;
     };
 
     /**
@@ -369,6 +372,27 @@ heartbeat.clock || (heartbeat.clock = {});
      */
     Version.getMicro = function() {
         return MICRO;
+    };
+
+    /**
+     * The patch number.
+     */
+    Version.getPatch = function() {
+        return PATCH;
+    };
+
+    /**
+     * The build identifier.
+     */
+    Version.getBuild = function() {
+        return BUILD;
+    };
+
+    /**
+     * The API level.
+     */
+    Version.getApiLevel = function() {
+        return API_LEVEL;
     };
 
     // Export symbols.
@@ -404,6 +428,7 @@ heartbeat.clock || (heartbeat.clock = {});
         Constructor.prototype = parent.prototype;
         child.prototype = new Constructor();
         child.__super__ = parent.prototype;
+
         return child;
     }
 
@@ -432,7 +457,7 @@ heartbeat.clock || (heartbeat.clock = {});
         }
 
         // Bind all scraped functions to the destination constructor function.
-        for (var i = 0; i < fnNames.length; i ++) {
+        for (var i = 0; i < fnNames.length; i++) {
             var fnName = fnNames[i];
             to.prototype[fnName] = from[fnName];
         }
@@ -446,7 +471,7 @@ heartbeat.clock || (heartbeat.clock = {});
     'use strict';
 
     core.deferrable = {
-        executeDeferred: function () {
+        executeDeferred: function() {
             if (this._deferred) {
                 this._deferred.apply(this, arguments);
             }
@@ -571,7 +596,7 @@ heartbeat.clock || (heartbeat.clock = {});
         context = context || window;
 
         this._events[type] = (this._events[type] || []);
-        this._events[type].push({cb: listener, ctx:context});
+        this._events[type].push({cb: listener, ctx: context});
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -604,7 +629,7 @@ heartbeat.clock || (heartbeat.clock = {});
         if (!isTypeRegistered) return;
 
         // Search for the target event listener
-        for (i = this._events[key].length - 1; i >=0 ; i --) {
+        for (i = this._events[key].length - 1; i >= 0; i--) {
             var _listener = this._events[key][i];
             if (listener === _listener.cb && context === _listener.ctx) {
                 this._events[key].splice(i, 1);
@@ -625,7 +650,7 @@ heartbeat.clock || (heartbeat.clock = {});
     EventDispatcher.prototype.dispatchEvent = function(event) {
         if (!event.type) return;
 
-        var key,i;
+        var key, i;
         for (key in this._events) {
             if (this._events.hasOwnProperty(key) && (event.type === key)) {
                 var listeners = this._events[key];
@@ -640,7 +665,7 @@ heartbeat.clock || (heartbeat.clock = {});
     /**
      * Un-registers all listener methods.
      *
-     * @param {Object=} target The object for which all event listeners are to be removed.
+     * @param {Object} target The object for which all event listeners are to be removed.
      */
     EventDispatcher.prototype.removeAllListeners = function(target) {
         if (!target) {
@@ -650,7 +675,7 @@ heartbeat.clock || (heartbeat.clock = {});
 
             for (key in this._events) {
                 if (this._events.hasOwnProperty(key)) {
-                    for (i = this._events[key].length - 1; i >=0 ; i --) {
+                    for (i = this._events[key].length - 1; i >= 0; i--) {
                         var _listener = this._events[key][i];
                         if (_listener.ctx === target) {
                             this._events[key].splice(i, 1);
@@ -670,23 +695,69 @@ heartbeat.clock || (heartbeat.clock = {});
 })(core);
 
 (function(core) {
-    'use strict';
 
-    var EventDispatcher = core.EventDispatcher;
-
-    function NotificationCenter() {
-        // Provide a singleton event dispatcher.
-        if (!NotificationCenter.prototype._instance) {
-            NotificationCenter.prototype._instance = new EventDispatcher();
-        }
-
-        return NotificationCenter.prototype._instance;
+    function WorkQueue(delay) {
+        this._workQueue = [];
+        this._delay = (typeof delay !== "undefined") ? delay : 0;
+        this._drainInProgress = false;
     }
 
-    // Export symbols.
-    core.NotificationCenter = NotificationCenter;
-})(core);
+    WorkQueue.prototype.clear = function() {
+        this._workQueue = [];
+    };
 
+    WorkQueue.prototype.isEmpty = function() {
+        return (this._workQueue.length === 0);
+    };
+
+    WorkQueue.prototype.drain = function() {
+        if (this._drainInProgress) return;
+        this._drainInProgress = true;
+
+        var self = this;
+        (function _drain() {
+            var currentJob = self._workQueue.shift();
+
+            if (currentJob) {
+                self._runJob(currentJob, function() {
+                    _drain();
+                });
+            } else {
+                self._drainInProgress = false;
+            }
+        })();
+    };
+
+    WorkQueue.prototype.flush = function() {
+        for (var i = 0; i < this._workQueue.length; i++) {
+            var job = this._workQueue[i];
+            job.fn.apply(job.ctx, job.args);
+        }
+
+        // Reset the work queue.
+        this._workQueue = [];
+    };
+
+    WorkQueue.prototype.addJob = function(name, fn, args, ctx) {
+        args = (typeof args !== "undefined") ? args : null;
+        ctx = (typeof ctx !== "undefined") ? ctx : null;
+        this._workQueue.push({name: name, fn: fn, args: args, ctx: ctx});
+    };
+
+    WorkQueue.prototype._runJob = function(job, done) {
+        var self = this;
+        setTimeout(function() {
+            job.fn.apply(job.ctx, job.args);
+
+            if (done != null) {
+                done.call(self);
+            }
+        }, this._delay);
+    };
+
+    // Export symbols
+    core.WorkQueue = WorkQueue;
+})(core);
 (function(core) {
     'use strict';
 
@@ -694,9 +765,8 @@ heartbeat.clock || (heartbeat.clock = {});
     var EventDispatcher = core.EventDispatcher;
 
     URLRequestMethod.GET = "GET";
-    function URLRequestMethod() {}
-
-
+    function URLRequestMethod() {
+    }
 
 
     function URLRequest(url, method) {
@@ -706,9 +776,6 @@ heartbeat.clock || (heartbeat.clock = {});
     }
 
 
-
-
-    URLLoader.STATUS = "status";
     URLLoader.RESPONSE = "response";
     URLLoader.INSTANCE = "instance";
 
@@ -728,37 +795,56 @@ heartbeat.clock || (heartbeat.clock = {});
     //
     // -------------------[ Private helper methods ]-----------------------
     //
-    URLLoader.prototype._createCORSRequest = function(req){
-        req._xmlhttp = new window["XMLHttpRequest"]();
-        if ("withCredentials" in req._xmlhttp){
-            return;
-        } else if (typeof window["XDomainRequest"] !== "undefined"){
-            req._xmlhttp = new window["XDomainRequest"]();
-        } else {
-            req._xmlhttp = null;
+
+    URLLoader.prototype._createCORSRequest = function(req) {
+        var xhr = null;
+
+        // First, try to use XMLHTTPRequest2, which has CORS support
+        if (typeof window["XMLHttpRequest"] !== "undefined") {
+            var candidateXHR = new window["XMLHttpRequest"]();
+
+            if ("withCredentials" in candidateXHR) {
+                // The presence of this property indicates XMLHTTPRequest2,
+                // (supported by most browsers and IE10+)
+                xhr = candidateXHR;
+                xhr.open(req.method, req.url, true);
+            }
         }
 
-        if (req._xmlhttp) {
+        // If that didn't work, try to use XDomainRequest (IE8 and IE9)
+        if (xhr == null) {
+            if (typeof window["XDomainRequest"] !== "undefined") {
+                xhr = new window["XDomainRequest"]();
+                xhr.open(req.method, req.url);
+            }
+        }
+
+        if (xhr) {
+            // If CORS is supported, register the success & error callbacks
+            var eventData = {};
+            eventData[URLLoader.INSTANCE] = this;
             var self = this;
-            req._xmlhttp.onreadystatechange = function() {
-                if (req._xmlhttp.readyState === 4) { // Wait for the call to complete
-                    var eventData = {};
-                    eventData[URLLoader.STATUS] = req._xmlhttp.status;
 
-                    if (req._xmlhttp.status >= 200 && req._xmlhttp.status < 400) {
-                        eventData[URLLoader.RESPONSE] = req._xmlhttp.responseText;
-                        eventData[URLLoader.INSTANCE] = self;
-                        self.dispatchEvent(new core.Event(Event.SUCCESS, eventData));
-
-                    } else {
-                        self.dispatchEvent(new core.Event(Event.ERROR, eventData));
-                    }
+            xhr.onload = function() {
+                if (xhr.status && parseInt(xhr.status, 10) >= 400) {
+                    // This extra-check is needed because some browsers
+                    // will call the 'onload' callback even if
+                    // the request was unsuccessful.
+                    return this.onerror();
                 }
+                eventData[URLLoader.RESPONSE] = xhr.responseText;
+                self.dispatchEvent(new Event(Event.SUCCESS, eventData));
+            };
+
+            xhr.onerror = function() {
+                self.dispatchEvent(new core.Event(Event.ERROR, eventData));
             };
         }
+
+        return xhr;
     };
 
-    URLLoader.prototype._load_img = function(req) {
+    URLLoader.prototype._loadImage = function(req) {
         if (!this._connection) {
             this._connection = new Image();
             this._connection.alt = "";
@@ -766,9 +852,8 @@ heartbeat.clock || (heartbeat.clock = {});
 
         this._connection.src = req.url;
 
-        // Image requests are always successful.
+        // Image requests are assumed to be successful.
         var eventData = {};
-        eventData[URLLoader.STATUS] = 200;
         eventData[URLLoader.RESPONSE] = "";
         eventData[URLLoader.INSTANCE] = this;
 
@@ -783,17 +868,17 @@ heartbeat.clock || (heartbeat.clock = {});
     };
 
     URLLoader.prototype.load = function(req) {
-        if(!req || !req.method || !req.url) {
+        if (!req || !req.method || !req.url) {
             return;
         }
 
-        this._createCORSRequest(req);
+        req._xmlhttp = this._createCORSRequest(req);
 
         if (req._xmlhttp) {
-            req._xmlhttp.open(req.method, req.url, true);
             req._xmlhttp.send();
-        } else { // No CORS support : fall-back to image request.
-            this._load_img(req);
+        } else {
+            // No CORS support: fall-back to image request.
+            this._loadImage(req);
         }
     };
 
@@ -802,6 +887,504 @@ heartbeat.clock || (heartbeat.clock = {});
     core.URLRequest = URLRequest;
     core.URLLoader = URLLoader;
 })(core);
+(function(core) {
+    'use strict';
+
+    function Operation(fn, ctx, params) {
+        this.fn = fn;
+        this.ctx = ctx;
+        this.params = params;
+    }
+
+    Operation.prototype.run = function() {
+        this.fn.apply(this.ctx, this.params);
+    };
+
+    // Export symbols.
+    core.Operation = Operation;
+})(core);
+(function(core) {
+    'use strict';
+
+    function OperationQueue() {
+        this._queue = [];
+    }
+
+    OperationQueue.prototype.addOperation = function(operation) {
+        this._queue.push(operation);
+        this._processQueue();
+    };
+
+    OperationQueue.prototype.cancelAllOperations = function() {
+        this._queue = [];
+    };
+
+    OperationQueue.prototype._processQueue = function() {
+        if (this._queue.length) {
+            var operation = this._queue.shift();
+            var self = this;
+            setTimeout(function() {
+                operation.run();
+                self._processQueue();
+            }, 0);
+        }
+    };
+
+    // Export symbols.
+    core.OperationQueue = OperationQueue;
+})(core);
+(function(core) {
+    'use strict';
+
+    var EventDispatcher = core.EventDispatcher;
+    var OperationQueue = core.OperationQueue;
+
+    function CommCenter() {
+        this.notificationCenter = new EventDispatcher();
+        this.workQueue = new OperationQueue();
+    }
+
+    // Export symbols.
+    core.CommCenter = CommCenter;
+})(core);
+(function(va) {
+    'use strict';
+
+    /**
+     * Container for ad-break related information.
+     *
+     * @constructor
+     */
+    function AdBreakInfo() {
+        this.playerName = null;
+        this.name = null;
+        this.position = null;
+        this.startTime = null;
+    }
+
+    // Export symbols.
+    va.AdBreakInfo = AdBreakInfo;
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    /**
+     * Container for ad related information.
+     *
+     * @constructor
+     */
+    function AdInfo() {
+        this.id = null;
+        this.name = null;
+        this.length = null;
+        this.playhead = null;
+        this.position = null;
+        this.cpm = null;
+    }
+
+    // Export symbols.
+    va.AdInfo = AdInfo;
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    // Export symbols.
+    va.ASSET_TYPE_VOD = "vod";
+    va.ASSET_TYPE_LIVE = "live";
+    va.ASSET_TYPE_LINEAR = "linear";
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    /**
+     * Information about chapters.
+     *
+     * @constructor
+     */
+    function ChapterInfo() {
+        this.name = null;
+        this.length = null;
+        this.position = null;
+        this.startTime = null;
+    }
+
+    // Export symbols.
+    va.ChapterInfo = ChapterInfo;
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    var DEFAULT_UNKNOWN = "unknown";
+    var DEFAULT_EMPTY_STRING = "";
+
+    /**
+     * Configuration data for video heartbeat.
+     *
+     * @constructor
+     */
+    function ConfigData(trackingServer, jobId, publisher) {
+        this.trackingServer = trackingServer;
+        this.jobId = jobId;
+        this.publisher = publisher;
+
+        this.channel = DEFAULT_EMPTY_STRING;
+
+        this.ovp = DEFAULT_UNKNOWN;
+        this.sdk = DEFAULT_UNKNOWN;
+
+        this.debugLogging = false;
+
+        this.quietMode = false;
+
+        this.__primetime = false;
+        this.__psdkVersion = null;
+    }
+
+    // Export symbols.
+    va.ConfigData = ConfigData;
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    /**
+     * Container for error related information.
+     *
+     * @constructor
+     */
+    function ErrorInfo(message, details) {
+        this.message = message;
+        this.details = details;
+    }
+
+    // Export symbols.
+    va.ErrorInfo = ErrorInfo;
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    /**
+     * Definition of Adobe's video-tracking DSL.
+     *
+     * @interface
+     */
+    function HeartbeatProtocol() {}
+
+    // -----------------[ Configuration & life-cycle management ]---------------------
+    HeartbeatProtocol.prototype.configure = function(configData) {};
+
+    HeartbeatProtocol.prototype.destroy = function() {};
+
+    // -----------------[ Video playback tracking ]---------------------
+    HeartbeatProtocol.prototype.trackVideoLoad = function() {};
+
+    HeartbeatProtocol.prototype.trackVideoUnload = function() {};
+
+    HeartbeatProtocol.prototype.trackPlay = function() {};
+
+    HeartbeatProtocol.prototype.trackPause = function() {};
+
+    HeartbeatProtocol.prototype.trackBufferStart = function() {};
+
+    HeartbeatProtocol.prototype.trackBufferComplete = function() {};
+
+    HeartbeatProtocol.prototype.trackSeekStart = function() {};
+
+    HeartbeatProtocol.prototype.trackSeekComplete = function() {};
+
+    HeartbeatProtocol.prototype.trackComplete = function() {};
+
+    // -----------------[ Chapter tracking ]---------------------
+    HeartbeatProtocol.prototype.trackChapterStart = function() {};
+
+    HeartbeatProtocol.prototype.trackChapterComplete = function() {};
+
+    // -----------------[ Ad tracking ]---------------------
+    /**
+     * @Deprecated
+     */
+    HeartbeatProtocol.prototype.trackAdBreakStart = function() {};
+
+    /**
+     * @Deprecated
+     */
+    HeartbeatProtocol.prototype.trackAdBreakComplete = function() {};
+
+    HeartbeatProtocol.prototype.trackAdStart = function() {};
+
+    HeartbeatProtocol.prototype.trackAdComplete = function() {};
+
+    // -----------------[ QoS tracking ]---------------------
+    HeartbeatProtocol.prototype.trackBitrateChange = function(bitrate) {};
+
+
+    // -----------------[ Error tracking ]---------------------
+    HeartbeatProtocol.prototype.trackVideoPlayerError = function(errorId) {};
+
+    HeartbeatProtocol.prototype.trackApplicationError = function(errorId) {};
+
+    // Export symbols.
+    va.HeartbeatProtocol = HeartbeatProtocol;
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    /**
+     * Delegate object for player-specific computations.
+     *
+     * NOTE: this is an abstract base class designed to be extended.
+     *       Not to be instantiated directly.
+     */
+    function PlayerDelegate() {}
+
+    PlayerDelegate.prototype.getVideoInfo = function() {
+        throw new Error("Implementation error: Method must be overridden.");
+    };
+
+    PlayerDelegate.prototype.getAdBreakInfo = function() {
+        return null;
+    };
+
+    PlayerDelegate.prototype.getAdInfo = function() {
+        return null;
+    };
+
+    PlayerDelegate.prototype.getChapterInfo = function() {
+        return null;
+    };
+
+    PlayerDelegate.prototype.getQoSInfo = function() {
+        return null;
+    };
+
+    PlayerDelegate.prototype.onError = function(errorInfo) {
+    };
+
+    PlayerDelegate.prototype.onVideoUnloaded = function() {
+    };
+
+    // Export symbols.
+    va.PlayerDelegate = PlayerDelegate;
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    /**
+     * Container for QoS related information.
+     *
+     * @constructor
+     */
+    function QoSInfo() {
+        this.bitrate = null;
+        this.fps = null;
+        this.droppedFrames = null;
+    }
+
+    // Export symbols.
+    va.QoSInfo = QoSInfo;
+})(va);
+
+
+(function(va) {
+    'use strict';
+
+    /**
+     * Container for video related information.
+     *
+     * @constructor
+     */
+    function VideoInfo() {
+        this.playerName = null;
+        this.id = null;
+        this.name = null;
+        this.length = null;
+        this.playhead = null;
+        this.streamType = null;
+    }
+
+    // Export symbols.
+    va.VideoInfo = VideoInfo;
+})(va);
+
+
+(function(core, va) {
+    'use strict';
+
+    function InputDataSanitizer(invalidDataOperation) {
+        this._invalidDataOperation = invalidDataOperation;
+    }
+
+    InputDataSanitizer.prototype.sanitizeVideoInfo = function(videoInfo) {
+        if (!videoInfo) {
+            return this._fail("VideoInfo cannot be null");
+        }
+
+        var errorString = getVideoInfoErrorString(videoInfo);
+        if (errorString) {
+            return this._fail(errorString);
+        }
+
+        return true;
+    };
+
+    InputDataSanitizer.prototype.sanitizeAdBreakInfo = function(adBreakInfo, allowNull) {
+        if (!allowNull && !adBreakInfo) {
+            return this._fail("AdBreakInfo cannot be null");
+        }
+
+        var errorString = getAdBreakInfoErrorString(adBreakInfo);
+        if (errorString) {
+            return this._fail(errorString);
+        }
+
+        return true;
+    };
+
+    InputDataSanitizer.prototype.sanitizeAdInfo = function(adInfo, allowNull) {
+        if (!allowNull && !adInfo) {
+            return this._fail("AdInfo cannot be null");
+        }
+
+        var errorString = getAdInfoErrorString(adInfo);
+        if (errorString) {
+            return this._fail(errorString);
+        }
+
+        return true;
+    };
+
+    InputDataSanitizer.prototype.sanitizeChapterInfo = function(chapterInfo, allowNull) {
+        if (!allowNull && !chapterInfo) {
+            return this._fail("ChapterInfo cannot be null");
+        }
+
+        var errorString = getChapterInfoErrorString(chapterInfo);
+        if (errorString) {
+            return this._fail(errorString);
+        }
+
+        return true;
+    };
+
+
+    //
+    //---------------------[ Private helper functions ]-----------------------
+    //
+
+    InputDataSanitizer.prototype._fail = function(errorString) {
+        this._invalidDataOperation.params = ["Invalid input data", errorString];
+        this._invalidDataOperation.run();
+        return false;
+    };
+
+
+    //
+    //---------------------[ Static helper functions ]-----------------------
+    //
+
+    function getVideoInfoErrorString(videoInfo) {
+        if (videoInfo) {
+            if (videoInfo.id == null || videoInfo.id === "") {
+                return "Video ID cannot be null or empty string";
+            }
+
+            if (videoInfo.streamType != va.ASSET_TYPE_VOD &&
+                videoInfo.streamType != va.ASSET_TYPE_LIVE &&
+                videoInfo.streamType != va.ASSET_TYPE_LINEAR) {
+                return "Video ID must be one of " +
+                    va.ASSET_TYPE_VOD + ", " +
+                    va.ASSET_TYPE_LIVE + ", " +
+                    va.ASSET_TYPE_LINEAR;
+            }
+
+            if (videoInfo.length == null || isNaN(videoInfo.length)) {
+                return "Video length cannot be null or NaN";
+            }
+
+            if (videoInfo.playhead == null || isNaN(videoInfo.playhead)) {
+                return "Video playhead cannot be null or NaN";
+            }
+
+            if (videoInfo.playerName == null || videoInfo.playerName === "") {
+                return "Video player-name cannot be null or empty string.";
+            }
+        }
+        return null;
+    }
+
+    function getAdBreakInfoErrorString(adBreakInfo) {
+        if (adBreakInfo) {
+            if (adBreakInfo.playerName == null || adBreakInfo.playerName === "") {
+                return "Ad-break player-name cannot be null or empty string";
+            }
+
+            if (adBreakInfo.position == null || isNaN(adBreakInfo.position)) {
+                return "Ad-break position cannot be null or NaN";
+            }
+        }
+
+        return null;
+    }
+
+    function getAdInfoErrorString(adInfo) {
+        if (adInfo) {
+            if (adInfo.id == null || adInfo.id === "") {
+                return "Ad ID cannot be null or empty string";
+            }
+
+            if (adInfo.playhead == null || isNaN(adInfo.playhead)) {
+                return "Ad playhead cannot be null or NaN";
+            }
+
+            if (adInfo.position == null || isNaN(adInfo.position)) {
+                return "Ad position cannot be null or NaN";
+            }
+
+            if (adInfo.length == null || isNaN(adInfo.length)) {
+                return "Ad length cannot be null or NaN";
+            }
+        }
+
+        return null;
+    }
+
+    function getChapterInfoErrorString(chapterInfo) {
+        if (chapterInfo) {
+            if (chapterInfo.position == null || isNaN(chapterInfo.position)) {
+                return "Chapter position cannot be null or NaN";
+            }
+
+            if (chapterInfo.startTime == null || isNaN(chapterInfo.startTime)) {
+                return "Chapter offset (start-time) cannot be null or NaN";
+            }
+
+            if (chapterInfo.length == null || isNaN(chapterInfo.length)) {
+                return "Chapter length cannot be null or NaN";
+            }
+        }
+
+        return null;
+    }
+
+    // Export symbols.
+    core.InputDataSanitizer = InputDataSanitizer;
+
+})(core, va);
 (function(core, heartbeat) {
     'use strict';
 
@@ -816,33 +1399,27 @@ heartbeat.clock || (heartbeat.clock = {});
     EventKeyName.CHECK_STATUS_SERVER = "check_status_server";
     EventKeyName.JOB_ID = "job_id";
     EventKeyName.PUBLISHER = "publisher";
-    EventKeyName.STREAM_TYPE = "stream_type";
     EventKeyName.OVP = "ovp";
     EventKeyName.SDK = "sdk";
     EventKeyName.CHANNEL = "channel";
     EventKeyName.USE_SSL = "use_ssl";
     EventKeyName.QUIET_MODE = "quiet_mode";
-    EventKeyName.VISITOR_ID = "visitor_id";
     EventKeyName.ANALYTICS_VISITOR_ID = "analytics_visitor_id";
     EventKeyName.MARKETING_CLOUD_VISITOR_ID = "marketing_cloud_visitor_id";
-    EventKeyName.NAME = "name";
-    EventKeyName.LENGTH = "length";
-    EventKeyName.PLAYER_NAME = "player_name";
+    EventKeyName.VISITOR_ID = "visitor_id";
+    EventKeyName.VIDEO_INFO = "video_info";
+    EventKeyName.AD_INFO = "ad_info";
+    EventKeyName.AD_BREAK_INFO = "ad_break_info";
+    EventKeyName.CHAPTER_INFO = "chapter_info";
+    EventKeyName.MESSAGE = "message";
+    EventKeyName.DETAILS = "details";
+
     EventKeyName.TIMER_INTERVAL = "timer_interval";
     EventKeyName.TRACKING_INTERVAL = "tracking_interval";
     EventKeyName.CHECK_STATUS_INTERVAL = "check_status_interval";
     EventKeyName.TRACK_EXTERNAL_ERRORS = "track_external_errors";
-    EventKeyName.PARENT_NAME = "parent_name";
-    EventKeyName.PARENT_POD = "parent_pod";
-    EventKeyName.PARENT_POD_POSITION = "parent_pod_position";
-    EventKeyName.PARENT_POD_OFFSET = "parent_pod_offset";
-    EventKeyName.CPM = "parent_pod_cpm";
-    EventKeyName.OFFSET = "offset";
     EventKeyName.SOURCE = "source";
     EventKeyName.ERROR_ID = "error_id";
-    EventKeyName.BITRATE = "bitrate";
-    EventKeyName.FPS = "fps";
-    EventKeyName.DROPPED_FRAMES = "dropped_frames";
 
     // Export symbols.
     heartbeat.event.EventKeyName = EventKeyName;
@@ -867,19 +1444,22 @@ heartbeat.clock || (heartbeat.clock = {});
     }
 
     ApiEvent.API_CONFIG = "api_config";
-    ApiEvent.API_OPEN_MAIN = "api_open_main";
-    ApiEvent.API_OPEN_AD = "api_open_ad";
-    ApiEvent.API_CLOSE = "api_close";
+    ApiEvent.API_VIDEO_LOAD  = "api_video_load";
+    ApiEvent.API_VIDEO_UNLOAD  = "api_video_unload";
+    ApiEvent.API_VIDEO_START = "api_video_start";
+    ApiEvent.API_VIDEO_COMPLETE = "api_video_complete";
+    ApiEvent.API_AD_START = "api_ad_start";
+    ApiEvent.API_AD_COMPLETE = "api_ad_complete";
     ApiEvent.API_PLAY = "api_play";
-    ApiEvent.API_STOP = "api_stop";
-    ApiEvent.API_CLICK = "api_click";
-    ApiEvent.API_COMPLETE = "api_complete";
-    ApiEvent.API_TRACK_ERROR = "api_track_error";
-    ApiEvent.API_QOS_INFO = "api_qos_info";
-    ApiEvent.API_BITRATE_CHANGE = "api_bitrate_change";
+    ApiEvent.API_PAUSE = "api_pause";
     ApiEvent.API_BUFFER_START = "api_buffer_start";
-    ApiEvent.API_POD_OFFSET = "api_pod_offset";
-    ApiEvent.API_SESSION_COMPLETE = "api_session_complete";
+    ApiEvent.API_SEEK_START = "api_seek_start";
+    ApiEvent.API_SEEK_COMPLETE = "api_seek_complete";
+    ApiEvent.API_CHAPTER_START = "api_chapter_start";
+    ApiEvent.API_CHAPTER_COMPLETE = "api_chapter_complete";
+
+    ApiEvent.API_TRACK_ERROR = "api_track_error";
+    ApiEvent.API_BITRATE_CHANGE = "api_bitrate_change";
 
     // Export symbols.
     heartbeat.event.ApiEvent = ApiEvent;
@@ -981,23 +1561,41 @@ heartbeat.clock || (heartbeat.clock = {});
         ClockEvent.__super__.constructor.call(this, type, data);
     }
 
-    ClockEvent["CLOCK_TRACKING_TICK"] = "CLOCK_TRACKING_TICK";
-    ClockEvent["CLOCK_TRACKING_ENABLE"] = "CLOCK_TRACKING_ENABLE";
-    ClockEvent["CLOCK_TRACKING_DISABLE"] = "CLOCK_TRACKING_DISABLE";
+    ClockEvent.CLOCK_TRACKING_TICK = "CLOCK_TRACKING_TICK";
+    ClockEvent.CLOCK_TRACKING_ENABLE = "CLOCK_TRACKING_ENABLE";
+    ClockEvent.CLOCK_TRACKING_DISABLE = "CLOCK_TRACKING_DISABLE";
 
-    ClockEvent["CLOCK_CHECK_STATUS_TICK"] = "CLOCK_CHECK_STATUS_TICK";
-    ClockEvent["CLOCK_CHECK_STATUS_ENABLE"] = "CLOCK_CHECK_STATUS_ENABLE";
-    ClockEvent["CLOCK_CHECK_STATUS_DISABLE"] = "CLOCK_CHECK_STATUS_DISABLE";
-
-    ClockEvent["CLOCK_MONITOR_TICK"] = "CLOCK_MONITOR_TICK";
-    ClockEvent["CLOCK_MONITOR_UPDATE"] = "CLOCK_MONITOR_UPDATE";
-    ClockEvent["CLOCK_MONITOR_ENABLE"] = "CLOCK_MONITOR_ENABLE";
-    ClockEvent["CLOCK_MONITOR_DISABLE"] = "CLOCK_MONITOR_DISABLE";
+    ClockEvent.CLOCK_CHECK_STATUS_TICK = "CLOCK_CHECK_STATUS_TICK";
+    ClockEvent.CLOCK_CHECK_STATUS_ENABLE = "CLOCK_CHECK_STATUS_ENABLE";
+    ClockEvent.CLOCK_CHECK_STATUS_DISABLE = "CLOCK_CHECK_STATUS_DISABLE";
 
     // Export symbols.
     heartbeat.event.ClockEvent = ClockEvent;
 })(core, heartbeat);
 
+(function(core, heartbeat) {
+    'use strict';
+
+    var Event = core.Event;
+
+    core.extend(ErrorEvent, Event);
+
+    /**
+     * Event dispatched when an error occurs.
+     *
+     * @extends {Event}
+     *
+     * @constructor
+     */
+    function ErrorEvent(type, data) {
+        ErrorEvent.__super__.constructor.call(this, type, data);
+    }
+
+    ErrorEvent.ERROR = "error";
+
+    // Export symbols.
+    heartbeat.event.ErrorEvent = ErrorEvent;
+})(core, heartbeat);
 (function(core, heartbeat) {
     'use strict';
 
@@ -1102,6 +1700,7 @@ heartbeat.clock || (heartbeat.clock = {});
 
         this.cpm = this._createAccessor("_cpm", "cpm", null);
         this.adId = this._createAccessor("_adId", "ad_id", null);
+        this.sid = this._createAccessor("_sid", "ad_sid", null);
         this.resolver = this._createAccessor("_resolver", "resolver", null);
         this.podId = this._createAccessor("_podId", "pod_id", null);
         this.podPosition = this._createAccessor("_podPosition", "pod_position", null);
@@ -1110,6 +1709,7 @@ heartbeat.clock || (heartbeat.clock = {});
 
         this.cpm('');
         this.adId('');
+        this.sid('');
         this.resolver('');
         this.podId('');
         this.podPosition('');
@@ -1121,6 +1721,7 @@ heartbeat.clock || (heartbeat.clock = {});
 
             this.cpm(other.cpm());
             this.adId(other.adId());
+            this.sid(other.sid());
             this.resolver(other.resolver());
             this.podId(other.podId());
             this.podPosition(other.podPosition());
@@ -1137,7 +1738,55 @@ heartbeat.clock || (heartbeat.clock = {});
     'use strict';
 
     var Dao = heartbeat.model.Dao;
+
+    core.extend(ChapterDao, Dao);
+
+    /**
+     * DAO describing chapter data.
+     *
+     * @extends {Dao}
+     *
+     * @constructor
+     */
+    function ChapterDao() {
+        ChapterDao.__super__.constructor.call(this, "stream");
+
+        this.id = this._createAccessor("_id", "chapter_id", null);
+        this.sid = this._createAccessor("_sid", "chapter_sid", null);
+        this.name = this._createAccessor("_name", "chapter_name", null);
+        this.position = this._createAccessor("_position", "chapter_pos", null);
+        this.length = this._createAccessor("_length", "chapter_length", null);
+        this.offset = this._createAccessor("_offset", "chapter_offset", null);
+
+        this.id('');
+        this.sid('');
+        this.name('');
+        this.position(0);
+        this.length(0);
+        this.offset(0);
+
+        if (arguments.length && arguments[0] instanceof ChapterDao) {
+            var other = arguments[0];
+
+            this.id(other.id());
+            this.sid(other.sid());
+            this.name(other.name());
+            this.position(other.position());
+            this.length(other.length());
+            this.offset(other.offset());
+        }
+    }
+
+    // Export symbols.
+    heartbeat.model.ChapterDao = ChapterDao;
+})(core, heartbeat);
+
+(function(core, heartbeat) {
+    'use strict';
+
+    var Dao = heartbeat.model.Dao;
     var AdDao = heartbeat.model.AdDao;
+    var ChapterDao = heartbeat.model.ChapterDao;
 
     core.extend(AssetDao, Dao);
 
@@ -1155,12 +1804,14 @@ heartbeat.clock || (heartbeat.clock = {});
         this.videoId = this._createAccessor("_videoId", "video_id", null);
         this.publisher = this._createAccessor("_publisher", "publisher", null);
         this.adData = this._createAccessor("_adData", "ad_data", null);
+        this.chapterData = this._createAccessor("_chapterData", "chapter_data", null);
         this.duration = this._createAccessor("_duration", "duration", null);
 
         this.type('');
         this.videoId('');
         this.publisher('');
         this.adData(null);
+        this.chapterData(null);
         this.duration(0);
 
         if (arguments.length && arguments[0] instanceof AssetDao) {
@@ -1174,6 +1825,11 @@ heartbeat.clock || (heartbeat.clock = {});
             var otherAdData = other.adData();
             if (otherAdData) {
                 this.adData(new AdDao(otherAdData));
+            }
+
+            var otherChapterData = other.chapterData();
+            if (otherChapterData) {
+                this.chapterData(new ChapterDao(otherChapterData));
             }
         }
     }
@@ -1225,8 +1881,9 @@ heartbeat.clock || (heartbeat.clock = {});
         this.playhead(0);
         this.id('');
         this.source('');
-        this.prevTs(-1);
         this.ts(new Date().getTime());
+        this._updateTsAsDate();
+        this.prevTs(-1);
     }
 
     //
@@ -1237,9 +1894,7 @@ heartbeat.clock || (heartbeat.clock = {});
         var trackingIntervalMs = this._trackingInterval * 1000;
         var truncatedMs = Math.floor(this._ts / trackingIntervalMs) * trackingIntervalMs;
 
-        this._tsAsDate = new Date(truncatedMs);
-        var dateDao = new DateDao(this.realm, this._tsAsDate);
-        this.setField("ts_as_date", dateDao, null);
+        this.tsAsDate(new Date(truncatedMs));
     };
 
     //
@@ -1269,6 +1924,8 @@ heartbeat.clock || (heartbeat.clock = {});
     EventDao.EVENT_TYPE_LOAD = "load";
     EventDao.EVENT_TYPE_UNLOAD = "unload";
     EventDao.EVENT_TYPE_START = "start";
+    EventDao.EVENT_TYPE_CHAPTER_START = "chapter_start";
+    EventDao.EVENT_TYPE_CHAPTER_COMPLETE = "chapter_complete";
     EventDao.EVENT_TYPE_PLAY = "play";
     EventDao.EVENT_TYPE_PAUSE = "pause";
     EventDao.EVENT_TYPE_BUFFER = "buffer";
@@ -1315,6 +1972,7 @@ heartbeat.clock || (heartbeat.clock = {});
     'use strict';
 
     var Dao = heartbeat.model.Dao;
+    var DaoField = heartbeat.model.DaoField;
 
     core.extend(SiteCatalystDao, Dao);
 
@@ -1330,9 +1988,11 @@ heartbeat.clock || (heartbeat.clock = {});
 
         this.reportSuiteId = this._createAccessor("_reportSuiteId", "rsid", null);
         this.trackingServer = this._createAccessor("_trackingServer", "tracking_server", null);
+        this.ssl = this._createAccessor("_ssl", "ssl", DaoField.HINT_SHORT);
 
         this.reportSuiteId('');
         this.trackingServer('');
+        this.ssl(0);
     }
 
     // Export symbols.
@@ -1343,6 +2003,8 @@ heartbeat.clock || (heartbeat.clock = {});
     'use strict';
 
     var Dao = heartbeat.model.Dao;
+
+    var UNKNOWN = 'unknown';
 
     core.extend(ServiceProviderDao, Dao);
 
@@ -1361,12 +2023,14 @@ heartbeat.clock || (heartbeat.clock = {});
         this.channel = this._createAccessor("_channel", "channel", null);
         this.playerName = this._createAccessor("_playerName", "player_name", null);
         this.libVersion = this._createAccessor("_libVersion", "hb_version", null);
+        this.apiLevel = this._createAccessor("_apiLevel", "hb_api_lvl", null);
 
-        this.ovp('unknown');
-        this.sdk('unknown');
-        this.channel('unknown');
+        this.ovp(UNKNOWN);
+        this.sdk(UNKNOWN);
+        this.channel(UNKNOWN);
         this.playerName('');
-        this.libVersion('unknown');
+        this.libVersion('');
+        this.apiLevel(0);
     }
 
     // Export symbols.
@@ -1392,7 +2056,7 @@ heartbeat.clock || (heartbeat.clock = {});
 
         this.sessionId = this._createAccessor("_sessionId", "sid", null);
 
-        this.sessionId('');
+        this.sessionId(null);
     }
 
     // Export symbols.
@@ -1419,8 +2083,8 @@ heartbeat.clock || (heartbeat.clock = {});
         this.cdn = this._createAccessor("_cdn", "cdn", null);
         this.name = this._createAccessor("_name", "name", null);
 
-        this.cdn('');
-        this.name('');
+        this.cdn(null);
+        this.name(null);
 
         if (arguments.length && arguments[0] instanceof StreamDao) {
             var other = arguments[0];
@@ -1456,18 +2120,18 @@ heartbeat.clock || (heartbeat.clock = {});
         this.city = this._createAccessor("_city", "city", null);
         this.latitude = this._createAccessor("_latitude", "latitude", null);
         this.longitude = this._createAccessor("_longitude", "longitude", null);
-        this.visitorId = this._createAccessor("_visitorId", "id", null);
         this.analyticsVisitorId = this._createAccessor("_analyticsVisitorId", "aid", null);
         this.marketingCloudVisitorId = this._createAccessor("_marketingCloudVisitorId", "mid", null);
+        this.visitorId = this._createAccessor("_visitorId", "vid", null);
 
-        this.device('');
-        this.country('');
-        this.city('');
-        this.latitude('');
-        this.longitude('');
-        this.visitorId('');
-        this.analyticsVisitorId('');
-        this.marketingCloudVisitorId('');
+        this.device(null);
+        this.country(null);
+        this.city(null);
+        this.latitude(null);
+        this.longitude(null);
+        this.analyticsVisitorId(null);
+        this.marketingCloudVisitorId(null);
+        this.visitorId(null);
 
         if (arguments.length && arguments[0] instanceof UserDao) {
             var other = arguments[0];
@@ -1477,9 +2141,9 @@ heartbeat.clock || (heartbeat.clock = {});
             this.city(other.city());
             this.latitude(other.latitude());
             this.longitude(other.longitude());
-            this.visitorId(other.visitorId());
             this.analyticsVisitorId(other.analyticsVisitorId());
             this.marketingCloudVisitorId(other.marketingCloudVisitorId());
+            this.visitorId(other.visitorId());
         }
     }
 
@@ -1527,7 +2191,7 @@ heartbeat.clock || (heartbeat.clock = {});
             return;
         }
 
-        for (var i = this.reportEntries.length - 1; i >=0; i--) {
+        for (var i = this.reportEntries.length - 1; i >= 0; i--) {
             if (this.reportEntries[i].eventData.type() ===  EventDao.EVENT_TYPE_PAUSE) {
                 this.reportEntries.splice(i, 1);
             }
@@ -1734,10 +2398,9 @@ heartbeat.clock || (heartbeat.clock = {});
 
     var logger = core.logger;
     var mixin = core.mixin;
-    var ApiEvent = heartbeat.event.ApiEvent;
+    var Operation = core.Operation;
     var ClockEvent = heartbeat.event.ClockEvent;
     var EventKeyName = heartbeat.event.EventKeyName;
-    var NotificationCenter = core.NotificationCenter;
 
     function TimerDescriptor(interval) {
         this.tick = 0;
@@ -1747,51 +2410,29 @@ heartbeat.clock || (heartbeat.clock = {});
 
 
 
-
     var TIMER_BASE_INTERVAL = 1;  // 1 second
 
     mixin(TimerManager, logger);
 
-    function TimerManager() {
+    function TimerManager(commCenter) {
+        this._isDestroyed = false;
         this._currentTick = 0;
         this._timers = {};
+        this._commCenter = commCenter;
 
         // Setup the base timer for the clock partition.
         var self = this;
-        this._clock = setInterval(function(){ self._onTick(); }, TIMER_BASE_INTERVAL * 1000);
+        this._clock = setInterval(function() { self._onTick(); }, TIMER_BASE_INTERVAL * 1000);
 
         // Activate logging for this class.
         this.enableLogging('[heartbeat::TimerManager] > ');
     }
 
-    //
-    //--------------------[ Notification handlers ]--------------------
-    //
-    TimerManager.prototype._onTick = function() {
-        this.log("#_onTick() > ------------------- (" + this._currentTick + ")");
-        this._currentTick ++;
-
-        for (var name in this._timers) {
-            if (this._timers.hasOwnProperty(name)) {
-                var timer = this._timers[name];
-
-                if (timer.isActive) {
-                    timer.tick ++;
-
-                    if (timer.tick % timer.interval === 0) {
-                        var eventData = {};
-                        eventData[EventKeyName.TIMER_INTERVAL] = timer.interval;
-
-                        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent[name], eventData));
-                    }
-                }
-            }
-        }
-    };
 
     //
-    // -------------------[ Public methods ]-----------------------
+    // -------------------[ Public API ]-----------------------
     //
+
     TimerManager.prototype.isTimerActive = function(name) {
         var timer = this._timers[name];
 
@@ -1818,7 +2459,6 @@ heartbeat.clock || (heartbeat.clock = {});
             timer.isActive = true;
 
             if (reset) {
-                this.log('Resetting timer: ' + name);
                 timer.tick = 0;
             }
         }
@@ -1836,18 +2476,49 @@ heartbeat.clock || (heartbeat.clock = {});
             timer.isActive = false;
 
             if (reset) {
-                this.log('Resetting timer: ' + name);
                 timer.tick = 0;
             }
         }
     };
 
     TimerManager.prototype.destroy = function() {
-        this.log("#destroy()");
+        if (this._isDestroyed) return;
+        this._isDestroyed = true;
 
         // Stop the base timer.
         clearInterval(this._clock);
     };
+
+    //
+    //--------------------[ Notification handlers ]--------------------
+    //
+
+    TimerManager.prototype._onTick = function() {
+        var operation = new Operation(function() {
+            this.log("#_onTick() > ------------------- (" + this._currentTick + ")");
+            this._currentTick++;
+
+            for (var name in this._timers) {
+                if (this._timers.hasOwnProperty(name)) {
+                    var timer = this._timers[name];
+
+                    if (timer.isActive) {
+                        timer.tick++;
+
+                        if (timer.tick % timer.interval === 0) {
+                            var eventData = {};
+                            eventData[EventKeyName.TIMER_INTERVAL] = timer.interval;
+
+                            this._commCenter.notificationCenter.dispatchEvent(new ClockEvent(ClockEvent[name], eventData));
+                        }
+                    }
+                }
+            }
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
+    };
+
 
     // Export symbols.
     heartbeat.clock.TimerManager = TimerManager;
@@ -1858,15 +2529,15 @@ heartbeat.clock || (heartbeat.clock = {});
 
     var logger = core.logger;
     var mixin = core.mixin;
-    var NotificationCenter = core.NotificationCenter;
-    var ApiEvent = heartbeat.event.ApiEvent;
-    var TimerManager = heartbeat.clock.TimerManager;
     var EventKeyName = heartbeat.event.EventKeyName;
 
     mixin(Timer, logger);
-    function Timer(timerManager, tickEventName, enableEventName, disableEventName, interval) {
+    function Timer(commCenter, timerManager, tickEventName, enableEventName, disableEventName, interval) {
         this.enableLogging('[media-fork::Timer] > ');
 
+        this._isDestroyed = false;
+
+        this._commCenter = commCenter;
         this._timerManager = timerManager;
         this._interval = interval;
         this._tickEventName = tickEventName;
@@ -1877,13 +2548,57 @@ heartbeat.clock || (heartbeat.clock = {});
         this._timerManager.createTimer(this._tickEventName, this._interval);
 
         // We register as observers to various heartbeat events.
-        NotificationCenter().addEventListener(this._enableEventName, this._onTimerEnabled, this);
-        NotificationCenter().addEventListener(this._disableEventName, this._onTimerDisabled, this);
+        this._commCenter.notificationCenter.addEventListener(this._enableEventName, this._onTimerEnabled, this);
+        this._commCenter.notificationCenter.addEventListener(this._disableEventName, this._onTimerDisabled, this);
     }
 
     //
-    // -------------------[ Private helper methods ]-----------------------
+    // -------------------[ Public methods ]-----------------------
     //
+
+    Timer.prototype.start = function(reset) {
+        this.log("Starting timer: " + this._tickEventName);
+        this._timerManager.startTimer(this._tickEventName, reset);
+    };
+
+    Timer.prototype.stop = function(reset) {
+        this.log("Stopping timer: " + this._tickEventName + ")");
+        this._timerManager.stopTimer(this._tickEventName, reset);
+    };
+
+    Timer.prototype.destroy = function() {
+        if (this._isDestroyed) return;
+        this._isDestroyed = true;
+
+        // Detach from the notification center.
+        this._commCenter.notificationCenter.removeAllListeners(this);
+
+        // Un-register from the timer manager.
+        this._timerManager.destroyTimer(this._tickEventName);
+    };
+
+    Timer.prototype.setInterval = function(interval) {
+        // Remember the current timer state.
+        var wasActive = this._timerManager.isTimerActive(this._tickEventName);
+
+        // Stop the timer.
+        this.stop(true);
+
+        // Create a new timer (it will replace the old one if it exists).
+        this._interval = interval;
+        this._timerManager.createTimer(this._tickEventName, this._interval);
+
+        // Restart the timer if it was active prior to the update of the timer interval.
+        if (wasActive) {
+            this.start(true);
+        }
+    };
+
+
+    //
+    // -------------------[ Notification handlers ]-----------------------
+    //
+
     Timer.prototype._onTimerEnabled = function(e) {
         var eventData = e.data;
         var reset = false;
@@ -1906,43 +2621,6 @@ heartbeat.clock || (heartbeat.clock = {});
         this.stop(reset);
     };
 
-    Timer.prototype.start = function(reset) {
-        this.log("#start(" + this._tickEventName + ")");
-        this._timerManager.startTimer(this._tickEventName, reset);
-    };
-
-    //
-    // -------------------[ Public methods ]-----------------------
-    //
-    Timer.prototype.stop = function(reset) {
-        this.log("#stop(" + this._tickEventName + ")");
-        this._timerManager.stopTimer(this._tickEventName, reset);
-    };
-
-    Timer.prototype.destroy = function() {
-        // Detach from the notification center.
-        NotificationCenter().removeAllListeners(this);
-
-        // Un-register from the timer manager.
-        this._timerManager.destroyTimer(this._tickEventName);
-    };
-
-    Timer.prototype.setInterval = function(interval) {
-        // Remember the current timer state.
-        var wasActive = TimerManager().isTimerActive(this._tickEventName);
-
-        // Stop the timer.
-        this.stop(true);
-
-        // Create a new timer (it will replace the old one if it exists).
-        this._interval = interval;
-        this._timerManager.createTimer(this._tickEventName, this._interval);
-
-        // Restart the timer if it was active prior to the update of the timer interval.
-        if (wasActive) {
-            this.start(true);
-        }
-    };
 
     // Export symbols.
     heartbeat.clock.Timer = Timer;
@@ -1953,111 +2631,6 @@ heartbeat.clock || (heartbeat.clock = {});
 
     var mixin = core.mixin;
     var logger = core.logger;
-    var NotificationCenter = core.NotificationCenter;
-    var ClockEvent = heartbeat.event.ClockEvent;
-    var EventKeyName = heartbeat.event.EventKeyName;
-    var Timer = heartbeat.clock.Timer;
-
-    var MONITOR_TIMER_INTERVAL = 1; // 1 second
-
-    core.extend(MonitorTimer, Timer);
-    mixin(MonitorTimer, logger);
-
-    /**
-     * @extends clock.Timer
-     */
-    function MonitorTimer(timerManager) {
-        MonitorTimer.__super__.constructor.call(this,
-            timerManager,
-            ClockEvent["CLOCK_MONITOR_TICK"],
-            ClockEvent["CLOCK_MONITOR_ENABLE"],
-            ClockEvent["CLOCK_MONITOR_DISABLE"],
-            MONITOR_TIMER_INTERVAL);
-
-        this._offsetTable = {};
-        this._activeAsset = null;
-
-        //
-        //-----------------[ Object construction ]-----------------------
-        //
-        // We register as observers to various heartbeat events.
-        NotificationCenter().addEventListener(ClockEvent["CLOCK_MONITOR_TICK"], this._onMonitorTick, this);
-
-        // Activate logging for this class.
-        this.enableLogging('[heartbeat::MonitorTimer] > ');
-    }
-
-    //
-    //--------------------[ Notification handlers ]--------------------
-    //
-    MonitorTimer.prototype._onMonitorTick = function(e) {
-        if (!this._activeAsset) {
-            this.error("_onMonitorTick() > Monitor timer expects an activeAsset value that is not NULL.");
-            return;
-        }
-
-        if (!this._offsetTable.hasOwnProperty(this._activeAsset)) {
-            this.error("_onMonitorTick() > Unable to find offset for asset: " + this._activeAsset);
-        }
-
-        var offset = this._offsetTable[this._activeAsset];
-
-        // Increment the playhead value for the current active asset.
-        offset ++;
-
-        // Save the new playhead value inside the offset table.
-        this._offsetTable[this._activeAsset] = offset;
-
-        // Signal that the playhead for the currently active asset has changed.
-        var eventData = {};
-        eventData[EventKeyName.NAME] = this._activeAsset;
-        eventData[EventKeyName.OFFSET] = offset;
-
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent.CLOCK_MONITOR_UPDATE, eventData));
-    };
-
-    //
-    //--------------------[ Private helper methods ]--------------------
-    //
-    MonitorTimer.prototype._onTimerEnabled = function(e) {
-        var eventData = e.data;
-
-        // Remember the currently active asset.
-        this._activeAsset = eventData[EventKeyName.NAME];
-
-        this.log("_onTimerEnabled() > Active asset: " + this._activeAsset);
-
-        // Update the internal offset table.
-        this._offsetTable[this._activeAsset] = eventData[EventKeyName.OFFSET];
-
-        MonitorTimer.__super__._onTimerEnabled.call(this, e);
-
-    };
-
-    MonitorTimer.prototype._onTimerDisabled = function(e) {
-        var eventData = e.data;
-
-        // Remember the currently active asset.
-        this._activeAsset = eventData[EventKeyName.NAME];
-
-        this.log("_onTimerDisabled() > Active asset: " + this._activeAsset);
-
-        // Update the internal offset table.
-        this._offsetTable[this._activeAsset] = eventData[EventKeyName.OFFSET];
-
-        MonitorTimer.__super__._onTimerDisabled.call(this, e);
-    };
-
-    // Export symbols.
-    heartbeat.clock.MonitorTimer = MonitorTimer;
-})(core, heartbeat);
-
-(function(core, heartbeat) {
-    'use strict';
-
-    var mixin = core.mixin;
-    var logger = core.logger;
-    var NotificationCenter = core.NotificationCenter;
     var DataEvent = heartbeat.event.DataEvent;
     var NetworkEvent = heartbeat.event.NetworkEvent;
     var ClockEvent = heartbeat.event.ClockEvent;
@@ -2072,32 +2645,50 @@ heartbeat.clock || (heartbeat.clock = {});
     /**
      * @extends clock.Timer
      */
-    function TrackingTimer(timerManager) {
+    function TrackingTimer(commCenter, timerManager) {
         TrackingTimer.__super__.constructor.call(this,
+            commCenter,
             timerManager,
-            ClockEvent["CLOCK_TRACKING_TICK"],
-            ClockEvent["CLOCK_TRACKING_ENABLE"],
-            ClockEvent["CLOCK_TRACKING_DISABLE"],
+            ClockEvent.CLOCK_TRACKING_TICK,
+            ClockEvent.CLOCK_TRACKING_ENABLE,
+            ClockEvent.CLOCK_TRACKING_DISABLE,
             DEFAULT_TRACKING_INTERVAL);
 
         // We register as observers to various heartbeat events.
-        NotificationCenter().addEventListener(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, this._onCheckStatusComplete, this);
-        NotificationCenter().addEventListener(DataEvent.DATA_REQUEST, this._onDataRequest, this);
+        this._commCenter.notificationCenter.addEventListener(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, this._onCheckStatusComplete, this);
+        this._commCenter.notificationCenter.addEventListener(DataEvent.DATA_REQUEST, this._onDataRequest, this);
 
         // Activate logging for this class.
         this.enableLogging('[heartbeat::TrackingTimer] > ');
     }
 
+
+    //
+    //--------------------[ Public API ]--------------------
+    //
+
+    TrackingTimer.prototype.destroy = function() {
+        if (this._isDestroyed) return;
+
+        // Remove all listeners from the notification center.
+        this._commCenter.notificationCenter.removeEventListener(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, this._onCheckStatusComplete, this);
+        this._commCenter.notificationCenter.removeEventListener(DataEvent.DATA_REQUEST, this._onDataRequest, this);
+
+        TrackingTimer.__super__.destroy.call(this);
+    };
+
+
     //
     //--------------------[ Notification handlers ]--------------------
     //
+
     TrackingTimer.prototype._onCheckStatusComplete = function(e) {
         var newTimerInterval = e.data[EventKeyName.TRACKING_INTERVAL];
 
         this.log("#_onCheckStatusComplete(interval=" + newTimerInterval + ")");
 
         if (newTimerInterval) {
-            if (newTimerInterval === this._interval) {
+            if (newTimerInterval == this._interval) {
                 this.log("#_onCheckStatusComplete() > Interval value not changed.");
 
                 // Interval has not changed. Just exit.
@@ -2123,10 +2714,11 @@ heartbeat.clock || (heartbeat.clock = {});
                 var eventData = {};
                 eventData[EventKeyName.TIMER_INTERVAL] = this._interval;
 
-                NotificationCenter().dispatchEvent(new DataEvent(DataEvent.DATA_RESPONSE, eventData));
+                this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_RESPONSE, eventData));
                 break;
         }
     };
+
 
     // Export symbols.
     heartbeat.clock.TrackingTimer = TrackingTimer;
@@ -2135,12 +2727,12 @@ heartbeat.clock || (heartbeat.clock = {});
 (function(core, heartbeat) {
     'use strict';
 
-    var MAXIMUM_CHECK_STATUS_INTERVAL = 10 * 60; //10 min
-    var DEFAULT_CHECK_STATUS_INTERVAL = 60; // 1 min
+    var MAXIMUM_CHECK_STATUS_INTERVAL = 10 * 60; // 10 minutes
+    var DEFAULT_CHECK_STATUS_INTERVAL = 60; // 1 minute
 
     var mixin = core.mixin;
     var logger = core.logger;
-    var NotificationCenter = core.NotificationCenter;
+    var Operation = core.Operation;
     var NetworkEvent = heartbeat.event.NetworkEvent;
     var EventKeyName = heartbeat.event.EventKeyName;
     var ClockEvent = heartbeat.event.ClockEvent;
@@ -2152,36 +2744,44 @@ heartbeat.clock || (heartbeat.clock = {});
     /**
      * @extends clock.Timer
      */
-    function CheckStatusTimer(timerManager) {
+    function CheckStatusTimer(commCenter, timerManager) {
         CheckStatusTimer.__super__.constructor.call(this,
+            commCenter,
             timerManager,
-            ClockEvent["CLOCK_CHECK_STATUS_TICK"],
-            ClockEvent["CLOCK_CHECK_STATUS_ENABLE"],
-            ClockEvent["CLOCK_CHECK_STATUS_DISABLE"],
+            ClockEvent.CLOCK_CHECK_STATUS_TICK,
+            ClockEvent.CLOCK_CHECK_STATUS_ENABLE,
+            ClockEvent.CLOCK_CHECK_STATUS_DISABLE,
             DEFAULT_CHECK_STATUS_INTERVAL);
+
+        // We register as observers to various heartbeat events.
+        this._commCenter.notificationCenter.addEventListener(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, this._onCheckStatusComplete, this);
+
+        // Activate logging for this class.
+        this.enableLogging('[heartbeat::CheckStatusTimer] > ');
+        this.log("#CheckStatusTimer()");
 
         // Do the initial settings request.
         var self = this;
         setTimeout(function() { self._initialCheck(); }, 200);
-
-        // We register as observers to various heartbeat events.
-        NotificationCenter().addEventListener(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, this._onCheckStatusComplete, this);
-
-        // Activate logging for this class.
-        this.enableLogging('[heartbeat::CheckStatusTimer] > ');
     }
 
     //
-    // -------------------[ Private helper methods ]-----------------------
+    //--------------------[ Public API ]--------------------
     //
-    CheckStatusTimer.prototype._initialCheck = function() {
-        this.log("#_initialCheck()");
 
-        var eventData = {};
-        eventData[EventKeyName.TIMER_INTERVAL] = this._interval;
+    CheckStatusTimer.prototype.destroy = function() {
+        if (this._isDestroyed) return;
 
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent["CLOCK_CHECK_STATUS_TICK"], eventData));
+        // Remove all listeners from the notification center.
+        this._commCenter.notificationCenter.removeEventListener(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, this._onCheckStatusComplete, this);
+
+        CheckStatusTimer.__super__.destroy.call(this);
     };
+
+
+    //
+    //--------------------[ Notification handlers ]--------------------
+    //
 
     CheckStatusTimer.prototype._onCheckStatusComplete = function(e) {
         var newTimerInterval = e.data[EventKeyName.CHECK_STATUS_INTERVAL];
@@ -2189,7 +2789,7 @@ heartbeat.clock || (heartbeat.clock = {});
         this.log("#_onCheckStatusComplete(interval=" + newTimerInterval + ")");
 
         if (newTimerInterval) {
-            if (newTimerInterval === this._interval) {
+            if (newTimerInterval == this._interval) {
                 this.log("#_onCheckStatusComplete() > Interval value not changed.");
 
                 // Interval has not changed. Just exit.
@@ -2211,6 +2811,25 @@ heartbeat.clock || (heartbeat.clock = {});
         }
     };
 
+
+    //
+    // -------------------[ Private helper methods ]-----------------------
+    //
+
+    CheckStatusTimer.prototype._initialCheck = function() {
+        var operation = new Operation(function() {
+            this.log("#_initialCheck()");
+
+            var eventData = {};
+            eventData[EventKeyName.TIMER_INTERVAL] = this._interval;
+
+            this._commCenter.notificationCenter.dispatchEvent(new ClockEvent(ClockEvent["CLOCK_CHECK_STATUS_TICK"], eventData));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
+    };
+
+
     // Export symbols.
     heartbeat.clock.CheckStatusTimer = CheckStatusTimer;
 })(core, heartbeat);
@@ -2221,18 +2840,20 @@ heartbeat.clock || (heartbeat.clock = {});
     var TimerManager = heartbeat.clock.TimerManager;
     var CheckStatusTimer = heartbeat.clock.CheckStatusTimer;
     var TrackingTimer = heartbeat.clock.TrackingTimer;
-    var MonitorTimer = heartbeat.clock.MonitorTimer;
 
-    function Clock() {
+    function Clock(commCenter) {
+        this._isDestroyed = false;
+
         // Instantiate the timers.
-        this._timerManager = new TimerManager();
-        this._checkStatusTimer = new CheckStatusTimer(this._timerManager);
-        this._trackingTimer = new TrackingTimer(this._timerManager);
-        this._monitorTimer = new MonitorTimer(this._timerManager);
+        this._timerManager = new TimerManager(commCenter);
+        this._checkStatusTimer = new CheckStatusTimer(commCenter, this._timerManager);
+        this._trackingTimer = new TrackingTimer(commCenter, this._timerManager);
     }
 
     Clock.prototype.destroy = function() {
-        this._monitorTimer.destroy();
+        if (this._isDestroyed) return;
+        this._isDestroyed = true;
+
         this._trackingTimer.destroy();
         this._checkStatusTimer.destroy();
         this._timerManager.destroy();
@@ -2247,7 +2868,6 @@ heartbeat.clock || (heartbeat.clock = {});
 
     var mixin = core.mixin;
     var logger = core.logger;
-    var NotificationCenter = core.NotificationCenter;
     var EventKeyName = heartbeat.event.EventKeyName;
     var NetworkEvent = heartbeat.event.NetworkEvent;
 
@@ -2295,7 +2915,7 @@ heartbeat.clock || (heartbeat.clock = {});
         temp && (checkStatusInterval = temp);
 
         temp = parseInt(xmlDoc.getElementsByTagName("trackExternalErrors")[0].childNodes[0].nodeValue, 10);
-        temp && (trackExternalErrors = (temp === 1));
+        temp && (trackExternalErrors = (temp == 1));
 
         // Tell everybody about the update in the configuration data.
         var eventData = {};
@@ -2304,8 +2924,7 @@ heartbeat.clock || (heartbeat.clock = {});
         eventData[EventKeyName.TRACK_EXTERNAL_ERRORS] = trackExternalErrors;
 
         this.log("#parse() > Obtained configuration settings: " + JSON.stringify(eventData));
-
-        NotificationCenter().dispatchEvent(new NetworkEvent(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, eventData));
+        return eventData;
     };
 
     // Export symbols.
@@ -2319,7 +2938,8 @@ heartbeat.clock || (heartbeat.clock = {});
     var deferrable = core.deferrable;
     var logger = core.logger;
     var Event = core.Event;
-    var NotificationCenter = core.NotificationCenter;
+    var Operation = core.Operation;
+    var OperationQueue = core.OperationQueue;
     var ApiEvent = heartbeat.event.ApiEvent;
     var URLRequestMethod = core.URLRequestMethod;
     var URLRequest = core.URLRequest;
@@ -2328,37 +2948,53 @@ heartbeat.clock || (heartbeat.clock = {});
     var DataEvent = heartbeat.event.DataEvent;
     var ClockEvent = heartbeat.event.ClockEvent;
     var ContextEvent = heartbeat.event.ContextEvent;
+    var NetworkEvent = heartbeat.event.NetworkEvent;
     var SettingsParser = heartbeat.network.SettingsParser;
+    var EventDao = heartbeat.model.EventDao;
 
     mixin(Network, deferrable);
     mixin(Network, logger);
 
-    function Network(serializer) {
-        this._quietMode  = false;
-        this._isConfigured = false;
-        this._serializer = serializer;
+    function Network(commCenter, serializer, playerDelegate) {
+        this._jobId = null;
         this._trackingServer = null;
         this._checkStatusServer = null;
-        this._jobId = null;
+
+        this._quietMode  = false;
+        this._isConfigured = false;
+        this._isDestroyed = false;
+
+        this._commCenter = commCenter;
+        this._serializer = serializer;
+        this._playerDelegate = playerDelegate;
+
+        this._netQueue = new OperationQueue();
 
         // We register as observers to various heartbeat events.
-        NotificationCenter().addEventListener(DataEvent.DATA_RESPONSE, this._onDataResponse, this);
-        NotificationCenter().addEventListener(ApiEvent.API_CONFIG, this._onApiConfig, this);
-        NotificationCenter().addEventListener(ContextEvent.CONTEXT_DATA_AVAILABLE, this._onContextDataAvailable, this);
-        NotificationCenter().addEventListener(ClockEvent["CLOCK_CHECK_STATUS_TICK"], this._onClockCheckStatusTick, this);
+        this._commCenter.notificationCenter.addEventListener(DataEvent.DATA_RESPONSE, this._onDataResponse, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_CONFIG, this._onApiConfig, this);
+        this._commCenter.notificationCenter.addEventListener(ContextEvent.CONTEXT_DATA_AVAILABLE, this._onContextDataAvailable, this);
+        this._commCenter.notificationCenter.addEventListener(ClockEvent.CLOCK_CHECK_STATUS_TICK, this._onClockCheckStatusTick, this);
 
         // Activate logging for this class.
         this.enableLogging('[heartbeat::Network] > ');
+        this.log("#Network()");
     }
 
     //
     //--------------------[ Public API ]--------------------
     //
     Network.prototype.destroy = function() {
+        if (this._isDestroyed) return;
+        this._isDestroyed = true;
+
         this.log("#destroy()");
 
+        // Cancel all async operations.
+        this._netQueue.cancelAllOperations();
+
         // Detach from the notification center.
-        NotificationCenter().removeAllListeners(this);
+        this._commCenter.notificationCenter.removeAllListeners(this);
     };
 
     //
@@ -2393,40 +3029,50 @@ heartbeat.clock || (heartbeat.clock = {});
             return;
         }
 
-        // Obtain the serialized payload.
-        var report = e.data[EventKeyName.REPORT];
-        var payloads = this._serializer.serializeReport(report);
+        var operation = new Operation(function() {
+            // Obtain the serialized payload.
+            var report = e.data[EventKeyName.REPORT];
+            var payloads = this._serializer.serializeReport(report);
 
-        // We only send the request over the wire if tracking-local flag is not switched on.
-        for (var i = 0; i < payloads.length; i++) {
-            var payload = payloads[i];
+            for (var i = 0; i < payloads.length; i++) {
+                var payload = payloads[i];
+                var error = null;
 
-            // Create and send the request.
-            var url = this._trackingServer + "/?__job_id=" + this._jobId + "&" + payload;
-            var req = new URLRequest(url, URLRequestMethod.GET);
+                // Create and send the request.
+                var url = this._trackingServer + "/?__job_id=" + this._jobId + "&" + payload;
+                var req = new URLRequest(url, URLRequestMethod.GET);
 
-            this.info("_onContextDataAvailable() > " + req.url);
+                this.info("_onContextDataAvailable() > Sending request: " + req.url);
 
-            var loader = new URLLoader();
+                var loader = new URLLoader();
 
-            (function(loader, self) {
-                function onSuccess(e) {
-                    loader.close();
-                }
+                (function(loader, self) {
+                    function onSuccess(e) {
+                        loader.close();
+                    }
 
-                function  onError(e) {
-                    self.warn("#_onContextDataAvailable() > Failed to send heartbeat report: " + JSON.stringify(e));
-                    loader.close();
-                }
+                    function onError(e) {
+                        self.warn("#_onContextDataAvailable() > Failed to send heartbeat report: " + JSON.stringify(e));
+                        loader.close();
+                    }
 
-                // We only send the request over the wire if the quiet-mode flag is not switched on.
-                if (!self._quietMode) {
-                    loader.addEventListener(Event.SUCCESS, onSuccess, this);
-                    loader.addEventListener(Event.ERROR, onError, this);
-                    loader.load(req);
-                }
-            })(loader, this);
-        }
+                    // We only send the request over the wire if the quiet-mode flag is not switched on.
+                    if (!self._quietMode) {
+                        loader.addEventListener(Event.SUCCESS, onSuccess, this);
+                        loader.addEventListener(Event.ERROR, onError, this);
+                        loader.load(req);
+                    }
+                })(loader, this);
+            }
+
+            // If we are dealing with a report for the UNLOAD event,
+            // we also notify the integration code though the delegate.
+            if (report.reportEntries[0].eventData.type() == EventDao.EVENT_TYPE_UNLOAD) {
+                this._playerDelegate.onVideoUnloaded();
+            }
+        }, this);
+
+        this._netQueue.addOperation(operation);
     };
 
     Network.prototype._onClockCheckStatusTick = function(e) {
@@ -2436,20 +3082,7 @@ heartbeat.clock || (heartbeat.clock = {});
             return;
         }
 
-        function onSuccess(e) {
-            if (e.data) {
-                new SettingsParser(e.data.response).parse();
-            }
-
-            e.data[URLLoader.INSTANCE].close();
-        }
-
         var self = this;
-        function  onError(e) {
-            self.warn('_onClockCheckStatusTick() > Failed to obtain the config. settings: ' + JSON.stringify(e));
-            e.data[URLLoader.INSTANCE].close();
-        }
-
         this._deferred = function(response) {
             var publisher = response[EventKeyName.PUBLISHER];
 
@@ -2459,23 +3092,49 @@ heartbeat.clock || (heartbeat.clock = {});
                 return;
             }
 
-            // Sanitize input.
-            publisher = publisher.replace(/[^a-zA-Z0-9]+/, "-").toLocaleLowerCase();
-            var url = this._checkStatusServer + publisher + ".xml?r=" + new Date().getTime();
-            var req = new URLRequest(url, URLRequestMethod.GET);
+            var operation = new Operation(function() {
+                var self = this;
+                function onSuccess(e) {
+                    if (e.data) {
+                        // Parse the settings document
+                        var parser = new SettingsParser(e.data.response);
+                        var parseResult = parser.parse();
 
-            var loader = new URLLoader();
-            loader.addEventListener(Event.SUCCESS, onSuccess, this);
-            loader.addEventListener(Event.ERROR, onError, this);
+                        if (parseResult) {
+                            self._commCenter.notificationCenter.dispatchEvent(new NetworkEvent(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, parseResult));
+                        } else {
+                            self.warn("#_onClockCheckStatusTick() > Failed to parse the config. settings.");
+                        }
+                    }
 
-            this.log("#_onClockCheckStatusTick() > Get new settings from: " + url);
-            loader.load(req);
+                    loader.close();
+                }
+
+                function onError(e) {
+                    self.warn('#_onClockCheckStatusTick() > Failed to obtain the config. settings: ' + JSON.stringify(e));
+                    loader.close();
+                }
+
+                // Sanitize input.
+                publisher = publisher.replace(/[^a-zA-Z0-9]+/, "-").toLocaleLowerCase();
+                var url = this._checkStatusServer + publisher + ".xml?r=" + new Date().getTime();
+                var req = new URLRequest(url, URLRequestMethod.GET);
+
+                var loader = new URLLoader();
+                loader.addEventListener(Event.SUCCESS, onSuccess, this);
+                loader.addEventListener(Event.ERROR, onError, this);
+
+                this.log("#_onClockCheckStatusTick() > Get new settings from: " + url);
+                loader.load(req);
+            }, self);
+
+            self._netQueue.addOperation(operation);
         };
 
         // Issue a data request: the current value of the main-video publisher.
         var eventData = {};
         eventData[EventKeyName.WHAT] = DataEvent.keys.MAIN_VIDEO_PUBLISHER;
-        NotificationCenter().dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
+        this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
     };
 
     Network.prototype._onDataResponse = function(e) {
@@ -2522,8 +3181,9 @@ heartbeat.clock || (heartbeat.clock = {});
     //
     // -------------------[ Public methods ]-----------------------
     //
-    Counters.prototype.getTotalCount = function(eventType, assetId, assetType) {
-        var key = assetId + "." + assetType + "." + eventType;
+
+    Counters.prototype.getTotalCount = function(item) {
+        var key = _computeKey(item);
 
         this._totalCount[key] || (this._totalCount[key] = 0);
 
@@ -2532,18 +3192,18 @@ heartbeat.clock || (heartbeat.clock = {});
         return this._totalCount[key];
     };
 
-    Counters.prototype.incrementTotalCount = function(eventType, assetId, assetType) {
-        var key = assetId + "." + assetType + "." + eventType;
+    Counters.prototype.incrementTotalCount = function(item) {
+        var key = _computeKey(item);
 
         this._totalCount[key] || (this._totalCount[key] = 0);
 
         this.log("#incrementTotalCount(key=" + key + ")");
 
-        this._totalCount[key] ++;
+        this._totalCount[key]++;
     };
 
-    Counters.prototype.getTotalDuration = function(eventType, assetId, assetType) {
-        var key = assetId + "." + assetType + "." + eventType;
+    Counters.prototype.getTotalDuration = function(item) {
+        var key = _computeKey(item);
 
         this._totalDuration[key] || (this._totalDuration[key] = 0);
 
@@ -2552,17 +3212,17 @@ heartbeat.clock || (heartbeat.clock = {});
         return this._totalDuration[key];
     };
 
-    Counters.prototype.increaseTotalDuration = function(eventType, assetId, assetType, amount) {
-        var key = assetId + "." + assetType + "." + eventType;
+    Counters.prototype.increaseTotalDuration = function(item) {
+        var key = _computeKey(item);
 
         this._totalDuration[key] || (this._totalDuration[key] = 0);
 
         this.log("#increaseTotalDuration(" +
-            "key=" + key +
-            ", amount=" + amount +
+              "key=" + key +
+            ", amount=" + item.duration +
             ")");
 
-        this._totalDuration[key] += amount;
+        this._totalDuration[key] += item.duration;
     };
 
     Counters.prototype.resetCounters = function(assetId, assetType) {
@@ -2571,7 +3231,6 @@ heartbeat.clock || (heartbeat.clock = {});
         this.log("#resetCounters(key=" + key + ")");
 
         var entryKey;
-
         for (entryKey in this._totalCount) {
             if (this._totalCount.hasOwnProperty(entryKey) && entryKey.indexOf(key) != -1) {
                 this._totalCount[entryKey] = 0;
@@ -2584,6 +3243,12 @@ heartbeat.clock || (heartbeat.clock = {});
             }
         }
     };
+
+    function _computeKey(item) {
+        var key = item.getAssetId() + "." + item.assetData.type() + "." + item.eventType;
+
+        return key;
+    }
 
 
     // Export symbols.
@@ -2606,21 +3271,11 @@ heartbeat.clock || (heartbeat.clock = {});
     }
 
     //
-    // -------------------[ Private helper methods ]-----------------------
-    //
-    History.prototype._computeItemKey = function(timelineItem) {
-        var assetData = timelineItem.assetData;
-        var assetId = assetData.adData() ? assetData.adData().adId()
-                                         : assetData.videoId();
-
-        return assetId + "." + assetData.type() + "." + timelineItem.eventType;
-    };
-
-    //
     // -------------------[ Public methods ]-----------------------
     //
+
     History.prototype.updateWith = function(timelineItem) {
-        var key = this._computeItemKey(timelineItem);
+        var key = _computeItemKey(timelineItem);
 
         this.log("#updateWith(key=" + key + ")");
 
@@ -2628,12 +3283,22 @@ heartbeat.clock || (heartbeat.clock = {});
     };
 
     History.prototype.getPreviousItemOfSameTypeWith = function(timelineItem) {
-        var key = this._computeItemKey(timelineItem);
+        var key = _computeItemKey(timelineItem);
 
         this.log("#getPreviousItemOfSameTypeWith(key=" + key + ")");
 
         return this._items[key];
     };
+
+
+    function _computeItemKey(timelineItem) {
+        var assetData = timelineItem.assetData;
+        var assetId = assetData.adData()
+            ? assetData.adData().adId()
+            : assetData.videoId();
+
+        return assetId + "." + assetData.type() + "." + timelineItem.eventType;
+    }
 
 
     // Export symbols.
@@ -2653,23 +3318,34 @@ heartbeat.clock || (heartbeat.clock = {});
         this.assetData = new AssetDao(assetData);
         this.userData = new UserDao(userData);
         this.streamData = new StreamDao(streamData);
-        this.eventType = eventType;
         this.qosData = qosData;
+        this.eventType = eventType;
         this.playhead = playhead;
-        this.prevItemOfSameType = undefined;
+
+        this.duration = NaN;
+        this.prevItemOfSameType = null;
     }
 
-    //
-    // -------------------[ Public methods ]-----------------------
-    //
+    TimelineItem.clone = function(other) {
+        var clonedItem = new TimelineItem(other.assetData,
+                                          other.userData,
+                                          other.streamData,
+                                          other.qosData,
+                                          other.eventType,
+                                          other.playhead);
+        clonedItem.timestamp = other.timestamp;
+
+        return clonedItem;
+    };
+
     TimelineItem.prototype.getAssetId = function() {
         // For ACTIVE events we always consider the asset id to be the id of the main video.
         if (this.eventType === EventDao.EVENT_TYPE_ACTIVE) {
             return this.assetData.videoId();
         }
 
-        return (this.assetData.type() === AssetDao.TYPE_AD) ? this.assetData.adData().adId()
-                                                            : this.assetData.videoId();
+        return (this.assetData.adData()) ? this.assetData.adData().adId()
+                                         : this.assetData.videoId();
     };
 
     TimelineItem.prototype.getEventCount = function() {
@@ -2684,32 +3360,93 @@ heartbeat.clock || (heartbeat.clock = {});
 (function(core, heartbeat) {
     'use strict';
 
-    function Timeline() {
+    var mixin = core.mixin;
+    var logger = core.logger;
+    var TimelineItem = heartbeat.context.TimelineItem;
+    var EventDao = heartbeat.model.EventDao;
+
+    mixin(Timeline, logger);
+
+    function Timeline(context) {
         this._timeline = [];
+        this._context = context;
+
+        this.enableLogging('[heartbeat::Timeline] > ');
     }
 
-    //
-    // -------------------[ Public methods ]-----------------------
-    //
     Timeline.prototype.getTimelineItems = function() {
         return this._timeline.slice();
     };
 
-    Timeline.prototype.addItem = function(timelineItem) {
-        var pos = -1;
+    Timeline.prototype.getLast = function() {
+        if (this._timeline.length > 0)
+            return this._timeline[this._timeline.length - 1];
 
-        // Insert the items to keep the item list sorted by their timestamp.
-        for (var i = this._timeline.length - 1; i >= 0; i--) {
-            if (timelineItem.timestamp >= this._timeline[i].timestamp) {
-                break;
+        return null;
+    };
+
+    Timeline.prototype.addItem = function(timelineItem, playhead) {
+        var counters = this._context._counters;
+        var lastItem = this.getLast();
+
+        if (lastItem) {
+            if (lastItem.eventType == EventDao.EVENT_TYPE_ACTIVE) {
+                var activeItem = lastItem;
+                var cumulatedDuration = 0;
+
+                // For the ACTIVE item the duration is the sum of all
+                // the durations of the previous non-ACTIVE items going back
+                // to the previous ACTIVE event.
+                for (var i = this._timeline.length - 2; i >= 0; i--) {
+                    var currentItem = this._timeline[i];
+
+                    if (currentItem.eventType == EventDao.EVENT_TYPE_ACTIVE) {
+                        // We found the previous ACTIVE item: break-out.
+                        break;
+                    }
+
+                    cumulatedDuration += currentItem.duration;
+                }
+
+                activeItem.duration = cumulatedDuration;
+            } else {
+                // Update the duration of the last item on the timeline.
+                lastItem.duration = _timeSpanMs(lastItem.timestamp, timelineItem.timestamp);
             }
 
-            pos = i;
+            // Update the total counters.
+            counters.incrementTotalCount(lastItem);
+            counters.increaseTotalDuration(lastItem);
+
+            this.log("#addItem() > "
+                + " | " + timelineItem.assetData.type()
+                + " | " + timelineItem.eventType
+                + " | " + timelineItem.playhead
+                + " | " + (timelineItem.prevItemOfSameType ? timelineItem.prevItemOfSameType.timestamp.getTime() : "-1")
+                + " | " + timelineItem.timestamp.getTime());
         }
 
-        (pos > 0) ? this._timeline.splice(i, 0, timelineItem)
-                  : this._timeline.push(timelineItem);
+        // Add the item to the timeline.
+        this._timeline.push(timelineItem);
+
+        if (timelineItem.eventType == EventDao.EVENT_TYPE_ACTIVE) {
+            // For the ACTIVE item we also need to create a new pseudo-item
+            // based on the last item on the timeline.
+            var pseudoItem = TimelineItem.clone(lastItem);
+            pseudoItem.prevItemOfSameType = lastItem;
+
+            // Adjust various data for the pseudo-item.
+            pseudoItem.timestamp = timelineItem.timestamp;
+            pseudoItem.playhead = playhead;
+            pseudoItem.duration = NaN;
+
+            this.addItem(pseudoItem, playhead);
+        }
     };
+
+    function _timeSpanMs(startTime, endTime) {
+        return endTime.getTime() - startTime.getTime();
+    }
 
     // Export symbols.
     heartbeat.context.Timeline = Timeline;
@@ -2724,67 +3461,227 @@ heartbeat.clock || (heartbeat.clock = {});
     var EventDao = heartbeat.model.EventDao;
     var AssetDao = heartbeat.model.AssetDao;
     var ReportEntry = heartbeat.model.ReportEntry;
-    var TimelineItem = heartbeat.context.TimelineItem;
 
     mixin(ReporterHelper, logger);
     function ReporterHelper(context) {
         this._context = context;
-        this._lastQuantTimeStamp = null;
 
         // Activate logging for this class.
         this.enableLogging('[heartbeat::ReporterHelper] > ');
     }
 
     //
-    // -------------------[ Private helper methods ]-----------------------
+    // ------------[ Public API ]---------------
     //
-    ReporterHelper.prototype._computeQuantTimeStamp = function(startTime, endTime, trackingInterval) {
-        var trackingIntervalMs = trackingInterval * 1000;
-        var quantTimeStamp;
 
-        if (startTime.getTime() === 0) {
-            quantTimeStamp = endTime.getTime() - trackingIntervalMs / 2;
-        } else {
-            quantTimeStamp = startTime.getTime() / 2 + endTime.getTime() / 2;
-        }
+    ReporterHelper.prototype.createReportForItem = function(timelineItem, trackingInterval) {
+        var counters = this._context._counters;
+        var report = new Report(this._context._siteCatalystData,
+                                this._context._serviceProviderData,
+                                this._context._sessionData);
 
-        quantTimeStamp = Math.floor(quantTimeStamp / trackingIntervalMs) * trackingIntervalMs;
-
-        if (this._lastQuantTimeStamp == quantTimeStamp) {
-            quantTimeStamp += trackingIntervalMs;
-        }
-        this._lastQuantTimeStamp = quantTimeStamp;
-
-        return new Date(quantTimeStamp);
-    };
-
-    ReporterHelper.prototype._buildReportEntryForItem = function(timelineItem, eventDuration, trackingInterval) {
-        var counters = this._context._counters,
-            eventType = timelineItem.eventType,
-            assetId = timelineItem.getAssetId(),
-            assetType = timelineItem.assetData.type();
-
-        var playhead = (eventType === EventDao.EVENT_TYPE_START) ? 0 : timelineItem.playhead;
+        // Out-of-band events have a duration of 0.
+        timelineItem.duration = 0;
 
         // Update the global counters.
-        counters.incrementTotalCount(eventType, assetId, assetType);
-        counters.increaseTotalDuration(eventType, assetId, assetType, eventDuration);
+        counters.incrementTotalCount(timelineItem);
+        counters.increaseTotalDuration(timelineItem);
+
+        report.addEntry(this._buildReportEntryForItem(timelineItem, trackingInterval));
+
+        return report;
+    };
+
+    ReporterHelper.prototype.createReportForQuantum = function(trackingInterval) {
+        var i;
+        var currentItem;
+
+        // First we select the timeline items that are part of the current quantum
+        var selectedItems = this._selectTimelineItemsForCurrentQuantum();
+
+        this.log("#createReportForQuantum() > -------------[ SUMMARY REPORT ]----------------");
+        for (i = 0; i < selectedItems.length; i++) {
+            currentItem = selectedItems[i];
+
+            this.log("#createReportForQuantum() > "
+                    + " | " + currentItem.assetData.type()
+                    + " | " + currentItem.eventType
+                    + " | " + currentItem.playhead
+                    + " | " + currentItem.duration);
+        }
+
+        // ... and then we compact that list to make sure that there are no duplicates.
+        selectedItems = this._compactTimelineItems(selectedItems);
+
+        this.log("#createReportForQuantum() > -----------------------------------------");
+        for (i = 0; i < selectedItems.length; i++) {
+            currentItem = selectedItems[i];
+
+            this.log("#createReportForQuantum() > "
+                    + " | " + currentItem.assetData.type()
+                    + " | " + currentItem.eventType
+                    + " | " + currentItem.playhead
+                    + " | " + currentItem.duration);
+        }
+
+        this.log("#createReportForQuantum() > -----------------------------------------");
+
+        // Finally we turn the compacted list into a report.
+        var report = this._createReport(selectedItems, trackingInterval);
+
+        return report;
+    };
+
+
+    //
+    // -------------------[ Private helper methods ]-----------------------
+    //
+
+    ReporterHelper.prototype._selectTimelineItemsForCurrentQuantum = function() {
+        var timelineItems = this._context._timeline.getTimelineItems();
+        var selectedItems = [];
+        var currentItem;
+        var i;
+
+        // We expect that the second-to-last item on the timeline to be the ACTIVE event.
+        // NOTE: the last item is the continuation pseudo-event and we are not interested in that.
+        var lastItem = timelineItems[timelineItems.length - 2];
+        if (lastItem.eventType != EventDao.EVENT_TYPE_ACTIVE) {
+            throw new Error("Expecting an ACTIVE event as the last item on the timeline.");
+        } else {
+            // ... put this ACTIVE item in the selected-items list.
+            selectedItems.unshift(lastItem);
+        }
+
+        // Start scanning the timeline from the third-last item backwards.
+        // NOTE: we know that the second-last item injected is the ACTIVE event.
+        for (i = timelineItems.length - 3; i >= 0; i--) {
+            currentItem = timelineItems[i];
+
+            // Select all the items until the previous ACTIVE event is encountered,
+            // or until we reach the beginning of the timeline.
+            if (currentItem.eventType != EventDao.EVENT_TYPE_ACTIVE) {
+                selectedItems.unshift(currentItem);
+            } else {
+                // We found the previous ACTIVE event: break-out.
+                break;
+            }
+        }
+
+        return selectedItems;
+    };
+
+    ReporterHelper.prototype._compactTimelineItems = function(items) {
+        var compactedList = [];
+        var i;
+
+        var findInCompactedItemsList = function(item) {
+            var i;
+            for (i = 0; i < compactedList.length; i++) {
+                var currentItem = compactedList[i];
+                var matched = false;
+
+                // Let's see of the event and asset types match.
+                if (item.eventType == currentItem.eventType &&
+                    item.assetData.type() == currentItem.assetData.type()) {
+                    // If we are dealing with an ad, we need to see if the ad-ids match.
+                    if (item.assetData.type() == AssetDao.TYPE_AD) {
+                        matched = ((item.assetData.adData().adId() == currentItem.assetData.adData().adId()) &&
+                                   (item.assetData.adData().podPosition() == currentItem.assetData.adData().podPosition()));
+                    }
+                    // If we are dealing with the main asset, we need to match the video-ids.
+                    else {
+                        matched = (item.assetData.videoId() == currentItem.assetData.videoId());
+
+                        // TODO: at this point, if "matched" is false something really bad happened (switch to ERROR).
+                    }
+
+                    // If we don't have a match so far, just move on.
+                    if (!matched) continue;
+
+                    // If the assets coincide, we also need to check
+                    // if we have a match on the chapter info.
+                    if (item.assetData.chapterData()) {
+                        matched = (currentItem.assetData.chapterData() &&
+                            (item.assetData.chapterData().id() == currentItem.assetData.chapterData().id()) &&
+                            (item.assetData.chapterData().position() == currentItem.assetData.chapterData().position()));
+                    } else {
+                        matched = (currentItem.assetData.chapterData() == null);
+                    }
+                }
+
+                if (matched) { // We found what we are looking for.
+                    return currentItem;
+                }
+            }
+
+            return null;
+        };
+
+        for (i = 0; i < items.length; i++) {
+            var currentItem = items[i];
+
+            var compactedItem = findInCompactedItemsList(currentItem);
+
+            if (!compactedItem) {
+                // The item is not in the compacted items list: add it now.
+                compactedList.push(currentItem);
+            } else {
+                // The item is already in the compacted item list: update it.
+                compactedItem.playhead = currentItem.playhead;
+                compactedItem.timestamp = currentItem.timestamp;
+                compactedItem.duration += currentItem.duration;
+            }
+        }
+
+        return compactedList;
+    };
+
+    ReporterHelper.prototype._createReport = function(items, trackingInterval) {
+        var i;
+        var report = new Report(this._context._siteCatalystData,
+                                this._context._serviceProviderData,
+                                this._context._sessionData);
+
+        for (i = 0; i < items.length; i++) {
+            report.addEntry(this._buildReportEntryForItem(items[i], trackingInterval));
+        }
+
+        // We need to attribute all the report entries inside this report to the same quantum
+        // as represented by the last ACTIVE event.
+        var lastReportEntry = report.reportEntries[report.reportEntries.length - 1];
+        if (lastReportEntry.eventData.type() != EventDao.EVENT_TYPE_ACTIVE) {
+            throw new Error("Expecting the last report entry to represent an ACTIVE event.");
+        }
+
+        for (i = 0; i < report.reportEntries.length - 1; i++) {
+            var currentReportEntry = report.reportEntries[i];
+            currentReportEntry.eventData.tsAsDate(lastReportEntry.eventData.tsAsDate());
+        }
+
+        // We don't want to send the PAUSE events over the network.
+        report.discardPauseEvents();
+
+        return report;
+    };
+
+    ReporterHelper.prototype._buildReportEntryForItem = function(timelineItem, trackingInterval) {
+        var counters = this._context._counters;
 
         // Set the event data.
         var eventData = new EventDao(trackingInterval);
-        eventData.type(eventType);
+        eventData.type(timelineItem.eventType);
         eventData.count(timelineItem.getEventCount());
-        eventData.duration(eventDuration);
-        eventData.totalCount(counters.getTotalCount(eventType, assetId, assetType));
-        eventData.totalDuration(counters.getTotalDuration(eventType, assetId, assetType));
-        eventData.playhead(playhead);
+        eventData.duration(timelineItem.duration);
+        eventData.totalCount(counters.getTotalCount(timelineItem));
+        eventData.totalDuration(counters.getTotalDuration(timelineItem));
+        eventData.playhead(timelineItem.playhead);
 
         // Set the timestamp values.
         eventData.ts(timelineItem.timestamp.getTime());
-        var prevTs = timelineItem.prevItemOfSameType
+        eventData.prevTs(timelineItem.prevItemOfSameType
             ? timelineItem.prevItemOfSameType.timestamp.getTime()
-            : -1;
-        eventData.prevTs(prevTs);
+            : -1);
 
         // Build the report entry.
         return new ReportEntry(eventData,
@@ -2794,247 +3691,19 @@ heartbeat.clock || (heartbeat.clock = {});
             timelineItem.qosData);
     };
 
-    ReporterHelper.prototype._addPresenceEventToReport = function(report, trackingInterval, quantTimeStamp) {
-        if (!report.reportEntries.length)
-            return;
-
-        // Create a new instance of the AssetDao.
-        // Take a snapshot of the current instance maintained by the Context sub-module
-        // but exclude the ad-related info.
-        var noAdInfoAssetData = new AssetDao(this._context._assetData);
-        noAdInfoAssetData.type(this._context._mainAssetType);
-        noAdInfoAssetData.adData(null);
-
-        var presenceItem = new TimelineItem(noAdInfoAssetData,
-            this._context._userData,
-            this._context._streamData,
-            this._context._qosData,
-            EventDao.EVENT_TYPE_ACTIVE,
-            this._context._offset[this._context._assetData.videoId()]);
-        presenceItem.prevItemOfSameType = this._context._history.getPreviousItemOfSameTypeWith(presenceItem);
-        this._context._history.updateWith(presenceItem);
-
-        report.addEntry(this._buildReportEntryForItem(presenceItem, trackingInterval * 1000, trackingInterval));
-
-        // Overwrite the all event date-time values.
-        if (quantTimeStamp != null) {
-            for (var i = 0; i < report.reportEntries.length; i++) {
-                report.reportEntries[i].eventData.tsAsDate(quantTimeStamp);
-            }
-        }
-    };
-
-    ReporterHelper.prototype._timeSpanMs = function(startTime, endTime) {
-        return endTime.getTime() - startTime.getTime();
-    };
-
-    //
-    // -------------------[ Public methods ]-----------------------
-    //
-    ReporterHelper.prototype.createReportForItem = function(timelineItem, trackingInterval, usePresenceEvent) {
-        var report = new Report(this._context._siteCatalystData,
-            this._context._serviceProviderData,
-            this._context._sessionData);
-
-        report.addEntry(this._buildReportEntryForItem(timelineItem, 0, trackingInterval));
-
-        // AddPresence event (if required)
-        if (usePresenceEvent) {
-            this._addPresenceEventToReport(report, trackingInterval, null);
-        }
-
-        return report;
-    };
-
-    ReporterHelper.prototype.createReportForQuantum = function(startTime, endTime, trackingInterval) {
-        var assetId;
-
-        var reportEntry;
-        var report = new Report(this._context._siteCatalystData,
-            this._context._serviceProviderData,
-            this._context._sessionData);
-
-        var timelineItems = this._context._timeline.getTimelineItems();
-
-        var selectedTimelineItems = [],
-            lastTimelineItem = null,
-            i = 0, j = 0;
-
-        // Browse the timeline and search for the items that are in the current target interval.
-        for(i = 0; i < timelineItems.length; i ++) {
-            var timelineItem = timelineItems[i];
-            if ( (timelineItem.timestamp > startTime) &&
-                (timelineItem.timestamp <= endTime) ) {
-                selectedTimelineItems.push(timelineItem);
-            }
-
-            // Also remember the index of the last item in the previous quantum.
-            if (timelineItem.timestamp <= startTime) {
-                lastTimelineItem = timelineItem;
-            }
-        }
-
-        this.log('#createReportForQuantum() > -------------TRACK REPORT----------------');
-        this.log('#createReportForQuantum() > Interval: [' + startTime.getTime() + ' , ' + endTime.getTime() + ']. Tracking interval: ' + trackingInterval);
-        this.log('#createReportForQuantum() > -----------------------------------------');
-        for (i = 0; i < timelineItems.length; i ++) {
-            this.log('#createReportForQuantum() > [' + timelineItems[i].timestamp.getTime() + '] :' + timelineItems[i].eventType + ' | ' + timelineItems[i].assetData.type());
-        }
-        this.log('#createReportForQuantum() > -----------------------------------------');
-        for (i = 0; i < selectedTimelineItems.length; i ++) {
-            this.log('#createReportForQuantum() > [' + selectedTimelineItems[i].timestamp.getTime() + '] :' + selectedTimelineItems[i].eventType + ' | ' + selectedTimelineItems[i].assetData.type());
-        }
-        this.log('#createReportForQuantum() > -----------------------------------------');
-
-        // Update the last time-line item.
-        if (lastTimelineItem) {
-            // Update the timestamps.
-            if (lastTimelineItem.prevItemOfSameType) {
-                lastTimelineItem.prevItemOfSameType.timestamp = lastTimelineItem.timestamp;
-            }
-
-            lastTimelineItem.timestamp = new Date(startTime.getTime() + 1);
-
-            // Update the playhead.
-            assetId = lastTimelineItem.assetData.adData() ? lastTimelineItem.assetData.adData().adId()
-                : lastTimelineItem.assetData.videoId();
-            lastTimelineItem.playhead = this._context._offset[assetId];
-        }
-
-        // If we could not find any event in the current quantum,
-        // we are dealing with a "quiet" interval.
-        if (!selectedTimelineItems.length) {
-            if (lastTimelineItem) {
-                report.addEntry(this._buildReportEntryForItem(lastTimelineItem,
-                    this._timeSpanMs(startTime, endTime),
-                    trackingInterval));
-            }
-        } else {
-            var eventDuration = 0;
-
-            // We need to add to the report the last part of the previous event.
-            if (lastTimelineItem) {
-                // Compute the event duration.
-                if ((lastTimelineItem.eventType === EventDao.EVENT_TYPE_START) &&
-                    (lastTimelineItem.assetData.type() !== AssetDao.TYPE_AD)) {
-                    eventDuration = this._timeSpanMs(lastTimelineItem.timestamp, selectedTimelineItems[0].timestamp);
-                } else {
-                    eventDuration = this._timeSpanMs(startTime, selectedTimelineItems[0].timestamp);
-                }
-
-                report.addEntry(this._buildReportEntryForItem(lastTimelineItem, eventDuration, trackingInterval));
-            }
-
-            // Add to the report the events corresponding to the selected timeline items.
-            for (i = 0; i < selectedTimelineItems.length; i++) {
-                var currentItem = selectedTimelineItems[i];
-
-                // Compute the event duration.
-                if (i == selectedTimelineItems.length - 1) {
-                    eventDuration = this._timeSpanMs(currentItem.timestamp, endTime);
-                } else {
-                    var nextItem = selectedTimelineItems[i + 1];
-                    eventDuration = this._timeSpanMs(currentItem.timestamp, nextItem.timestamp);
-                }
-
-                // Compress all the timeline items with the same event type into a single report entry.
-                var isAlreadyAdded = false;
-
-                var reportEntries = report.reportEntries;
-                for (j = 0; j < reportEntries.length; j++) {
-                    reportEntry = reportEntries[j];
-
-                    // Check if another timeline item with the same coordinates
-                    // was previously added to the output report.
-                    if (currentItem.assetData.type() === reportEntry.assetData.type() &&
-                        currentItem.eventType === reportEntry.eventData.type()) {
-                        // If we are dealing with an ad.
-                        if (currentItem.assetData.type() === AssetDao.TYPE_AD) {
-                            isAlreadyAdded = (reportEntry.assetData.adData().adId() === currentItem.assetData.adData().adId());
-                        }
-                        // If we are dealing with the main content.
-                        else {
-                            isAlreadyAdded = reportEntry.assetData.videoId() === currentItem.assetData.videoId();
-                        }
-                    }
-
-                    // If another timeline item with the same coordinates
-                    // was previously added in the output report, just update the
-                    // data associated to the corresponding report entry.
-                    if (isAlreadyAdded) {
-                        var eventData = reportEntry.eventData,
-                            assetType = reportEntry.assetData.type();
-
-                        assetId = reportEntry.assetData.adData() ? reportEntry.assetData.adData().adId()
-                            : reportEntry.assetData.videoId();
-
-                        // Update the total counters.
-                        var counters = this._context._counters;
-                        counters.incrementTotalCount(eventData.type(), assetId, assetType);
-                        counters.increaseTotalDuration(eventData.type(), assetId, assetType, eventDuration);
-
-                        // Update this report entry with the latest QoS info.
-                        reportEntry.qosData = currentItem.qosData;
-
-                        // Update the event data already present in this report entry.
-                        eventData.playhead(this._context._offset[assetId]);
-                        eventData.duration(eventData.duration() + eventDuration);
-                        eventData.totalCount(counters.getTotalCount(eventData.type(), assetId, assetType));
-                        eventData.totalDuration(counters.getTotalDuration(eventData.type(), assetId, assetType));
-                        eventData.ts(currentItem.timestamp.getTime());
-
-                        // We're done - process the next selected timeline item.
-                        break;
-                    }
-                }
-
-                // If the timeline item was not already added in the output report, add it now.
-                if (!isAlreadyAdded) {
-                    this.log("#createReportForQuantum() > Adding event to report: " + currentItem.eventType);
-
-                    assetId = currentItem.assetData.adData() ? currentItem.assetData.adData().adId()
-                        : currentItem.assetData.videoId();
-                    currentItem.playhead = this._context._offset[assetId];
-
-                    report.addEntry(this._buildReportEntryForItem(currentItem, eventDuration, trackingInterval));
-                }
-            }
-        }
-
-        // Discard pause events.
-        report.discardPauseEvents();
-
-        // Add the presence event.
-        var quantTimeStamp = this._computeQuantTimeStamp(startTime, endTime, trackingInterval);
-        this._addPresenceEventToReport(report, trackingInterval, quantTimeStamp);
-
-        this.log("#createReportForQuantum() > Final report ----- START -----");
-        for (i = 0; i < report.reportEntries.length; i ++) {
-            reportEntry = report.reportEntries[i];
-            var _eventData = reportEntry.eventData;
-            assetId = reportEntry.assetData.adData() ? reportEntry.assetData.adData().adId()
-                : reportEntry.assetData.videoId();
-
-            this.log('#createReportForQuantum() > Final report [' + _eventData.ts() + "/" + _eventData.prevTs() + '] :' + _eventData.type() + ' | type='
-                + reportEntry.assetData.type() + ', name=' + assetId + ', duration=' + _eventData.duration()
-                + ', playhead=' + _eventData.playhead());
-        }
-        this.log("#createReportForQuantum() > Final report ----- END -----");
-
-        return report;
-    };
 
     // Export symbols.
     heartbeat.context.ReporterHelper = ReporterHelper;
 })(core, heartbeat);
 
-(function(core, heartbeat, va) {
+(function(core, heartbeat, va, utils) {
     'use strict';
 
     var mixin = core.mixin;
     var deferrable = core.deferrable;
     var logger = core.logger;
-    var NotificationCenter = core.NotificationCenter;
+    var Operation = core.Operation;
+    var InputDataSanitizer = core.InputDataSanitizer;
     var ReporterHelper = heartbeat.context.ReporterHelper;
     var Timeline = heartbeat.context.Timeline;
     var TimelineItem = heartbeat.context.TimelineItem;
@@ -3046,6 +3715,7 @@ heartbeat.clock || (heartbeat.clock = {});
     var UserDao = heartbeat.model.UserDao;
     var StreamDao = heartbeat.model.StreamDao;
     var QoSDao = heartbeat.model.QoSDao;
+    var ChapterDao = heartbeat.model.ChapterDao;
     var Counters = heartbeat.context.Counters;
     var ClockEvent = heartbeat.event.ClockEvent;
     var NetworkEvent = heartbeat.event.NetworkEvent;
@@ -3056,65 +3726,66 @@ heartbeat.clock || (heartbeat.clock = {});
     var EventDao = heartbeat.model.EventDao;
     var AdDao = heartbeat.model.AdDao;
     var Version = va.Version;
+    var MD5 = utils.md5;
 
-    var ERROR_SOURCE_PLAYER = "player";
+    var ERROR_SOURCE_PLAYER = "sourceErrorSDK";
 
     mixin(Context, deferrable);
     mixin(Context, logger);
 
-    function Context() {
-        this._isViewingSessionActive = false;
-        this._isVideoClosed = false;
-        this._mainAssetType = null;
-        this._blockExternalErrorTracking = false;
-        this._podOffset = null;
-        this._activeAssetName = null;
+    function Context(commCenter, playerDelegate) {
+        this._userData = null;
+        this._assetData = null;
+        this._streamData = null;
+        this._qosData = null;
+        this._siteCatalystData = new SiteCatalystDao();
+        this._serviceProviderData = new ServiceProviderDao();
+        this._sessionData = null;
 
-        this._config = {
-            streamType: null,
+        this._videoAssetType = null;
+
+        // Maintains a map of accumulated metrics (i.e. counters/duration)
+        // for each type of event that is placed on the timeline.
+        this._counters = new Counters();
+
+        // A map where we store for each event on the timeline a reference to the last
+        // event of the same type that occurred. It helps greatly with creating the
+        // reporting data that is required by the SaaSBase backend.
+        this._history = null;
+
+        // A vector which maintains a "timeline" view of the video-tracking events that are
+        // triggered by the API layer.
+        this._timeline = null;
+
+        this._configData = {
             publisher: null
         };
 
-        this._deferred = null;
-        this._timestampOfLastReport = null;
-        this._offset = {};
+        this._isTrackingSessionActive = false;
+        this._isVideoComplete = false;
+        this._activeAssetId = null;
+        this._isDestroyed = false;
 
+        // Instantiate the helper class for building tracking reports.
         this._reporterHelper = new ReporterHelper(this);
-        this._timeline = new Timeline();
-        this._history = new History();
 
-        this._sessionData = new SessionDao();
-        this._siteCatalystData = new SiteCatalystDao();
-        this._serviceProviderData = new ServiceProviderDao();
-        this._assetData = new AssetDao();
-        this._userData = new UserDao();
-        this._streamData = new StreamDao();
-        this._qosData = new QoSDao();
-        this._counters = new Counters();
+        this._commCenter = commCenter;
+
+        // Reference to the player-delegate object.
+        this._playerDelegate = playerDelegate;
+
+        this._stashedChapterData = null;
+        this._stashedAdData = null;
+
+        // Boolean flag that enables/disables support for external error tracking
+        // (a.k.a. custom application error tracking).
+        this._trackExternalErrors = true;
+
+        var errorOperation = new Operation(this._executeErrorCallback, this);
+        this._inputDataSanitizer = new InputDataSanitizer(errorOperation);
 
         // We register as observers to various heartbeat events.
-        NotificationCenter().addEventListener(ApiEvent.API_CONFIG, this._onApiConfig, this);
-        NotificationCenter().addEventListener(ApiEvent.API_OPEN_MAIN, this._onApiOpenMain, this);
-        NotificationCenter().addEventListener(ApiEvent.API_OPEN_AD, this._onApiOpenAd, this);
-        NotificationCenter().addEventListener(ApiEvent.API_CLOSE, this._onApiClose, this);
-        NotificationCenter().addEventListener(ApiEvent.API_PLAY, this._onApiPlay, this);
-        NotificationCenter().addEventListener(ApiEvent.API_STOP, this._onApiStop, this);
-        NotificationCenter().addEventListener(ApiEvent.API_CLICK, this._onApiClick, this);
-        NotificationCenter().addEventListener(ApiEvent.API_COMPLETE, this._onApiComplete, this);
-        NotificationCenter().addEventListener(ApiEvent.API_QOS_INFO, this._onApiQoSInfo, this);
-        NotificationCenter().addEventListener(ApiEvent.API_BITRATE_CHANGE, this._onApiBitrateChange, this);
-        NotificationCenter().addEventListener(ApiEvent.API_BUFFER_START, this._onApiBufferStart, this);
-        NotificationCenter().addEventListener(ApiEvent.API_TRACK_ERROR, this._onApiTrackError, this);
-        NotificationCenter().addEventListener(ApiEvent.API_POD_OFFSET, this._onApiPodOffset, this);
-        NotificationCenter().addEventListener(ApiEvent.API_SESSION_COMPLETE, this._onApiSessionComplete, this);
-
-        NotificationCenter().addEventListener(ClockEvent["CLOCK_MONITOR_UPDATE"], this._onClockMonitorUpdate, this);
-        NotificationCenter().addEventListener(ClockEvent["CLOCK_TRACKING_TICK"], this._onClockTrackingTick, this);
-
-        NotificationCenter().addEventListener(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, this._onNetworkCheckStatusComplete, this);
-
-        NotificationCenter().addEventListener(DataEvent.DATA_REQUEST, this._onDataRequest, this);
-        NotificationCenter().addEventListener(DataEvent.DATA_RESPONSE, this._onDataResponse, this);
+        this._installEventListeners();
 
         // Activate logging for this class.
         this.enableLogging('[heartbeat::Context] > ');
@@ -3125,17 +3796,20 @@ heartbeat.clock || (heartbeat.clock = {});
     //--------------------[ Public API ]--------------------
     //
     Context.prototype.destroy = function() {
+        if (this._isDestroyed) return;
+        this._isDestroyed = true;
+
         this.log("#destroy()");
 
-        this._resetInternalState();
-
         // Detach from the notification center.
-        NotificationCenter().removeAllListeners(this);
+        this._uninstallEventListeners();
     };
+
 
     //
     //--------------------[ Notification handlers ]--------------------
     //
+
     Context.prototype._onApiConfig = function(e) {
         var info = e.data;
 
@@ -3155,139 +3829,426 @@ heartbeat.clock || (heartbeat.clock = {});
 
         this._siteCatalystData.reportSuiteId(info[EventKeyName.ACCOUNT]);
         this._siteCatalystData.trackingServer(info[EventKeyName.SC_TRACKING_SERVER]);
+        this._siteCatalystData.ssl(info[EventKeyName.USE_SSL] ? 1 : 0);
 
-        this._config.publisher = info[EventKeyName.PUBLISHER];
+        this._configData.publisher = info[EventKeyName.PUBLISHER];
 
         this._serviceProviderData.ovp(info[EventKeyName.OVP]);
         this._serviceProviderData.sdk(info[EventKeyName.SDK]);
         this._serviceProviderData.channel(info[EventKeyName.CHANNEL]);
         this._serviceProviderData.libVersion(Version.getVersion());
+        this._serviceProviderData.apiLevel(Version.getApiLevel());
 
         // The "check-status" timer must be activated.
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent["CLOCK_CHECK_STATUS_ENABLE"]));
+        this._commCenter.notificationCenter.dispatchEvent(new ClockEvent(ClockEvent["CLOCK_CHECK_STATUS_ENABLE"]));
     };
 
-    Context.prototype._onApiOpenMain = function(e) {
+    Context.prototype._onApiVideoLoad = function(e) {
         var info = e.data;
 
-        this.log("#_onApiOpenMain(" +
-            "name=" + info[EventKeyName.NAME] +
-            ", length=" + info[EventKeyName.LENGTH] +
-            ", type=" + info[EventKeyName.STREAM_TYPE] +
-            ", player_name=" + info[EventKeyName.PLAYER_NAME] +
-            ", vid=" + info[EventKeyName.VISITOR_ID] +
+        var videoInfo = info[EventKeyName.VIDEO_INFO];
+
+        this.log("#_onApiVideoLoad(" +
+              "id=" + videoInfo.id +
+            ", length=" + videoInfo.length +
+            ", type=" + videoInfo.streamType +
+            ", player_name=" + videoInfo.playerName +
             ", aid=" + info[EventKeyName.ANALYTICS_VISITOR_ID] +
             ", mid=" + info[EventKeyName.MARKETING_CLOUD_VISITOR_ID] +
+            ", vid=" + info[EventKeyName.VISITOR_ID] +
             ")");
 
         this._resetInternalState();
 
-        this._activeAssetName = info[EventKeyName.NAME];
-        this._offset[this._activeAssetName] = 0;
+        this._activeAssetId = videoInfo.id;
 
-        this._serviceProviderData.playerName(info[EventKeyName.PLAYER_NAME]);
+        this._serviceProviderData.playerName(videoInfo.playerName);
 
-        this._userData.visitorId(info[EventKeyName.VISITOR_ID]);
         this._userData.analyticsVisitorId(info[EventKeyName.ANALYTICS_VISITOR_ID]);
         this._userData.marketingCloudVisitorId(info[EventKeyName.MARKETING_CLOUD_VISITOR_ID]);
+        this._userData.visitorId(info[EventKeyName.VISITOR_ID]);
 
-        this._assetData.videoId(this._activeAssetName);
-        this._assetData.duration(info[EventKeyName.LENGTH]);
-        this._assetData.type(info[EventKeyName.STREAM_TYPE]);
+        this._assetData.videoId(this._activeAssetId);
+        this._assetData.duration(videoInfo.length);
+        this._assetData.type(videoInfo.streamType);
 
-        this._mainAssetType = this._assetData.type();
+        this._videoAssetType = this._assetData.type();
 
-        this._streamData.name(this._activeAssetName);
+        this._streamData.name(videoInfo.name || this._activeAssetId);
 
         // Generate a new session ID value.
-        this._generateSessionId();
+        this._sessionData.sessionId(_generateSessionId());
 
         // Reset the main video counters.
-        this._counters.resetCounters(this._activeAssetName, this._mainAssetType);
+        this._counters.resetCounters(this._activeAssetId, this._videoAssetType);
 
-        // The "tracking" timer must be activated.
-        var eventData = {};
-        eventData[EventKeyName.RESET] = true;
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent["CLOCK_TRACKING_ENABLE"], eventData));
-
-        // Send the first LOAD event immediately (out-of-band).
+        // Send the LOAD event immediately (out-of-band).
         // Defer the broadcasting of the CONTEXT_DATA_AVAILABLE event until
         // we obtain the value of the tracking-timer interval.
+        var self = this;
         this._deferred = function(response) {
             var trackingInterval = response[EventKeyName.TIMER_INTERVAL];
 
-            var loadItem = new TimelineItem(this._assetData,
-                this._userData,
-                this._streamData,
-                this._qosData,
-                EventDao.EVENT_TYPE_LOAD, 0);
-            loadItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(loadItem);
+            self._updateQoSInfo();
+            var loadItem = new TimelineItem(self._assetData,
+                                            self._userData,
+                                            self._streamData,
+                                            self._qosData,
+                                            EventDao.EVENT_TYPE_LOAD, 0);
+            loadItem.prevItemOfSameType = self._history.getPreviousItemOfSameTypeWith(loadItem);
 
-            // Update the history data.
-            this._history.updateWith(loadItem);
+            // Update the history data
+            self._history.updateWith(loadItem);
 
-            var report = this._reporterHelper.createReportForItem(loadItem, trackingInterval, true);
+            var report = self._reporterHelper.createReportForItem(loadItem, trackingInterval);
 
             // Issue a CONTEXT_DATA_AVAILABLE event.
             var eventData = {};
             eventData[EventKeyName.REPORT] = report;
-            NotificationCenter().dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
+            this._commCenter.notificationCenter.dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
         };
 
         // Issue a data request: the current value of the tracking-timer interval.
-        eventData = {};
+        var eventData = {};
         eventData[EventKeyName.WHAT] = DataEvent.keys.TRACKING_TIMER_INTERVAL;
-        NotificationCenter().dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
+        this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
 
-        // Place the START event on the timeline in order to be able to collect the start up time.
-        var startItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_START, 0);
-        startItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(startItem);
-        this._placeItemOnTimeline(startItem);
-
-        this._isViewingSessionActive = true;
+        // The tracking session has started.
+        this._isTrackingSessionActive = true;
     };
 
-    Context.prototype._onApiOpenAd = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiOpenAd() > No active viewing session.");
+    Context.prototype._onApiVideoUnload = function(e) {
+        if (!this._isTrackingSessionActive) {
+            this.warn("#_onApiVideoUnload() > No active tracking session.");
             return;
         }
 
-        this.info('Call detected: onApiOpenAd().');
+        this.log("#_onApiVideoUnload()");
 
-        var info = e.data;
+        // Send the UNLOAD event immediately (out-of-band).
+        // Defer the broadcasting of the CONTEXT_DATA_AVAILABLE event until
+        // we obtain the value of the tracking-timer interval.
+        var self = this;
+        this._deferred = function(response) {
+            var trackingInterval = response[EventKeyName.TIMER_INTERVAL];
 
-        this.log(this, "#_onApiOpenAd(" +
-            "name=" + info[EventKeyName.NAME] +
-            ", length=" + info[EventKeyName.LENGTH] +
-            ", player_name=" + info[EventKeyName.PLAYER_NAME] +
-            ", parent_name=" + info[EventKeyName.PARENT_NAME] +
-            ", pod_pos=" + info[EventKeyName.PARENT_POD_POSITION] +
-            ", pod_offset=" + info[EventKeyName.PARENT_POD_OFFSET] +
-            ", cpm=" + info[EventKeyName.CPM] +
-            ")");
+            var unloadItem = new TimelineItem(self._assetData,
+                                              self._userData,
+                                              self._streamData,
+                                              self._qosData,
+                                              EventDao.EVENT_TYPE_UNLOAD, 0);
+            unloadItem.prevItemOfSameType = self._history.getPreviousItemOfSameTypeWith(unloadItem);
 
-        // Set the video ID (if not already set).
-        if (!this._assetData.videoId()) {
-            this._assetData.videoId(info[EventKeyName.PARENT_NAME]);
+            // Update the history data
+            self._history.updateWith(unloadItem);
+
+            var report = self._reporterHelper.createReportForItem(unloadItem, trackingInterval);
+
+            // Issue a CONTEXT_DATA_AVAILABLE event.
+            var eventData = {};
+            eventData[EventKeyName.REPORT] = report;
+            this._commCenter.notificationCenter.dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
+        };
+
+        // Issue a data request: the current value of the tracking-timer interval.
+        var eventData = {};
+        eventData[EventKeyName.WHAT] = DataEvent.keys.TRACKING_TIMER_INTERVAL;
+        this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
+
+        // The playback session is now complete.
+        this._isTrackingSessionActive = false;
+    };
+
+    Context.prototype._onApiVideoStart = function(e) {
+        if (!this._checkCall("_onApiVideoStart")) return;
+
+        this.log("#_onApiVideoStart()");
+
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
+            return;
         }
 
-        this._activeAssetName = info[EventKeyName.NAME];
-        this._offset[this._activeAssetName] = 0;
+        // The tracking timer must be activated.
+        var eventData = {};
+        eventData[EventKeyName.RESET] = true;
+        this._commCenter.notificationCenter.dispatchEvent(new ClockEvent(ClockEvent.CLOCK_TRACKING_ENABLE, eventData));
+
+        // Place the START event on the timeline.
+        this._updateQoSInfo();
+        var startItem = new TimelineItem(this._assetData,
+                                         this._userData,
+                                         this._streamData,
+                                         this._qosData,
+                                         EventDao.EVENT_TYPE_START,
+                                         playhead);
+        startItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(startItem);
+        this._placeItemOnTimeline(startItem, playhead);
+    };
+
+    Context.prototype._onApiVideoComplete = function(e) {
+        if (!this._checkCall("_onApiVideoComplete")) return;
+
+        this.log("#_onApiVideoComplete()");
+
+        // Place the COMPLETE event on the timeline (for main asset).
+        this._updateQoSInfo();
+        var completeItem = new TimelineItem(this._assetData,
+                                            this._userData,
+                                            this._streamData,
+                                            this._qosData,
+                                            EventDao.EVENT_TYPE_COMPLETE,
+                                            this._assetData.duration());
+        completeItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(completeItem);
+        this._placeItemOnTimeline(completeItem, this._assetData.duration());
+
+        // We need to send the last batch.
+        // Defer the broadcasting of the CONTEXT_DATA_AVAILABLE event until
+        // we obtain the value of the tracking-timer interval.
+        var self = this;
+        this._deferred = function(response) {
+            var trackingInterval = response[EventKeyName.TIMER_INTERVAL];
+
+            // Inject the ACTIVE event on the timeline.
+            // Take a snapshot of the AssetDao instance
+            var noAdInfoAssetData = new AssetDao(self._assetData);
+            // ...but exclude the ad-related info.
+            noAdInfoAssetData.adData(null);
+            // ... and make sure that the asset type coincides with the type of the main asset.
+            noAdInfoAssetData.type(self._videoAssetType);
+
+            var activeItem = new TimelineItem(noAdInfoAssetData,
+                                              self._userData,
+                                              self._streamData,
+                                              self._qosData,
+                                              EventDao.EVENT_TYPE_ACTIVE,
+                                              noAdInfoAssetData.duration());
+            activeItem.prevItemOfSameType = self._history.getPreviousItemOfSameTypeWith(activeItem);
+            self._placeItemOnTimeline(activeItem, noAdInfoAssetData.duration());
+
+            // Create the last report.
+            var report = self._reporterHelper.createReportForQuantum(trackingInterval);
+
+            // Issue a CONTEXT_DATA_AVAILABLE event.
+            var eventData  = {};
+            eventData[EventKeyName.REPORT] = report;
+            this._commCenter.notificationCenter.dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
+        };
+
+        // Issue a data request: the current value of the tracking-timer interval.
+        var eventData = {};
+        eventData[EventKeyName.WHAT] = DataEvent.keys.TRACKING_TIMER_INTERVAL;
+        this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
+
+        // The "tracking" timer must be deactivated.
+        eventData = {};
+        eventData[EventKeyName.RESET] = true;
+        this._commCenter.notificationCenter.dispatchEvent(new ClockEvent(ClockEvent.CLOCK_TRACKING_DISABLE, eventData));
+
+        // Mark the main asset as being complete.
+        this._isVideoComplete = true;
+    };
+
+    Context.prototype._onApiPlay = function(e) {
+        if (!this._checkCall("_onApiPlay")) return;
+
+        this.log("#_onApiPlay()");
+
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
+            return;
+        }
+
+        // The "tracking" timer must be activated.
+        this._commCenter.notificationCenter.dispatchEvent(new ClockEvent(ClockEvent.CLOCK_TRACKING_ENABLE));
+
+        // Place the PLAY event on the timeline.
+        this._updateQoSInfo();
+        var playItem = new TimelineItem(this._assetData,
+                                        this._userData,
+                                        this._streamData,
+                                        this._qosData,
+                                        EventDao.EVENT_TYPE_PLAY,
+                                        playhead);
+        playItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(playItem);
+        this._placeItemOnTimeline(playItem, playhead);
+    };
+
+    Context.prototype._onApiPause = function(e) {
+        if (!this._checkCall("_onApiPause")) return;
+
+        this.log("#_onApiPause()");
+
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
+            return;
+        }
+
+        // Place the PAUSE event on the timeline.
+        this._updateQoSInfo();
+        var pauseItem = new TimelineItem(this._assetData,
+                                         this._userData,
+                                         this._streamData,
+                                         this._qosData,
+                                         EventDao.EVENT_TYPE_PAUSE,
+                                         playhead);
+        pauseItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(pauseItem);
+        this._placeItemOnTimeline(pauseItem, playhead);
+
+        // The "tracking" timer must be deactivated.
+        this._commCenter.notificationCenter.dispatchEvent(new ClockEvent(ClockEvent.CLOCK_TRACKING_DISABLE));
+    };
+
+    Context.prototype._onApiBufferStart = function(e) {
+        if (!this._checkCall("_onApiBufferStart")) return;
+
+        this.log("#_onApiBufferStart()");
+
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
+            return;
+        }
+
+        // Place the BUFFER_START event on the timeline.
+        this._updateQoSInfo();
+        var bufferStartItem = new TimelineItem(this._assetData,
+                                               this._userData,
+                                               this._streamData,
+                                               this._qosData,
+                                               EventDao.EVENT_TYPE_BUFFER,
+                                               playhead);
+        bufferStartItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(bufferStartItem);
+        this._placeItemOnTimeline(bufferStartItem, playhead);
+    };
+
+    Context.prototype._onApiSeekStart = function(e) {
+        if (!this._checkCall("_onApiSeekStart")) return;
+
+        this.log("#_onApiSeekStart()");
+
+        // We need to stash the ad/chapter data in order to be able
+        // to reuse it when seek completes (if needed).
+        this._stashedAdData = this._assetData.adData();
+        this._stashedChapterData = this._assetData.chapterData();
+
+        // Nullify & reset the ad/chapter information (we don't know where we will end-up).
+        this._assetData.adData(null);
+        this._assetData.type(this._videoAssetType);
+        this._activeAssetId = this._assetData.videoId();
+
+        this._assetData.chapterData(null);
+    };
+
+    Context.prototype._onApiSeekComplete = function(e) {
+        if (!this._checkCall("_onApiSeekComplete")) return;
+
+        // Do a full-sync with the video player.
+        var adBreakInfo = this._playerDelegate.getAdBreakInfo();
+        if (!this._inputDataSanitizer.sanitizeAdBreakInfo(adBreakInfo, true)) {
+            return;
+        }
+
+        var adInfo = this._playerDelegate.getAdInfo();
+        if (!this._inputDataSanitizer.sanitizeAdInfo(adInfo, true)) {
+            return;
+        }
+
+        var chapterInfo = this._playerDelegate.getChapterInfo();
+        if (!this._inputDataSanitizer.sanitizeChapterInfo(chapterInfo, true)) {
+            return;
+        }
+
+        if (adBreakInfo && adInfo) {
+            var podId = MD5(this._assetData.videoId()) + "_" + adBreakInfo.position;
+
+            // If the ad did not change, reuse the stashed chapter data.
+            if (this._stashedAdData &&
+                this._stashedAdData.podId() == podId &&
+                parseInt(this._stashedAdData.podPosition(), 10) == adInfo.position) {
+
+                this._assetData.adData(this._stashedAdData);
+                this._activeAssetId = this._stashedAdData.adId();
+            } else if (!this._assetData.adData()) {
+                this._activeAssetId = adInfo.id;
+
+                // Set-up the ad-data associated to the current ad.
+                var adData = new AdDao();
+                adData.adId(this._activeAssetId);
+                adData.length(adInfo.length);
+                adData.resolver(adBreakInfo.playerName);
+                adData.cpm(adInfo.cpm);
+                adData.podId(podId);
+                adData.podSecond(adBreakInfo.startTime);
+                adData.podPosition(adInfo.position + "");
+                adData.sid(_generateSessionId());
+
+                this._assetData.adData(adData);
+            }
+
+            // The asset type is now AD.
+            this._assetData.type(AssetDao.TYPE_AD);
+        } else {
+            this._assetData.adData(null);
+            this._assetData.type(this._videoAssetType);
+
+            this._activeAssetId = this._assetData.videoId();
+        }
+
+        if (chapterInfo) {
+            // If the chapter did not change, reuse the stashed chapter data.
+            if (this._stashedChapterData &&
+                chapterInfo.position == this._stashedChapterData.position()) {
+
+                this._assetData.chapterData(this._stashedChapterData);
+            } else if (!this._assetData.chapterData()) {
+                // Set-up the chapter DAO.
+                var chapterData = new ChapterDao();
+                chapterData.id(MD5(this._assetData.videoId()) + "_" + chapterInfo.position);
+                chapterData.name(chapterInfo.name);
+                chapterData.length(chapterInfo.length);
+                chapterData.position(chapterInfo.position);
+                chapterData.offset(chapterInfo.startTime);
+                chapterData.sid(_generateSessionId());
+
+                this._assetData.chapterData(chapterData);
+            }
+        } else {
+            this._assetData.chapterData(null);
+        }
+
+        // We are done with all the stashed data
+        this._stashedAdData = null;
+        this._stashedChapterData = null;
+    };
+
+    Context.prototype._onApiAdStart = function(e) {
+        if (!this._checkCall("_onApiAdStart")) return;
+
+        var adBreakInfo = e.data[EventKeyName.AD_BREAK_INFO];
+        var adInfo = e.data[EventKeyName.AD_INFO];
+
+        this.log("#_onApiAdStart(" +
+              "id=" + adInfo.id +
+            ", length=" + adInfo.length +
+            ", player_name=" + adBreakInfo.playerName +
+            ", parent_name=" + this._assetData.videoId() +
+            ", pod_pos=" + adInfo.position +
+            ", pod_offset=" + adBreakInfo.startTime +
+            ", cpm=" + adInfo.cpm +
+            ")");
+
+        this._activeAssetId = adInfo.id;
 
         // Set-up the ad-data associated to the current ad.
         var adData = new AdDao();
-        adData.adId(this._activeAssetName);
-        adData.length(info[EventKeyName.LENGTH]);
-        adData.resolver(info[EventKeyName.PLAYER_NAME]);
-        adData.cpm(info[EventKeyName.CPM]);
-        adData.podId(info[EventKeyName.PARENT_POD]);
-        adData.podSecond(this._podOffset);
-        adData.podPosition(info[EventKeyName.PARENT_POD_POSITION] + "");
+        adData.adId(this._activeAssetId);
+        adData.length(adInfo.length);
+        adData.resolver(adBreakInfo.playerName);
+        adData.cpm(adInfo.cpm);
+        adData.podId(MD5(this._assetData.videoId()) + "_" + adBreakInfo.position);
+        adData.podSecond(adBreakInfo.startTime);
+        adData.podPosition(adInfo.position + "");
+        adData.sid(_generateSessionId());
 
         this._assetData.adData(adData);
 
@@ -3295,238 +4256,274 @@ heartbeat.clock || (heartbeat.clock = {});
         this._assetData.type(AssetDao.TYPE_AD);
 
         // Reset the ad counters.
-        this._counters.resetCounters(this._activeAssetName, AssetDao.TYPE_AD);
+        this._counters.resetCounters(this._activeAssetId, AssetDao.TYPE_AD);
 
         // Place the START event on the timeline.
+        this._updateQoSInfo();
         var startItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_START, 0);
+                                         this._userData,
+                                         this._streamData,
+                                         this._qosData,
+                                         EventDao.EVENT_TYPE_START,
+                                         adInfo.playhead);
         startItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(startItem);
-        this._placeItemOnTimeline(startItem);
+        this._placeItemOnTimeline(startItem, adInfo.playhead);
+    };
 
-        // Place the PLAY event on the timeline.
+    Context.prototype._onApiAdComplete = function(e) {
+        if (!this._checkCall("_onApiAdComplete")) return;
+
+        this.log("#_onApiAdComplete()");
+
+        if (this._assetData.type() != AssetDao.TYPE_AD) {
+            this.warn("#_onApiAdComplete() > Ignoring the ad complete event, because we are no longer in an ad.");
+            return;
+        }
+
+        this._updateQoSInfo();
+
+        // Place the PLAY event on the timeline (for ad asset).
         var playItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_PLAY,
-            this._offset[this._activeAssetName]);
+                                        this._userData,
+                                        this._streamData,
+                                        this._qosData,
+                                        EventDao.EVENT_TYPE_PLAY,
+                                        this._assetData.adData().length());
         playItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(playItem);
-        this._placeItemOnTimeline(playItem);
+        this._placeItemOnTimeline(playItem, this._assetData.adData().length());
+
+        // Place the COMPLETE event on the timeline (for ad asset).
+        var completeItem = new TimelineItem(this._assetData,
+                                            this._userData,
+                                            this._streamData,
+                                            this._qosData,
+                                            EventDao.EVENT_TYPE_COMPLETE,
+                                            this._assetData.adData().length());
+        completeItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(completeItem);
+        this._placeItemOnTimeline(completeItem, this._assetData.adData().length());
+
+        // Nullify the ad data.
+        this._assetData.adData(null);
+
+        // Revert back to the type of the main content.
+        this._assetData.type(this._videoAssetType);
+        this._activeAssetId = this._assetData.videoId();
     };
 
-    Context.prototype._onApiClose = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiClose() > No active viewing session.");
-            return;
-        }
+    Context.prototype._onApiChapterStart = function(e) {
+        if (!this._checkCall("_onApiChapterStart")) return;
 
-        var assetId = e.data[EventKeyName.NAME];
+        var chapterInfo = e.data[EventKeyName.CHAPTER_INFO];
 
-        this.log("#_onApiClose(name="+ assetId +")");
-
-        // Close the main video.
-        if (assetId === this._assetData.videoId()) {
-            this._closeMainVideo();
-        }
-        // Close the ad.
-        else {
-            this._closeAd();
-        }
-    };
-
-    Context.prototype._onApiPlay = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiPlay() > No active viewing session.");
-            return;
-        }
-
-        var info = e.data;
-
-        this.log("#_onApiPlay(" +
-            "name="+ info[EventKeyName.NAME] +
-            ", offset="+ info[EventKeyName.OFFSET] +
-            ", vid="+ info[EventKeyName.VISITOR_ID] +
-            ", aid="+ info[EventKeyName.ANALYTICS_VISITOR_ID] +
-            ", mid="+ info[EventKeyName.MARKETING_CLOUD_VISITOR_ID] +
+        this.log("#_onApiChapterStart(" +
+              "name=" + chapterInfo.name +
+            ", length=" + chapterInfo.length +
+            ", position=" + chapterInfo.position +
+            ", chapter_offset=" + chapterInfo.startTime +
             ")");
 
-        // Do not start playback if the main content has been previously closed.
-        if (info[EventKeyName.NAME] == this._assetData.videoId && this._isVideoClosed)
+        var mainVideoPlayhead = this._getMainVideoPlayhead();
+        if (mainVideoPlayhead == null || isNaN(mainVideoPlayhead)) {
             return;
-
-        // Update the context data.
-        this._userData.visitorId(info[EventKeyName.VISITOR_ID]);
-        this._userData.analyticsVisitorId(info[EventKeyName.ANALYTICS_VISITOR_ID]);
-        this._userData.marketingCloudVisitorId(info[EventKeyName.MARKETING_CLOUD_VISITOR_ID]);
-
-        this._activeAssetName = info[EventKeyName.NAME];
-        this._offset[this._activeAssetName] = Math.floor(info[EventKeyName.OFFSET]);
-
-        // Tracking must be activated.
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent["CLOCK_TRACKING_ENABLE"]));
-
-        // Place the PLAY event on the timeline.
-        var playItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_PLAY,
-            this._offset[this._activeAssetName]);
-        playItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(playItem);
-        this._placeItemOnTimeline(playItem);
-    };
-
-    Context.prototype._onApiStop = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiStop() > No active viewing session.");
+        }
+        
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
             return;
         }
 
-        var info = e.data;
+        // Set-up the chapter DAO.
+        var chapterData = new ChapterDao();
+        chapterData.id(MD5(this._assetData.videoId()) + "_" + chapterInfo.position);
+        chapterData.name(chapterInfo.name);
+        chapterData.length(chapterInfo.length);
+        chapterData.position(chapterInfo.position);
+        chapterData.offset(chapterInfo.startTime);
+        chapterData.sid(_generateSessionId());
 
-        this.log("#_onApiStop(" +
-            "name="+ info[EventKeyName.NAME] +
-            ", offset="+ info[EventKeyName.OFFSET] +
-            ")");
+        this._assetData.chapterData(chapterData);
 
-        // Update the context data.
-        this._activeAssetName = info[EventKeyName.NAME];
-        this._offset[this._activeAssetName] = Math.floor(info[EventKeyName.OFFSET]);
+        this._updateQoSInfo();
 
-        // Place the PAUSE event on the timeline.
-        var pauseItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_PAUSE,
-            this._offset[this._activeAssetName]);
-        pauseItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(pauseItem);
-        this._placeItemOnTimeline(pauseItem);
-
-        // Tracking must be deactivated.
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent["CLOCK_TRACKING_DISABLE"]));
-    };
-
-    Context.prototype._onApiClick = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiClick() > No active viewing session.");
-            return;
+        // If the last item is a PLAY event, we must segment it into 2 parts:
+        // one inside and one outside the chapter.
+        if (this._timeline.getLast().eventType == EventDao.EVENT_TYPE_PLAY) {
+            var item = new TimelineItem(this._assetData,
+                                        this._userData,
+                                        this._streamData,
+                                        this._qosData,
+                                        this._timeline.getLast().eventType,
+                                        playhead);
+            item.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(item);
+            this._placeItemOnTimeline(item, playhead);
         }
 
-        var info = e.data;
-
-        this.log("#_onApiClick(" +
-            "name="+ info[EventKeyName.NAME] +
-            ", offset="+ info[EventKeyName.OFFSET] +
-            ")");
-
-        // Not implemented.
-    };
-
-    Context.prototype._onApiComplete = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiComplete() > No active viewing session.");
-            return;
-        }
-
-        var info = e.data;
-
-        this.log("#_onApiComplete(" +
-            "name="+ info[EventKeyName.NAME] +
-            ", offset="+ info[EventKeyName.OFFSET] +
-            ")");
-
-        // Not implemented.
-    };
-
-    Context.prototype._onApiQoSInfo = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiQoSInfo() > No active viewing session.");
-            return;
-        }
-
-        var info = e.data;
-
-        this.log("#_onApiQoSInfo(" +
-            "bitrate="+ info[EventKeyName.NAME] +
-            ", fps="+ info[EventKeyName.FPS] +
-            ", dropped_frames="+ info[EventKeyName.DROPPED_FRAMES] +
-            ")");
-
-        // Update the QoS data.
-        this._qosData.bitrate(info[EventKeyName.BITRATE]);
-        this._qosData.fps(info[EventKeyName.FPS]);
-        this._qosData.droppedFrames(info[EventKeyName.DROPPED_FRAMES]);
-    };
-
-    Context.prototype._onApiBitrateChange = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiBitrateChange() > No active viewing session.");
-            return;
-        }
-
-        var info = e.data;
-
-        this.log("#_onApiBitrateChange(bitrate="+ info[EventKeyName.NAME] + ")");
-
-        // Update the QoS data.
-        this._qosData.bitrate(info[EventKeyName.BITRATE]);
-
-        // We need to prepare a tracking report just with the bitrate-change event.
-        var bitrateChangeItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_BITRATE_CHANGE,
-            this._offset[this._activeAssetName]);
-        bitrateChangeItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(bitrateChangeItem);
-
-        // Update the history data.
-        this._history.updateWith(bitrateChangeItem);
-
-        // Send the BITRATE_CHANGE event immediately (out-of-band).
+        // Send the CHAPTER_START event immediately (out-of-band).
         // Defer the broadcasting of the CONTEXT_DATA_AVAILABLE event until
         // we obtain the value of the tracking-timer interval.
+        var self = this;
         this._deferred = function(response) {
-            var trackingInterval = response[EventKeyName.TIMER_INTERVAL],
-                report = this._reporterHelper.createReportForItem(bitrateChangeItem, trackingInterval, false);
+            var trackingInterval = response[EventKeyName.TIMER_INTERVAL];
+
+            // The CHAPTER_START event must always be in the context of the main video asset.
+            // Take a snapshot of the AssetDao instance.
+            var noAdInfoAssetData = new AssetDao(self._assetData);
+            // ...but exclude the ad-related info.
+            noAdInfoAssetData.adData(null);
+            // ... and make sure that the asset type coincides with the type of the main asset.
+            noAdInfoAssetData.type(self._videoAssetType);
+
+            var startChapterItem = new TimelineItem(noAdInfoAssetData,
+                                                    self._userData,
+                                                    self._streamData,
+                                                    self._qosData,
+                                                    EventDao.EVENT_TYPE_CHAPTER_START,
+                                                    mainVideoPlayhead);
+            startChapterItem.prevItemOfSameType = self._history.getPreviousItemOfSameTypeWith(startChapterItem);
+
+            // Update the history data.
+            self._history.updateWith(startChapterItem);
+
+            var report = self._reporterHelper.createReportForItem(startChapterItem, trackingInterval);
 
             // Issue a CONTEXT_DATA_AVAILABLE event.
             var eventData = {};
             eventData[EventKeyName.REPORT] = report;
-            NotificationCenter().dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
+            self._commCenter.notificationCenter.dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
         };
 
         // Issue a data request: the current value of the tracking-timer interval.
         var eventData = {};
         eventData[EventKeyName.WHAT] = DataEvent.keys.TRACKING_TIMER_INTERVAL;
-        NotificationCenter().dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
+        this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
     };
 
-    Context.prototype._onApiBufferStart = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiBufferStart() > No active viewing session.");
+    Context.prototype._onApiChapterComplete = function(e) {
+        if (!this._checkCall("_onApiChapterComplete")) return;
+
+        this.log("#_onApiChapterComplete()");
+
+        if (!this._assetData.chapterData()) {
+            this.warn("#_onApiChapterComplete() > Ignoring the chapter complete event, because we are no longer in a chapter.");
             return;
         }
 
-        this.log("#_onApiBufferStart()");
+        var mainVideoPlayhead = this._getMainVideoPlayhead();
+        if (mainVideoPlayhead == null || isNaN(mainVideoPlayhead)) {
+            return;
+        }
 
-        var bufferStartItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_BUFFER,
-            this._offset[this._activeAssetName]);
-        bufferStartItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(bufferStartItem);
-        this._placeItemOnTimeline(bufferStartItem);
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
+            return;
+        }
+
+        // Send the CHAPTER_COMPLETE event immediately (out-of-band).
+        // Defer the broadcasting of the CONTEXT_DATA_AVAILABLE event until
+        // we obtain the value of the tracking-timer interval.
+        var self = this;
+        this._deferred = function(response) {
+            var trackingInterval = response[EventKeyName.TIMER_INTERVAL];
+
+            // The CHAPTER_COMPLETE event must always be in the context of the main video asset.
+            // Take a snapshot of the AssetDao instance.
+            var noAdInfoAssetData = new AssetDao(self._assetData);
+            // ...but exclude the ad-related info.
+            noAdInfoAssetData.adData(null);
+            // ... and make sure that the asset type coincides with the type of the main asset.
+            noAdInfoAssetData.type(self._videoAssetType);
+
+            self._updateQoSInfo();
+            var completeChapterItem = new TimelineItem(noAdInfoAssetData,
+                                                       self._userData,
+                                                       self._streamData,
+                                                       self._qosData,
+                                                       EventDao.EVENT_TYPE_CHAPTER_COMPLETE,
+                                                       mainVideoPlayhead);
+            completeChapterItem.prevItemOfSameType = self._history.getPreviousItemOfSameTypeWith(completeChapterItem);
+
+            // Update the history data.
+            self._history.updateWith(completeChapterItem);
+
+            var report = self._reporterHelper.createReportForItem(completeChapterItem, trackingInterval);
+
+            // Issue a CONTEXT_DATA_AVAILABLE event.
+            var eventData = {};
+            eventData[EventKeyName.REPORT] = report;
+            self._commCenter.notificationCenter.dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
+
+            // We are no longer inside a chapter.
+            self._assetData.chapterData(null);
+
+            // If the last item is a PLAY event, we must segment it in 2 parts:
+            // one inside and one outside the chapter.
+            if (self._timeline.getLast().eventType == EventDao.EVENT_TYPE_PLAY) {
+                var item = new TimelineItem(self._assetData,
+                                            self._userData,
+                                            self._streamData,
+                                            self._qosData,
+                                            self._timeline.getLast().eventType,
+                                            playhead);
+
+                item.prevItemOfSameType = self._history.getPreviousItemOfSameTypeWith(item);
+                self._placeItemOnTimeline(item, playhead);
+            }
+        };
+
+        // Issue a data request: the current value of the tracking-timer interval.
+        var eventData = {};
+        eventData[EventKeyName.WHAT] = DataEvent.keys.TRACKING_TIMER_INTERVAL;
+        this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
+    };
+
+    Context.prototype._onApiBitrateChange = function(e) {
+        if (!this._checkCall("_onApiBitrateChange")) return;
+
+        this.log("#_onApiBitrateChange()");
+
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
+            return;
+        }
+
+        // Send the BITRATE_CHANGE event immediately (out-of-band).
+        // Defer the broadcasting of the CONTEXT_DATA_AVAILABLE event until
+        // we obtain the value of the tracking-timer interval.
+        var self = this;
+        this._deferred = function(response) {
+            var trackingInterval = response[EventKeyName.TIMER_INTERVAL];
+
+            self._updateQoSInfo();
+            var bitrateChangeItem = new TimelineItem(self._assetData,
+                                                     self._userData,
+                                                     self._streamData,
+                                                     self._qosData,
+                                                     EventDao.EVENT_TYPE_BITRATE_CHANGE,
+                                                     playhead);
+            bitrateChangeItem.prevItemOfSameType = self._history.getPreviousItemOfSameTypeWith(bitrateChangeItem);
+
+            // Update the history data.
+            self._history.updateWith(bitrateChangeItem);
+
+            var report = self._reporterHelper.createReportForItem(bitrateChangeItem, trackingInterval);
+
+            // Issue a CONTEXT_DATA_AVAILABLE event.
+            var eventData = {};
+            eventData[EventKeyName.REPORT] = report;
+            self._commCenter.notificationCenter.dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
+        };
+
+        // Issue a data request: the current value of the tracking-timer interval.
+        var eventData = {};
+        eventData[EventKeyName.WHAT] = DataEvent.keys.TRACKING_TIMER_INTERVAL;
+        this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
     };
 
     Context.prototype._onApiTrackError = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiTrackError() > No active viewing session.");
+        if (!this._checkCall("_onApiTrackError")) return;
+
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
             return;
         }
 
@@ -3535,33 +4532,34 @@ heartbeat.clock || (heartbeat.clock = {});
         this.log("#_onApiTrackError(" +
             "source="+ info[EventKeyName.SOURCE] +
             ", err_id="+ info[EventKeyName.ERROR_ID] +
-            ", offset="+ info[EventKeyName.OFFSET] +
             ")");
 
         // If external error tracking is disabled, we must skip
         // the error reports issued by the application layer.
-        if (this._blockExternalErrorTracking && info[EventKeyName.SOURCE] !== ERROR_SOURCE_PLAYER) {
+        if (!this._trackExternalErrors && info[EventKeyName.SOURCE] !== ERROR_SOURCE_PLAYER) {
             return;
         }
-
-        // We need to prepare a tracking report just with the error event.
-        var errorItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_ERROR,
-            Math.floor(info[EventKeyName.OFFSET]));
-        errorItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(errorItem);
-
-        // Update the history data.
-        this._history.updateWith(errorItem);
 
         // Send the ERROR event immediately (out-of-band).
         // Defer the broadcasting of the CONTEXT_DATA_AVAILABLE event until
         // we obtain the value of the tracking-timer interval.
+        var self = this;
         this._deferred = function(response) {
-            var trackingInterval = response[EventKeyName.TIMER_INTERVAL],
-                report = this._reporterHelper.createReportForItem(errorItem, trackingInterval, false);
+            var trackingInterval = response[EventKeyName.TIMER_INTERVAL];
+
+            self._updateQoSInfo();
+            var errorItem = new TimelineItem(self._assetData,
+                                             self._userData,
+                                             self._streamData,
+                                             self._qosData,
+                                             EventDao.EVENT_TYPE_ERROR,
+                                             playhead);
+            errorItem.prevItemOfSameType = self._history.getPreviousItemOfSameTypeWith(errorItem);
+
+            // Update the history data.
+            self._history.updateWith(errorItem);
+
+            var report = self._reporterHelper.createReportForItem(errorItem, trackingInterval);
 
             // We need to set the error id and error source for the error report.
             var reportEntry = report.reportEntries[0];
@@ -3571,126 +4569,63 @@ heartbeat.clock || (heartbeat.clock = {});
             // Issue a CONTEXT_DATA_AVAILABLE event.
             var eventData = {};
             eventData[EventKeyName.REPORT] = report;
-            NotificationCenter().dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
+            self._commCenter.notificationCenter.dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
         };
 
         // Issue a data request: the current value of the tracking-timer interval.
         var eventData = {};
         eventData[EventKeyName.WHAT] = DataEvent.keys.TRACKING_TIMER_INTERVAL;
-        NotificationCenter().dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
-    };
-
-    Context.prototype._onApiPodOffset = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiPodOffset() > No active viewing session.");
-            return;
-        }
-
-        this._podOffset = Math.floor(e.data[EventKeyName.PARENT_POD_OFFSET]);
-
-        this.log("#_onApiPodOffset(podOffset=" + this._podOffset + ")");
-    };
-
-    Context.prototype._onApiSessionComplete = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onApiSessionComplete() > No active viewing session.");
-            return;
-        }
-
-        this.log("#_onApiSessionComplete()");
-
-        // Place the UNLOAD event in the timeline.
-        var unloadItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_UNLOAD, 0);
-        unloadItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(unloadItem);
-        this._placeItemOnTimeline(unloadItem);
-
-        // We need to send the last batch.
-        // Defer the broadcasting of the CONTEXT_DATA_AVAILABLE event until
-        // we obtain the value of the tracking-timer interval.
-        this._deferred = function(response) {
-            var trackingInterval = response[EventKeyName.TIMER_INTERVAL],
-                startTime = this._timestampOfLastReport || new Date(0),
-                endTime = new Date();
-
-            // Create the last report.
-            var report = this._reporterHelper.createReportForQuantum(startTime, endTime, trackingInterval);
-
-            // Issue a CONTEXT_DATA_AVAILABLE event.
-            var eventData = {};
-            eventData[EventKeyName.REPORT] = report;
-            NotificationCenter().dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
-
-            // We need to keep track of the timestamp of the last tracking report sent
-            // in order to avoid duplicates.
-            this._timestampOfLastReport = endTime;
-        };
-
-        // Issue a data request: the current value of the tracking-timer interval.
-        var eventData = {};
-        eventData[EventKeyName.WHAT] = DataEvent.keys.TRACKING_TIMER_INTERVAL;
-        NotificationCenter().dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
-
-        // Tracking must be deactivated.
-        eventData = {};
-        eventData[EventKeyName.RESET] = true;
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent["CLOCK_TRACKING_DISABLE"], eventData));
-
-        // The playback session is now complete.
-        this._isViewingSessionActive = false;
-    };
-
-    Context.prototype._onClockMonitorUpdate = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onClockMonitorUpdate() > No active viewing session.");
-            return;
-        }
-
-        var info = e.data;
-
-        this.log("#_onClockMonitorUpdate(" +
-            "name="+ info[EventKeyName.NAME] +
-            ", offset="+ info[EventKeyName.OFFSET] +
-            ")");
-
-        this._activeAssetName = info[EventKeyName.NAME];
-        this._offset[this._activeAssetName] = Math.floor(e.data[EventKeyName.OFFSET]);
+        this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_REQUEST, eventData));
     };
 
     Context.prototype._onClockTrackingTick = function(e) {
-        if (!this._isViewingSessionActive) {
-            this.warn("#_onClockTrackingTick() > No active viewing session.");
+        if (!this._checkCall("_onClockTrackingTick")) return;
+
+        var trackingInterval = e.data[EventKeyName.TIMER_INTERVAL];
+
+        this.log("#_onClockTrackingTick(interval=" + trackingInterval + ")");
+
+        var mainVideoPlayhead = this._getMainVideoPlayhead();
+        if (mainVideoPlayhead == null || isNaN(mainVideoPlayhead)) {
             return;
         }
 
-        this.log("#_onClockTrackingTick(interval=" + e.data[EventKeyName.TIMER_INTERVAL] + ")");
+        var playhead = this._getPlayhead();
+        if (playhead == null || isNaN(playhead)) {
+            return;
+        }
 
-        var trackingInterval = e.data[EventKeyName.TIMER_INTERVAL],
-            endTime = new Date(),
-            startTime = this._timestampOfLastReport || new Date(0);
+        // Inject the ACTIVE event on the timeline.
+        // Take a snapshot of the AssetDao instance
+        var noAdInfoAssetData = new AssetDao(this._assetData);
+        // ...but exclude the ad-related info.
+        noAdInfoAssetData.adData(null);
+        // ... and make sure that the asset type coincides with the type of the main asset.
+        noAdInfoAssetData.type(this._videoAssetType);
+
+        this._updateQoSInfo();
+        var activeItem = new TimelineItem(noAdInfoAssetData,
+                                          this._userData,
+                                          this._streamData,
+                                          this._qosData,
+                                          EventDao.EVENT_TYPE_ACTIVE,
+                                          mainVideoPlayhead);
+        activeItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(activeItem);
+        this._placeItemOnTimeline(activeItem, playhead);
 
         // Create the report for the current quantum.
-        var report = this._reporterHelper.createReportForQuantum(startTime, endTime, trackingInterval);
+        var report = this._reporterHelper.createReportForQuantum(trackingInterval);
 
         // Issue a CONTEXT_DATA_AVAILABLE event.
         var eventData = {};
         eventData[EventKeyName.REPORT] = report;
-        NotificationCenter().dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
-
-        // Update the timestamp of the last generated report.
-        this._timestampOfLastReport = endTime;
+        this._commCenter.notificationCenter.dispatchEvent(new ContextEvent(ContextEvent.CONTEXT_DATA_AVAILABLE, eventData));
     };
 
     Context.prototype._onNetworkCheckStatusComplete = function(e) {
-        this.log("#_onNetworkCheckStatusComplete(track_ext_err=" + e.data[EventKeyName.TRACK_EXTERNAL_ERRORS] + ")");
+        this._trackExternalErrors = e.data[EventKeyName.TRACK_EXTERNAL_ERRORS];
 
-        var blockExternalErrorTracking = e.data[EventKeyName.TRACK_EXTERNAL_ERRORS];
-        if (blockExternalErrorTracking !== null) {
-            this._blockExternalErrorTracking = blockExternalErrorTracking;
-        }
+        this.log("#_onNetworkCheckStatusComplete(track_ext_err=" + this._trackExternalErrors + ")");
     };
 
     Context.prototype._onDataRequest = function(e) {
@@ -3701,9 +4636,9 @@ heartbeat.clock || (heartbeat.clock = {});
         switch (what) {
             case DataEvent.keys.MAIN_VIDEO_PUBLISHER:
                 var eventData = {};
-                eventData[EventKeyName.PUBLISHER] = this._config.publisher;
+                eventData[EventKeyName.PUBLISHER] = this._configData.publisher;
 
-                NotificationCenter().dispatchEvent(new DataEvent(DataEvent.DATA_RESPONSE, eventData));
+                this._commCenter.notificationCenter.dispatchEvent(new DataEvent(DataEvent.DATA_RESPONSE, eventData));
                 break;
         }
     };
@@ -3717,93 +4652,150 @@ heartbeat.clock || (heartbeat.clock = {});
     //
     // -------------------[ Private helper methods ]-----------------------
     //
+
+    Context.prototype._installEventListeners = function() {
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_CONFIG, this._onApiConfig, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_VIDEO_LOAD, this._onApiVideoLoad, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_VIDEO_UNLOAD, this._onApiVideoUnload, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_VIDEO_START, this._onApiVideoStart, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_VIDEO_COMPLETE, this._onApiVideoComplete, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_AD_START, this._onApiAdStart, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_AD_COMPLETE, this._onApiAdComplete, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_PLAY, this._onApiPlay, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_PAUSE, this._onApiPause, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_BUFFER_START, this._onApiBufferStart, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_SEEK_START, this._onApiSeekStart, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_SEEK_COMPLETE, this._onApiSeekComplete, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_CHAPTER_START, this._onApiChapterStart, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_CHAPTER_COMPLETE, this._onApiChapterComplete, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_BITRATE_CHANGE, this._onApiBitrateChange, this);
+        this._commCenter.notificationCenter.addEventListener(ApiEvent.API_TRACK_ERROR, this._onApiTrackError, this);
+
+        this._commCenter.notificationCenter.addEventListener(ClockEvent.CLOCK_TRACKING_TICK, this._onClockTrackingTick, this);
+
+        this._commCenter.notificationCenter.addEventListener(NetworkEvent.NETWORK_CHECK_STATUS_COMPLETE, this._onNetworkCheckStatusComplete, this);
+
+        this._commCenter.notificationCenter.addEventListener(DataEvent.DATA_REQUEST, this._onDataRequest, this);
+        this._commCenter.notificationCenter.addEventListener(DataEvent.DATA_RESPONSE, this._onDataResponse, this);
+    };
+
+    Context.prototype._uninstallEventListeners = function() {
+        this._commCenter.notificationCenter.removeAllListeners(this);
+    };
+
     Context.prototype._resetInternalState = function() {
         this.log("#_resetInternalState()");
 
-        this._isViewingSessionActive = false;
-        this._isVideoClosed = false;
-        this._mainAssetType = null;
-        this._blockExternalErrorTracking = false;
-        this._offset = {};
-        this._podOffset = null;
-        this._timestampOfLastReport = null;
+        this._isTrackingSessionActive = false;
+        this._isVideoComplete = false;
+
+        this._videoAssetType = null;
+
         this._counters = new Counters();
         this._history = new History();
-        this._timeline = new Timeline();
+        this._timeline = new Timeline(this);
         this._userData = new UserDao();
         this._streamData = new StreamDao();
         this._qosData = new QoSDao();
         this._sessionData = new SessionDao();
         this._assetData = new AssetDao();
 
-        this._assetData.publisher(this._config.publisher);
-        this._assetData.type(this._config.streamType);
+        this._assetData.publisher(this._configData.publisher);
+
+        this._stashedAdData = null;
+        this._stashedChapterData = null;
     };
 
-    Context.prototype._generateSessionId = function() {
-        this._sessionData.sessionId("" + new Date().getTime() + Math.floor(Math.random() * 1000000000));
+    function _generateSessionId() {
+        return "" + new Date().getTime() + Math.floor(Math.random() * 1000000000);
+    }
 
-        this.log("#_generateSessionId() > New session id: " + this._sessionData.sessionId());
-    };
-
-    Context.prototype._placeItemOnTimeline = function(timelineItem) {
+    Context.prototype._placeItemOnTimeline = function(timelineItem, playhead) {
         this.log("#_placeItemOnTimeline(type=" + timelineItem.eventType + ")");
 
         // Place the item on the timeline.
-        this._timeline.addItem(timelineItem);
+        this._timeline.addItem(timelineItem, playhead);
 
         // Update the history data.
         this._history.updateWith(timelineItem);
     };
 
-    Context.prototype._closeMainVideo = function() {
-        // Do not close the main content if already closed.
-        if (this._isVideoClosed) {
-            this.warn("#_closeMainVideo() > The main video content was already closed.");
-            return;
+    Context.prototype._getPlayhead = function() {
+        var playhead = null;
+
+        if (this._assetData.adData()) { // we are inside ad content.
+            var adInfo = this._playerDelegate.getAdInfo();
+            if (adInfo && this._inputDataSanitizer.sanitizeAdInfo(adInfo, false)) {
+                playhead = adInfo.playhead;
+            }
+        } else { // we are inside main content.
+            var videoInfo = this._playerDelegate.getVideoInfo();
+            if (this._inputDataSanitizer.sanitizeVideoInfo(videoInfo)) {
+                playhead = videoInfo.playhead;
+            }
         }
 
-
-        if (this._offset[this._assetData.videoId()] == -1) {
-            this._offset[this._assetData.videoId()] = this._assetData.duration();
-        }
-
-        // Place the COMPLETE event on the timeline (for main asset).
-        var completeItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_COMPLETE,
-            this._offset[this._assetData.videoId()]);
-        completeItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(completeItem);
-        this._placeItemOnTimeline(completeItem);
-
-        this._isVideoClosed = true;
+        return playhead;
     };
 
-    Context.prototype._closeAd = function() {
-        // Place the COMPLETE event on the timeline (for ad asset).
-        var completeItem = new TimelineItem(this._assetData,
-            this._userData,
-            this._streamData,
-            this._qosData,
-            EventDao.EVENT_TYPE_COMPLETE,
-            this._offset[this._activeAssetName]);
-        completeItem.prevItemOfSameType = this._history.getPreviousItemOfSameTypeWith(completeItem);
-        this._placeItemOnTimeline(completeItem);
+    Context.prototype._getMainVideoPlayhead = function() {
+        var playhead = null;
 
-        // Revert back to the type of the main content.
-        this._assetData.type(this._mainAssetType);
-        this._activeAssetName = this._assetData.videoId();
+        var videoInfo = this._playerDelegate.getVideoInfo();
+        if (this._inputDataSanitizer.sanitizeVideoInfo(videoInfo)) {
+            playhead = videoInfo.playhead;
+        }
 
-        // Nullify the ad data.
-        this._assetData.adData(null);
+        return playhead;
+    };
+
+    Context.prototype._updateQoSInfo = function() {
+        // Query the player delegate for the QoS info.
+        var qosInfo = this._playerDelegate.getQoSInfo();
+
+        // Sanitize the data obtained from the player delegate.
+        this._qosData.bitrate((qosInfo && !isNaN(qosInfo.bitrate)) ? qosInfo.bitrate : 0);
+        this._qosData.fps((qosInfo && !isNaN(qosInfo.fps)) ? qosInfo.fps: 0);
+        this._qosData.droppedFrames((qosInfo && !isNaN(qosInfo.droppedFrames)) ? qosInfo.droppedFrames : 0);
+    };
+
+    Context.prototype._checkCall = function(methodName) {
+        if (!this._isTrackingSessionActive) {
+            this.warn("#" + methodName + "() > No active tracking session.");
+            return false;
+        }
+
+        if (this._isVideoComplete) {
+            this.warn("#" + methodName + "() > The video content already completed.");
+            return false;
+        }
+
+        return true;
+    };
+
+    Context.prototype._executeErrorCallback = function(message, details) {
+        var eventData = {};
+        eventData[EventKeyName.MESSAGE] = message;
+        eventData[EventKeyName.DETAILS] = details;
+        this._commCenter.notificationCenter.dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, eventData));
     };
 
     // Export symbols.
     heartbeat.context.Context = Context;
-})(core, heartbeat, va);
+})(core, heartbeat, va, utils);
 
+(function(heartbeat) {
+    function AppMeasurementInfo() {
+        'use strict';
+
+        this.account = null;
+        this.trackingServer = null;
+        this.ssl = false;
+    }
+
+    // Export symbols.
+    heartbeat.AppMeasurementInfo = AppMeasurementInfo;
+})(heartbeat);
 (function(core, heartbeat) {
     'use strict';
 
@@ -3811,10 +4803,10 @@ heartbeat.clock || (heartbeat.clock = {});
 
     var mixin = core.mixin;
     var logger = core.logger;
-    var NotificationCenter = core.NotificationCenter;
+    var Operation = core.Operation;
+    var CommCenter = core.CommCenter;
     var EventKeyName = heartbeat.event.EventKeyName;
     var ApiEvent = heartbeat.event.ApiEvent;
-    var ClockEvent = heartbeat.event.ClockEvent;
     var Clock = heartbeat.clock.Clock;
     var Network = heartbeat.network.Network;
     var Context = heartbeat.context.Context;
@@ -3822,8 +4814,16 @@ heartbeat.clock || (heartbeat.clock = {});
 
     mixin(Heartbeat, logger);
 
-    function Heartbeat(appMeasurement) {
-        this._appMeasurement = appMeasurement;
+    function Heartbeat(playerDelegate, errorOperation) {
+        this._visitorApiInfo = null;
+        this._clock = null;
+        this._context = null;
+        this._network = null;
+        this._isDestroyed = false;
+
+        this._commCenter = new CommCenter();
+        this._playerDelegate = playerDelegate;
+        this._errorOperation = errorOperation;
 
         // We are not configured yet.
         this._isConfigured = false;
@@ -3836,42 +4836,18 @@ heartbeat.clock || (heartbeat.clock = {});
     }
 
     //
-    //-----------------[ Private helper methods ]-----------------------
-    //
-    Heartbeat.prototype._bootstrap = function() {
-        // Instantiate all sub-modules.
-        this._initSubmodules();
-    };
-
-    Heartbeat.prototype._initSubmodules = function() {
-        this._context = new Context();
-        this._network = new Network(new QuerystringSerializer());
-        this._clock = new Clock();
-    };
-
-    Heartbeat.prototype._canTrack = function() {
-        var result = (this._isConfigured &&
-            (
-                this._appMeasurement.analyticsVisitorID ||
-                this._appMeasurement.marketingCloudVisitorID ||
-                this._appMeasurement.visitorID
-                ));
-
-        if (!result) {
-            this.warn("Unable to track!" +
-                " Is configured: " + this._isConfigured +
-                " analyticsVisitorID: " + this._appMeasurement.analyticsVisitorID +
-                " marketingCloudVisitorID: " + this._appMeasurement.marketingCloudVisitorID +
-                " visitorID: " + this._appMeasurement.visitorID);
-        }
-
-        return result;
-    };
-
-    //
     // -------------------[ Public methods ]-----------------------
     //
-    Heartbeat.prototype.setup = function(configData) {
+    Heartbeat.prototype.configure = function(appMeasurementInfo, visitorApiInfo, configData) {
+        if (!appMeasurementInfo) {
+            throw new Error("AppMeasurement info object cannot be NULL");
+        }
+
+        if (!visitorApiInfo) {
+            throw new Error("VisitorAPI info object cannot be NULL");
+        }
+        this._visitorApiInfo = visitorApiInfo;
+
         if (!configData) {
             throw new Error("Configuration object cannot be NULL");
         }
@@ -3880,238 +4856,157 @@ heartbeat.clock || (heartbeat.clock = {});
         var ovp = (configData.__primetime) ? PRIMETIME_OVP : configData.ovp;
 
         // If we have a PSDK version number available, override the custom SDK setting.
-        var sdk = (configData.__psdkVersion != null) ? configData.__psdkVersion : configData.sdk;
+        var sdk = configData.__psdkVersion || configData.sdk;
 
         var checkStatusServer = configData.trackingServer + "/settings/";
 
         this.log("#setup() > Applying configuration: {" +
-            "account: "            + this._appMeasurement.account +
-            ", scTrackingServer: " + this._appMeasurement.trackingServer +
+            "account: "            + appMeasurementInfo.account +
+            ", scTrackingServer: " + appMeasurementInfo.trackingServer +
             ", sbTrackingServer: " + configData.trackingServer +
             ", jobId: "            + configData.jobId +
             ", publisher: "        + configData.publisher +
             ", ovp: "              + configData.ovp +
             ", sdk: "              + configData.sdk +
-            ", useSSL: "           + this._appMeasurement.ssl +
-            ", channel:"           + configData.channel +
+            ", useSSL: "           + appMeasurementInfo.ssl +
             ", quietMode:  "       + configData.quietMode +
+            ", channel:"           + configData.channel +
             ", debugLogging: "     + configData.debugLogging +
             "}");
 
         // Let everybody know about the update of the configuration settings.
         var eventData = {};
-        eventData[EventKeyName.ACCOUNT]             = this._appMeasurement.account;
-        eventData[EventKeyName.SC_TRACKING_SERVER]  = this._appMeasurement.trackingServer;
+        eventData[EventKeyName.ACCOUNT]             = appMeasurementInfo.account;
+        eventData[EventKeyName.SC_TRACKING_SERVER]  = appMeasurementInfo.trackingServer;
         eventData[EventKeyName.TRACKING_SERVER]     = configData.trackingServer;
         eventData[EventKeyName.CHECK_STATUS_SERVER] = checkStatusServer;
         eventData[EventKeyName.JOB_ID]              = configData.jobId;
         eventData[EventKeyName.PUBLISHER]           = configData.publisher;
         eventData[EventKeyName.OVP]                 = ovp;
         eventData[EventKeyName.SDK]                 = sdk;
-        eventData[EventKeyName.USE_SSL]             = this._appMeasurement.ssl;
+        eventData[EventKeyName.USE_SSL]             = appMeasurementInfo.ssl;
         eventData[EventKeyName.CHANNEL]             = configData.channel;
         eventData[EventKeyName.QUIET_MODE]          = configData.quietMode;
 
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_CONFIG, eventData));
+        this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_CONFIG, eventData));
 
         // We are now configured.
         this._isConfigured = true;
     };
 
-    Heartbeat.prototype.open = function(name, length, playerName, streamType) {
-        this.log("#open(" +
-              "name=" + name +
-            ", length=" + length +
-            ", playerName=" + playerName +
+    Heartbeat.prototype.destroy = function() {
+        if (this._isDestroyed) return;
+
+        this._isDestroyed = true;
+        this.log("#destroy()");
+
+        // Cancel all async operations.
+        this._commCenter.workQueue.cancelAllOperations();
+
+        // Detach from the notification center.
+        this._commCenter.notificationCenter.removeAllListeners(this);
+
+        // Tear-down all sub-modules.
+        this._network.destroy();
+        this._context.destroy();
+        this._clock.destroy();
+    };
+
+    Heartbeat.prototype.videoLoad = function(videoInfo) {
+        this.log("#videoLoad(" +
+            "playerName=" + videoInfo.playerName +
+            ", id=" + videoInfo.id +
+            ", name=" + videoInfo.name +
+            ", length=" + videoInfo.length +
+            ", playhead=" + videoInfo.playhead +
+            ", streamType=" + videoInfo.streamType +
             ")");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        // Issue an API_OPEN_MAIN event.
-        var eventData = {};
-        eventData[EventKeyName.VISITOR_ID] = this._appMeasurement.visitorID;
-        eventData[EventKeyName.ANALYTICS_VISITOR_ID] = this._appMeasurement.analyticsVisitorID;
-        eventData[EventKeyName.MARKETING_CLOUD_VISITOR_ID] = this._appMeasurement.marketingCloudVisitorID;
-        eventData[EventKeyName.NAME] = name;
-        eventData[EventKeyName.LENGTH] = length;
-        eventData[EventKeyName.STREAM_TYPE] = streamType;
-        eventData[EventKeyName.PLAYER_NAME] = playerName;
+        var operation = new Operation(function() {
+            // Issue an API_VIDEO_LOAD event.
+            var eventData = {};
+            eventData[EventKeyName.ANALYTICS_VISITOR_ID] = this._visitorApiInfo.analyticsVisitorID;
+            eventData[EventKeyName.MARKETING_CLOUD_VISITOR_ID] = this._visitorApiInfo.marketingCloudVisitorID;
+            eventData[EventKeyName.VISITOR_ID] = this._visitorApiInfo.visitorID;
+            eventData[EventKeyName.VIDEO_INFO] = videoInfo;
 
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_OPEN_MAIN, eventData));
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_VIDEO_LOAD, eventData));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.openAd = function(name, length, playerName, parentName, parentPod, parentPodPosition, cpm) {
-        this.log("#openAd(" +
-              "name=" + name +
-            ", length=" + length +
-            ", playerName=" + playerName +
-            ", parentName=" + parentName +
-            ", parentPod=" + parentPod +
-            ", parentPodPosition=" + parentPodPosition +
-            ", cpm=" + cpm +
-            ")");
+    Heartbeat.prototype.videoUnload = function() {
+        this.log("#videounload()");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        // Issue an API_OPEN_AD event.
-        var eventData = {};
-        eventData[EventKeyName.NAME] = name;
-        eventData[EventKeyName.LENGTH] = length;
-        eventData[EventKeyName.PLAYER_NAME] = playerName;
-        eventData[EventKeyName.PARENT_NAME] = parentName;
-        eventData[EventKeyName.PARENT_POD] = parentPod;
-        eventData[EventKeyName.PARENT_POD_POSITION] = parentPodPosition;
-        eventData[EventKeyName.CPM] = cpm;
+        var operation = new Operation(function() {
+            // Issue an API_VIDEO_UNLOAD event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_VIDEO_UNLOAD));
+        }, this);
 
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_OPEN_AD, eventData));
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.close = function(name) {
-        this.log("#close(name=" + name + ")");
+    Heartbeat.prototype.videoStart = function() {
+        this.log("#videoStart()");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        // Issue an API_CLOSE event.
-        var eventData = {};
-        eventData[EventKeyName.NAME] = name;
+        var operation = new Operation(function() {
+            // Issue an API_VIDEO_START event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_VIDEO_START));
+        }, this);
 
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_CLOSE, eventData));
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.play = function(name, offset, segmentNum, segment, segmentLength) {
-        this.log("#play(" +
-              "name=" + name +
-            ", offset=" + offset +
-            ", segmentNum=" + segmentNum +
-            ", segment=" + segment +
-            ", segmentLength=" + segmentLength +
-            ")");
+    Heartbeat.prototype.videoComplete = function () {
+        this.log("#videoComplete()");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        var eventData;
-        eventData = {};
-        eventData[EventKeyName.VISITOR_ID] = this._appMeasurement.visitorID;
-        eventData[EventKeyName.ANALYTICS_VISITOR_ID] = this._appMeasurement.analyticsVisitorID;
-        eventData[EventKeyName.MARKETING_CLOUD_VISITOR_ID] = this._appMeasurement.marketingCloudVisitorID;
-        eventData[EventKeyName.NAME] = name;
-        eventData[EventKeyName.OFFSET] = offset;
+        var operation = new Operation(function() {
+            // Issue an API_VIDEO_COMPLETE event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_VIDEO_COMPLETE));
+        }, this);
 
-        // Issue a CLOCK_MONITOR_ENABLE event (start the monitor internal timer).
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent["CLOCK_MONITOR_ENABLE"], eventData));
-
-        // Issue an API_PLAY event.
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_PLAY, eventData));
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.stop = function(name, offset) {
-        this.log("#stop(" +
-              "name=" + name +
-            ", offset=" + offset +
-            ")");
+    Heartbeat.prototype.play = function() {
+        this.log("#play()");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        var eventData;
-        eventData = {};
-        eventData[EventKeyName.NAME] = name;
-        eventData[EventKeyName.OFFSET] = offset;
+        var operation = new Operation(function() {
+            // Issue an API_PLAY event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_PLAY));
+        }, this);
 
-        // Issue a CLOCK_MONITOR_DISABLE event (stop the monitor internal timer).
-        NotificationCenter().dispatchEvent(new ClockEvent(ClockEvent.CLOCK_MONITOR_DISABLE, eventData));
-
-        // Issue an API_STOP event.
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_STOP, eventData));
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.click = function(name, offset) {
-        this.log("#click(" +
-              "name=" + name +
-            ", offset=" + offset +
-            ")");
+    Heartbeat.prototype.pause = function() {
+        this.log("#pause()");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        // Issue an API_CLICK event.
-        var eventData = {};
-        eventData[EventKeyName.NAME] = name;
-        eventData[EventKeyName.OFFSET] = offset;
+        var operation = new Operation(function() {
+            // Issue an API_PAUSE event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_PAUSE));
+        }, this);
 
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_CLICK, eventData));
-    };
-
-    Heartbeat.prototype.complete = function(name, offset) {
-        this.log("#complete(" +
-              "name=" + name +
-            ", offset=" + offset +
-            ")");
-
-        // Fast exit.
-        if (!this._canTrack()) return;
-
-        // Issue an API_COMPLETE event.
-        var eventData = {};
-        eventData[EventKeyName.NAME] = name;
-        eventData[EventKeyName.OFFSET] = offset;
-
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_COMPLETE, eventData));
-    };
-
-    Heartbeat.prototype.trackError = function(source, errorId, offset) {
-        this.log("#trackError(" +
-              "source=" + source +
-            ", errorId=" + errorId +
-            ", offset=" + offset +
-            ")");
-
-        // Fast exit.
-        if (!this._canTrack()) return;
-
-        // Issue an API_TRACK_ERROR event.
-        var eventData = {};
-        eventData[EventKeyName.SOURCE] = source;
-        eventData[EventKeyName.ERROR_ID] = errorId;
-        eventData[EventKeyName.OFFSET] = offset;
-
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_TRACK_ERROR, eventData));
-    };
-
-    Heartbeat.prototype.updateQoSInfo = function(bitrate, fps, droppedFrames) {
-        this.log("#updateQoSInfo(" +
-              "bitrate=" + bitrate +
-            ", fps=" + fps +
-            ", droppedFrames=" + droppedFrames +
-            ")");
-
-        // Fast exit.
-        if (!this._canTrack()) return;
-
-        // Issue an API_QOS_INFO event.
-        var eventData = {};
-        eventData[EventKeyName.BITRATE] = bitrate;
-        eventData[EventKeyName.FPS] = fps;
-        eventData[EventKeyName.DROPPED_FRAMES] = droppedFrames;
-
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_QOS_INFO, eventData));
-    };
-
-    Heartbeat.prototype.bitrateChange = function(bitrate) {
-        this.log("#bitrateChange(bitrate=" + bitrate + ")");
-
-        // Fast exit.
-        if (!this._canTrack()) return;
-
-        // Issue an API_BITRATE_CHANGE event.
-        var eventData = {};
-        eventData[EventKeyName.BITRATE] = bitrate;
-
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_BITRATE_CHANGE, eventData));
+        this._commCenter.workQueue.addOperation(operation);
     };
 
     Heartbeat.prototype.bufferStart = function() {
@@ -4120,343 +5015,228 @@ heartbeat.clock || (heartbeat.clock = {});
         // Fast exit.
         if (!this._canTrack()) return;
 
-        // Issue an API_BUFFER_START event.
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_BUFFER_START));
+        var operation = new Operation(function() {
+            // Issue an API_BUFFER_START event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_BUFFER_START));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.adBreakStart = function(offset) {
-        this.log("#adBreakStart(offset=" + offset + ")");
+    Heartbeat.prototype.seekStart = function() {
+        this.log("#seekStart()");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        // Issue an API_POD_OFFSET event.
-        var eventData = {};
-        eventData[EventKeyName.PARENT_POD_OFFSET] = offset;
+        var operation = new Operation(function() {
+            // Issue an API_SEEK_START event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_SEEK_START));
+        }, this);
 
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_POD_OFFSET, eventData));
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.adBreakEnd = function() {
-        this.log("#adBreakEnd()");
+    Heartbeat.prototype.seekComplete = function() {
+        this.log("#seekComplete()");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        // Issue an API_POD_OFFSET event.
-        var eventData = {};
-        eventData[EventKeyName.PARENT_POD_OFFSET] = null;
+        var operation = new Operation(function() {
+            // Issue an API_SEEK_COMPLETE event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_SEEK_COMPLETE));
+        }, this);
 
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_POD_OFFSET, eventData));
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.sessionComplete = function() {
-        this.log("#sessionComplete()");
+    Heartbeat.prototype.adStart = function(adInfo, adBreakInfo) {
+        this.log("#adStart(" +
+            "id=" + adInfo.id +
+            ", name=" + adInfo.name +
+            ", length=" + adInfo.length +
+            ", playhead=" + adInfo.playhead +
+            ", position=" + adInfo.position +
+            ", cpm=" + adInfo.cpm +
+            ", podPlayerName=" + adBreakInfo.playerName +
+            ", podName=" + adBreakInfo.name +
+            ", podIndex=" + adBreakInfo.position +
+            ", podOffset=" + adBreakInfo.startTime +
+            ")");
 
         // Fast exit.
         if (!this._canTrack()) return;
 
-        NotificationCenter().dispatchEvent(new ApiEvent(ApiEvent.API_SESSION_COMPLETE));
+        var operation = new Operation(function() {
+            // Issue an API_AD_START event.
+            var eventData = {};
+            eventData[EventKeyName.AD_INFO] = adInfo;
+            eventData[EventKeyName.AD_BREAK_INFO] = adBreakInfo;
+
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_AD_START, eventData));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
     };
 
-    Heartbeat.prototype.destroy = function() {
-        this.log("#destroy()");
+    Heartbeat.prototype.adComplete = function() {
+        this.log("#adComplete()");
 
-        // Tear-down all sub-modules.
-        this._context.destroy();
-        this._clock.destroy();
-        this._network.destroy();
+        // Fast exit.
+        if (!this._canTrack()) return;
+
+        var operation = new Operation(function() {
+            // Issue an API_AD_COMPLETE event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_AD_COMPLETE));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
+    };
+
+    Heartbeat.prototype.chapterStart = function(chapterInfo) {
+        this.log("#chapterStart()");
+
+        // Fast exit.
+        if (!this._canTrack()) return;
+
+        var operation = new Operation(function() {
+            // Issue an API_CHAPTER_START event.
+            var eventData = {};
+            eventData[EventKeyName.CHAPTER_INFO] = chapterInfo;
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_CHAPTER_START, eventData));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
+    };
+
+    Heartbeat.prototype.chapterComplete = function() {
+        this.log("#chapterComplete()");
+
+        // Fast exit.
+        if (!this._canTrack()) return;
+
+        var operation = new Operation(function() {
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_CHAPTER_COMPLETE));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
+    };
+
+    Heartbeat.prototype.bitrateChange = function(bitrate) {
+        this.log("#bitrateChange()");
+
+        // Fast exit.
+        if (!this._canTrack()) return;
+
+        var operation = new Operation(function() {
+            // Issue an API_BITRATE_CHANGE event.
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_BITRATE_CHANGE));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
+    };
+
+    Heartbeat.prototype.trackError = function(source, errorId) {
+        this.log("#trackError(" +
+              "source=" + source +
+            ", errorId=" + errorId +
+            ")");
+
+        // Fast exit.
+        if (!this._canTrack()) return;
+
+        var operation = new Operation(function() {
+            // Issue an API_TRACK_ERROR event.
+            var eventData = {};
+            eventData[EventKeyName.SOURCE] = source;
+            eventData[EventKeyName.ERROR_ID] = errorId;
+
+            this._commCenter.notificationCenter.dispatchEvent(new ApiEvent(ApiEvent.API_TRACK_ERROR, eventData));
+        }, this);
+
+        this._commCenter.workQueue.addOperation(operation);
+    };
+
+    //
+    //-----------------[ Notification handlers ]-----------------------
+    //
+    Heartbeat.prototype._onHeartbeatError = function(e) {
+        this._errorOperation.params = [e.data[EventKeyName.MESSAGE], e.data[EventKeyName.DETAILS]];
+        this._errorOperation.run();
+    };
+
+    //
+    //-----------------[ Private helper methods ]-----------------------
+    //
+    Heartbeat.prototype._bootstrap = function() {
+        // Instantiate all sub-modules.
+        this._initSubmodules();
+
+        // We register as observers to various heartbeat events.
+        this._commCenter.notificationCenter.addEventListener(ErrorEvent.ERROR, this._onHeartbeatError, this);
+    };
+
+    Heartbeat.prototype._initSubmodules = function() {
+        this._context = new Context(this._commCenter, this._playerDelegate);
+        this._clock = new Clock(this._commCenter);
+        this._network = new Network(this._commCenter, new QuerystringSerializer(), this._playerDelegate);
+    };
+
+    Heartbeat.prototype._canTrack = function() {
+        var analyticsVisitorID = this._visitorApiInfo.analyticsVisitorID;
+        var marketingCloudVisitorID = this._visitorApiInfo.marketingCloudVisitorID;
+
+        var result = (this._isConfigured &&
+                     (
+                         analyticsVisitorID ||
+                         marketingCloudVisitorID
+                     ));
+
+        if (!result) {
+            this.warn("_canTrack() > Unable to track!" +
+                " Is configured: " + this._isConfigured +
+                ", analyticsVisitorID: " + analyticsVisitorID +
+                ", marketingCloudVisitorID: " + marketingCloudVisitorID);
+        }
+
+        return result;
     };
 
     // Export symbols.
     heartbeat.Heartbeat = Heartbeat;
 })(core, heartbeat);
 
-(function(va) {
+(function(heartbeat) {
     'use strict';
 
-    /**
-     * Container for ad-break related information.
-     *
-     * @constructor
-     */
-    function AdBreakInfo() {
-        this.playerName = null;
-        this.name = null;
-        this.position = null;
+    function VisitorApiInfo() {
+        this.analyticsVisitorID = null;
+        this.marketingCloudVisitorID = null;
+        this.visitorID = null;
     }
 
     // Export symbols.
-    va.AdBreakInfo = AdBreakInfo;
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    /**
-     * Container for ad related information.
-     *
-     * @constructor
-     */
-    function AdInfo() {
-        this.id = null;
-        this.name = null;
-        this.length = null;
-        this.playhead = null;
-        this.position = null;
-        this.cpm = null;
-    }
-
-    // Export symbols.
-    va.AdInfo = AdInfo;
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    // Export symbols.
-    va.ASSET_TYPE_VOD = "vod";
-    va.ASSET_TYPE_LINEAR = "linear";
-    va.ASSET_TYPE_LIVE = "live";
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    /**
-     * Information about chapters.
-     *
-     * @constructor
-     */
-    function ChapterInfo() {
-        this.name = null;
-        this.length = null;
-        this.position = null;
-    }
-
-    // Export symbols.
-    va.ChapterInfo = ChapterInfo;
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    var DEFAULT_UNKNOWN = "unknown";
-    var DEFAULT_EMPTY_STRING = "";
-
-    /**
-     * Configuration data for video heartbeat.
-     *
-     * @constructor
-     */
-    function ConfigData(trackingServer, jobId, publisher) {
-        this.trackingServer = trackingServer;
-        this.jobId = jobId;
-        this.publisher = publisher;
-
-        this.channel = DEFAULT_EMPTY_STRING;
-
-        this.ovp = DEFAULT_UNKNOWN;
-        this.sdk = DEFAULT_UNKNOWN;
-
-        this.debugLogging = false;
-
-        this.quietMode = false;
-
-        this.__primetime = false;
-        this.__psdkVersion = null;
-    }
-
-    // Export symbols.
-    va.ConfigData = ConfigData;
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    /**
-     * Container for error related information.
-     *
-     * @constructor
-     */
-    function ErrorInfo(message, details) {
-        this.message = message;
-        this.details = details;
-    }
-
-    // Export symbols.
-    va.ErrorInfo = ErrorInfo;
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    /**
-     * Definition of Adobe's video-tracking DSL.
-     *
-     * @interface
-     */
-    function HeartbeatProtocol() {}
-
-    // -----------------[ Configuration & life-cycle management ]---------------------
-    HeartbeatProtocol.prototype.configure = function(configData) {};
-
-    HeartbeatProtocol.prototype.destroy = function() {};
-
-    // -----------------[ Video playback tracking ]---------------------
-    HeartbeatProtocol.prototype.trackVideoLoad = function() {};
-
-    HeartbeatProtocol.prototype.trackVideoUnload = function() {};
-
-    HeartbeatProtocol.prototype.trackPlay = function() {};
-
-    HeartbeatProtocol.prototype.trackPause = function() {};
-
-    HeartbeatProtocol.prototype.trackBufferStart = function() {};
-
-    HeartbeatProtocol.prototype.trackBufferComplete = function() {};
-
-    HeartbeatProtocol.prototype.trackSeekStart = function() {};
-
-    HeartbeatProtocol.prototype.trackSeekComplete = function() {};
-
-    HeartbeatProtocol.prototype.trackComplete = function() {};
-
-    // -----------------[ Chapter tracking ]---------------------
-    HeartbeatProtocol.prototype.trackChapterStart = function() {};
-
-    HeartbeatProtocol.prototype.trackChapterComplete = function() {};
-
-    // -----------------[ Ad tracking ]---------------------
-    HeartbeatProtocol.prototype.trackAdBreakStart = function() {};
-
-    HeartbeatProtocol.prototype.trackAdBreakComplete = function() {};
-
-    HeartbeatProtocol.prototype.trackAdStart = function() {};
-
-    HeartbeatProtocol.prototype.trackAdComplete = function() {};
-
-    // -----------------[ QoS tracking ]---------------------
-    HeartbeatProtocol.prototype.trackBitrateChange = function(bitrate) {};
-
-
-    // -----------------[ Error tracking ]---------------------
-    HeartbeatProtocol.prototype.trackVideoPlayerError = function(errorId) {};
-
-    HeartbeatProtocol.prototype.trackApplicationError = function(errorId) {};
-
-    // Export symbols.
-    va.HeartbeatProtocol = HeartbeatProtocol;
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    /**
-     * Delegate object for player-specific computations.
-     *
-     * NOTE: this is an abstract base class designed to be extended.
-     *       Not to be instantiated directly.
-     */
-    function PlayerDelegate() {}
-
-    PlayerDelegate.prototype.getVideoInfo = function() {
-        throw new Error("Implementation error: Method must be overridden.");
-    };
-
-    PlayerDelegate.prototype.getAdBreakInfo = function() {
-        throw new Error("Implementation error: Method must be overridden.");
-    };
-
-    PlayerDelegate.prototype.getAdInfo = function() {
-        throw new Error("Implementation error: Method must be overridden.");
-    };
-
-    PlayerDelegate.prototype.getChapterInfo = function() {
-        throw new Error("Implementation error: Method must be overridden.");
-    };
-
-    PlayerDelegate.prototype.getQoSInfo = function() {
-        throw new Error("Implementation error: Method must be overridden.");
-    };
-
-    PlayerDelegate.prototype.onError = function(errorInfo) {
-        throw new Error("Implementation error: Method must be overridden.");
-    };
-
-    // Export symbols.
-    va.PlayerDelegate = PlayerDelegate;
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    /**
-     * Container for QoS related information.
-     *
-     * @constructor
-     */
-    function QoSInfo() {
-        this.bitrate = null;
-        this.fps = null;
-        this.droppedFrames = null;
-    }
-
-    // Export symbols.
-    va.QoSInfo = QoSInfo;
-})(va);
-
-
-(function(va) {
-    'use strict';
-
-    /**
-     * Container for video related information.
-     *
-     * @constructor
-     */
-    function VideoInfo() {
-        this.playerName = null;
-        this.id = null;
-        this.name = null;
-        this.length = null;
-        this.playhead = null;
-        this.streamType = null;
-    }
-
-    // Export symbols.
-    va.VideoInfo = VideoInfo;
-})(va);
-
-
+    heartbeat.VisitorApiInfo = VisitorApiInfo;
+})(heartbeat);
 (function(core, va, heartbeat, utils) {
     'use strict';
 
     var extend = core.extend;
     var logger = core.logger;
     var mixin = core.mixin;
+    var WorkQueue = core.WorkQueue;
+    var Operation = core.Operation;
+    var InputDataSanitizer = core.InputDataSanitizer;
     var HeartbeatProtocol = va.HeartbeatProtocol;
-    var VideoInfo = va.VideoInfo;
-    var AdBreakInfo = va.AdBreakInfo;
-    var AdInfo = va.AdInfo;
-    var QoSInfo = va.QoSInfo;
     var ErrorInfo = va.ErrorInfo;
+    var AppMeasurementInfo = heartbeat.AppMeasurementInfo;
+    var VisitorApiInfo = heartbeat.VisitorApiInfo;
     var Heartbeat = heartbeat.Heartbeat;
     var MD5 = utils.md5;
 
     var ERROR_SOURCE_APPLICATION = "application";
     var ERROR_SOURCE_PLAYER = "player";
-
-    var QOS_INFO_POLL_INTERVAL = 1000;
-    var APP_MEASUREMENT_POLL_INTERVAL = 300;
 
     var SC_CONTENT_TYPE_VIDEO = "video";
     var SC_CONTENT_TYPE_AD  = "videoAd";
@@ -4477,18 +5257,40 @@ heartbeat.clock || (heartbeat.clock = {});
     function VideoHeartbeat(appMeasurement, playerDelegate) {
         VideoHeartbeat.__super__.constructor.call(this);
 
+        this._configData = null;
+        this._isTrackingSessionActive = false;
+        this._isPaused = false;
+        this._isSeeking = false;
+        this._isBuffering = false;
+        this._errorInfo = null;
+        this._hbWorkQueue = null;
+        this._scWorkQueue = null;
+        this._handled = false;
+
         if (!appMeasurement) {
             throw new Error("The reference to the AppMeasurement object cannot be NULL.");
         }
         this._appMeasurement = appMeasurement;
 
+        this._appMeasurementInfo = new AppMeasurementInfo();
+        this._appMeasurementInfo.account = this._appMeasurement.account;
+        this._appMeasurementInfo.ssl = this._appMeasurement.ssl;
+        this._appMeasurementInfo.trackingServer = (this._appMeasurement.ssl && this._appMeasurement.trackingServerSecure)
+                                                ?  this._appMeasurement.trackingServerSecure
+                                                :  this._appMeasurement.trackingServer;
+
+
+        this._visitorApiInfo = new VisitorApiInfo();
+        this._visitorApiInfo.visitorID = this._appMeasurement.visitorID;
 
         if (!playerDelegate) {
             throw new Error("The reference to the PlayerDelegate implementation cannot be NULL.");
         }
         this._playerDelegate = playerDelegate;
 
-        this._heartbeat = new Heartbeat(appMeasurement);
+        var errorOperation = new Operation(this._executeErrorCallback, this);
+        this._inputDataSanitizer = new InputDataSanitizer(errorOperation);
+        this._heartbeat = new Heartbeat(this._playerDelegate, errorOperation);
 
         this._resetInternalState();
 
@@ -4496,425 +5298,11 @@ heartbeat.clock || (heartbeat.clock = {});
 
         // Activate logging for this class.
         this.enableLogging('[video-heartbeat::VideoHeartbeat] > ');
+
+        // Retrieve the Visitor-ID values.
+        this._retrieveVisitorId();
     }
 
-    //
-    //---------------------[ Private helper methods ]-----------------------
-    //
-    VideoHeartbeat.prototype._startViewingSession = function() {
-        // If the viewing session has already started, do nothing.
-        if (this._isViewingSessionActive) {
-            this.warn("#_startViewingSession() > Tracking session already in progress.");
-            return;
-        }
-
-        this.log("#_startViewingSession() > Setting the stream type: " + this._videoInfo.streamType);
-
-        // Open the main video asset.
-        this._openVideo();
-
-        // The viewing session has now started.
-        this._isViewingSessionActive = true;
-    };
-
-    VideoHeartbeat.prototype._openVideo = function() {
-        this.log(this, "#_openVideo(" +
-              "id=" + this._videoInfo.id +
-            ", length=" + this._videoInfo.length +
-            ", streamType=" + this._videoInfo.streamType +
-            ", playerName=" + this._videoInfo.playerName +
-            ")");
-
-        // Make sure that SiteCatalyst start call is fired over the network.
-
-        this._resetAppMeasurementContextData();
-
-        this._appMeasurement.contextData["a.contentType"]      = SC_CONTENT_TYPE_VIDEO;
-
-        this._appMeasurement.contextData["a.media.name"]       = this._videoInfo.id;
-        this._appMeasurement.contextData["a.media.length"]     = Math.floor(this._videoInfo.length);
-        this._appMeasurement.contextData["a.media.playerName"] = this._videoInfo.playerName;
-        this._appMeasurement.contextData["a.media.channel"]    = this._configData.channel;
-        this._appMeasurement.contextData["a.media.view"]       = true;
-
-        this._appMeasurement.pev3 = SC_CONTENT_TYPE_VIDEO;
-        this._appMeasurement.pe   = this._configData.__primetime ? SC_START_PRIMETIME : SC_START;
-
-        this._appMeasurement.track();
-
-        // Do the Heartbeat-specific work.
-        this._enqueueHeartbeatCall(this._heartbeat.open, [this._videoInfo.id, this._videoInfo.length,
-                                                         this._videoInfo.playerName, this._videoInfo.streamType]);
-    };
-
-    VideoHeartbeat.prototype._closeVideo = function() {
-        this.log("#_closeVideo(id=" + this._videoInfo.id + ")");
-
-        // Track the closing of the main content.
-        this._enqueueHeartbeatCall(this._heartbeat.close, [this._videoInfo.id]);
-
-        // The main asset is now closed.
-        this._isVideoClosed = true;
-    };
-
-    VideoHeartbeat.prototype._openAd = function() {
-        this.log("#_openAd(" +
-              "id=" + this._adInfo.id +
-            ", length=" + this._adInfo.length +
-            ", playerName=" + this._adBreakInfo.playerName +
-            ", parentId=" + this._videoInfo.id +
-            ", podId=" + this._adInfo.id +
-            ", parentPodPosition=" + this._adInfo.position +
-            ", cpm=" + this._adInfo.cpm +
-            ")");
-
-        // Make sure that SiteCatalyst start call is fired over the network.
-
-        this._resetAppMeasurementContextData();
-
-        this._appMeasurement.contextData["a.contentType"]          = SC_CONTENT_TYPE_AD;
-
-        this._appMeasurement.contextData["a.media.name"]           = this._videoInfo.id;
-        this._appMeasurement.contextData["a.media.channel"]        = this._configData.channel;
-
-        this._appMeasurement.contextData["a.media.ad.name"]        = this._adInfo.id;
-        this._appMeasurement.contextData["a.media.ad.length"]      = Math.floor(this._adInfo.length);
-        this._appMeasurement.contextData["a.media.ad.playerName"]  = this._adBreakInfo.playerName;
-        this._appMeasurement.contextData["a.media.ad.pod"]         = this._podId;
-        this._appMeasurement.contextData["a.media.ad.podPosition"] = Math.floor(this._adInfo.position);
-        this._appMeasurement.contextData["a.media.ad.CPM"]         = this._adInfo.cpm;
-        this._appMeasurement.contextData["a.media.ad.view"]        = true;
-
-        this._appMeasurement.pev3 = SC_CONTENT_TYPE_AD;
-        this._appMeasurement.pe   = this._configData.__primetime ? SC_START_AD_PRIMETIME : SC_START_AD;
-
-        this._appMeasurement.track();
-
-        // Do now the Heartbeat-specific work.
-        this._enqueueHeartbeatCall(this._heartbeat.openAd, [this._adInfo.id,
-                                                            this._adInfo.length,
-                                                            this._adBreakInfo.playerName,
-                                                            this._videoInfo.id,
-                                                            this._podId,
-                                                            this._adInfo.position,
-                                                            this._adInfo.cpm]);
-
-        // We are now inside an ad.
-        this._inAd = true;
-    };
-
-    VideoHeartbeat.prototype._closeAd = function() {
-        this.log("#_closeAd(id=" + this._adInfo.id + ")");
-
-        // Track the closing of the ad content.
-        this._enqueueHeartbeatCall(this._heartbeat.close, [this._adInfo.id]);
-
-        // We are no longer inside an ad.
-        this._inAd = false;
-        this._adInfo = null;
-    };
-
-    VideoHeartbeat.prototype._startPlayback = function() {
-        // Resume main video or ad playback.
-        (this._inAd) ? this._startAdPlayback()
-                     : this._startVideoPlayback();
-    };
-
-    VideoHeartbeat.prototype._stopPlayback = function() {
-        // Stop main video of or ad playback.
-        (this._inAd) ? this._stopAdPlayback(false)
-                     : this._stopVideoPlayback(false);
-    };
-
-    VideoHeartbeat.prototype._startAdPlayback = function() {
-        if (this._inAd && !this._isAdPlaying && !this._isSeeking) {
-            var playhead = this._getActiveAssetPlayhead();
-
-            this.log("#_startAdPlayback(" +
-                  "id=" + this._adInfo.id +
-                ", playhead=" + playhead +
-                ")");
-
-            // Track the start of the ad content playback.
-            this._enqueueHeartbeatCall(this._heartbeat.play, [this._adInfo.id, playhead]);
-
-            // Ad content is now playing.
-            this._isAdPlaying = true;
-        }
-    };
-
-    VideoHeartbeat.prototype._stopAdPlayback = function(completed) {
-        if (this._inAd && this._isAdPlaying) {
-            if (completed) {
-                // We are at the end of the ad; the playhead is now the ad's length
-                this._adInfo.playhead = this._adInfo.length;
-            } else {
-                this._adInfo = this._playerDelegate.getAdInfo();
-            }
-
-            this.log("#_stopAdPlayback(" +
-                "id=" + this._adInfo.id +
-                ", playhead=" + this._adInfo.playhead +
-                ")");
-
-            // Track the stop of the ad content playback.
-            this._enqueueHeartbeatCall(this._heartbeat.stop, [this._adInfo.id, this._adInfo.playhead]);
-
-            // Ad content is no longer playing.
-            this._isAdPlaying = false;
-        }
-    };
-
-    VideoHeartbeat.prototype._startVideoPlayback = function() {
-        if (!this._isVideoClosed && !this._isVideoPlaying && !this._isSeeking) {
-            var playhead = this._getActiveAssetPlayhead();
-
-            this.log("#_startVideoPlayback(" +
-                  "id=" + this._videoInfo.id +
-                ", playhead=" + playhead +
-                ")");
-
-            // Track the start of the video content playback.
-            this._enqueueHeartbeatCall(this._heartbeat.play, [this._videoInfo.id, this._videoInfo.playhead]);
-
-            // Main video is now playing.
-            this._isVideoPlaying = true;
-        }
-    };
-
-    VideoHeartbeat.prototype._stopVideoPlayback = function(completed) {
-        if (this._isVideoPlaying) {
-            if (completed) {
-                // We are at the end of the content; the playhead is now the content's length
-                this._videoInfo.playhead = this._videoInfo.length;
-            } else {
-                this._videoInfo = this._playerDelegate.getVideoInfo();
-            }
-
-            this.log("#_stopVideoPlayback(" +
-                  "id=" + this._videoInfo.id +
-                ", playhead=" + this._videoInfo.playhead +
-                ")");
-
-            // Track the stop of the video content playback.
-            this._enqueueHeartbeatCall(this._heartbeat.stop, [this._videoInfo.id, this._videoInfo.playhead]);
-
-            // Main video is no longer playing.
-            this._isVideoPlaying = false;
-        }
-    };
-
-    VideoHeartbeat.prototype._closeAllContent = function() {
-        this.log("#_closeAllContent()");
-
-        // Close the active ad (if any).
-        if (this._inAd) {
-            this.trackAdComplete();
-            this.trackAdBreakComplete();
-        }
-
-        // Close the main video.
-        this._closeVideo();
-    };
-
-    VideoHeartbeat.prototype._completeViewingSession = function() {
-        this.log("#_completeViewingSession() : Closing a previously open tracking session.");
-
-        // Stop all playback.
-        this._stopAdPlayback(true);
-        this._stopVideoPlayback(true);
-
-        // Close all active content.
-        this._closeAllContent();
-
-        // Complete the current viewing session.
-        this._enqueueHeartbeatCall(this._heartbeat.sessionComplete);
-
-        // This session is no longer active.
-        this._isViewingSessionActive = false;
-    };
-
-    VideoHeartbeat.prototype._resetInternalState = function() {
-        this.log("#_resetInternalState() : Resetting internal state variables.");
-
-        if (this._pollQoSInfoTimer) clearInterval(this._pollQoSInfoTimer);
-        this._pollQoSInfoTimer = null;
-
-        if (this._pollAppMeasurementTimer) clearInterval(this._pollAppMeasurementTimer);
-        this._pollAppMeasurementTimer = null;
-
-        this._workQueue = [];
-
-        this._errorInfo = null;
-
-        this._videoInfo = null;
-        this._adBreakInfo = null;
-        this._adInfo = null;
-        this._qosInfo = null;
-
-        this._isViewingSessionActive = false;
-        this._isVideoPlaying = false;
-        this._isVideoClosed = false;
-        this._isSeeking = false;
-        this._isPaused = false;
-        this._isAdPlaying = false;
-
-        this._inAd = false;
-        this._inAdBreak = false;
-
-        this._podId = null;
-    };
-
-    VideoHeartbeat.prototype._isVisitorIdAvailable = function() {
-        this.log("#_isVisitorIdAvailable() > VisitorID values: " +
-              "analyticsVisitorID=" + this._appMeasurement.analyticsVisitorID +
-            ", marketingCloudVisitorID=" + this._appMeasurement.analyticsVisitorID +
-            ", visitorID=" + this._appMeasurement.visitorID +
-            ")");
-
-        return  this._appMeasurement.analyticsVisitorID ||
-                this._appMeasurement.marketingCloudVisitorID ||
-                this._appMeasurement.visitorID;
-    };
-
-    VideoHeartbeat.prototype._drainWorkQueue = function() {
-        for (var i = 0; i < this._workQueue.length; i++) {
-            this.log("#_drainWorkQueue() > Dequeuing heartbeat operation.");
-
-            if (this._errorInfo) {
-                this.warn("#_drainWorkQueue() > Unable to track: in ERROR state.");
-                return;
-            }
-
-            var workItem = this._workQueue[i];
-            workItem.fn.apply(this._heartbeat, workItem.args);
-        }
-
-        // Reset the work queue.
-        this._workQueue = [];
-    };
-
-    VideoHeartbeat.prototype._enqueueHeartbeatCall = function(fn, args) {
-        if (this._errorInfo) {
-            this.warn("#_enqueueHeartbeatCall() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        if (!this._isVisitorIdAvailable()) {
-            if (!this._pollAppMeasurementTimer) {
-                var self = this;
-                this._pollAppMeasurementTimer = setInterval(function(){
-                    if (self._isVisitorIdAvailable()) {
-                        self._drainWorkQueue();
-
-                        if (self._pollAppMeasurementTimer) {
-                            clearInterval(self._pollAppMeasurementTimer);
-                        }
-
-                        self._pollAppMeasurementTimer = null;
-                    }
-                }, APP_MEASUREMENT_POLL_INTERVAL);
-            }
-
-            this.log("#_enqueueHeartbeatCall() > Enqueuing heartbeat operation.");
-
-            this._workQueue.push({fn: fn, args: args});
-        } else {
-            fn.apply(this._heartbeat, args);
-        }
-    };
-
-    VideoHeartbeat.prototype._getActiveAssetId = function() {
-        if (this._inAd) {
-            if (this._adInfo) {
-                return this._adInfo.id;
-            }
-
-            // We think we are inside an ad, but we have no ad-info available. Get it.
-            this._adInfo = this._playerDelegate.getAdInfo();
-
-            if (this._adInfo) {
-                return this._adInfo.id;
-            } else {
-                // The player says we are not inside an ad.
-                this._executeErrorCallback("Inconsistent internal state", "Unable to obtain valid ad-info.");
-            }
-        } else {
-            if (this._videoInfo) {
-                return this._videoInfo.id;
-            }
-
-            // We have no video-info available. Get it.
-            this._videoInfo = this._playerDelegate.getVideoInfo();
-
-            if (this._videoInfo) {
-                return this._videoInfo.id;
-            } else {
-                // We are unable to get the video info.
-                this._executeErrorCallback("Inconsistent internal state", "Unable to obtain valid video-info.");
-            }
-        }
-
-        return null;
-    };
-
-    VideoHeartbeat.prototype._getActiveAssetPlayhead = function() {
-        if (this._inAd) {
-            this._adInfo = this._playerDelegate.getAdInfo();
-
-            if (this._adInfo) {
-                return this._adInfo.playhead;
-            } else {
-                // The player says we are not inside an ad.
-                this._executeErrorCallback("Inconsistent internal state", "Unable to obtain valid ad-info.");
-            }
-        } else {
-            this._videoInfo = this._playerDelegate.getVideoInfo();
-
-            if (this._videoInfo) {
-                return this._videoInfo.playhead;
-            } else {
-                // We are unable to get the video info.
-                this._executeErrorCallback("Inconsistent internal state", "Unable to obtain valid video-info.");
-            }
-        }
-
-        return 0;
-    };
-
-    VideoHeartbeat.prototype._executeErrorCallback = function(message, details) {
-        this._errorInfo = new ErrorInfo(message, details);
-        this._playerDelegate.onError(this._errorInfo);
-    };
-
-    VideoHeartbeat.prototype._updateQoSInfo = function() {
-        // Get the latest QoS info.
-        this._qosInfo = this._playerDelegate.getQoSInfo();
-
-        if (this._qosInfo) {
-            this._enqueueHeartbeatCall(this._heartbeat.updateQoSInfo, [this._qosInfo.bitrate, this._qosInfo.fps, this._qosInfo.droppedFrames]);
-        } else {
-            this.log("#_updateQoSInfo() > QoS info unavailable.");
-        }
-    };
-
-    VideoHeartbeat.prototype._resetAppMeasurementContextData = function() {
-        delete this._appMeasurement.contextData["a.contentType"];
-
-        delete this._appMeasurement.contextData["a.media.name"];
-        delete this._appMeasurement.contextData["a.media.length"];
-        delete this._appMeasurement.contextData["a.media.playerName"];
-        delete this._appMeasurement.contextData["a.media.channel"];
-        delete this._appMeasurement.contextData["a.media.view"];
-
-        delete this._appMeasurement.contextData["a.media.ad.name"];
-        delete this._appMeasurement.contextData["a.media.ad.length"];
-        delete this._appMeasurement.contextData["a.media.ad.playerName"];
-        delete this._appMeasurement.contextData["a.media.ad.pod"];
-        delete this._appMeasurement.contextData["a.media.ad.podPosition"];
-        delete this._appMeasurement.contextData["a.media.ad.CPM"];
-        delete this._appMeasurement.contextData["a.media.ad.view"];
-    };
 
     //
     // -------------------[ HeartbeatProtocol interface implementation ]-----------------------
@@ -4943,12 +5331,13 @@ heartbeat.clock || (heartbeat.clock = {});
             ", debugLogging="   + configData.debugLogging +
             "})");
 
-        this._heartbeat.setup(configData);
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.configure", this._heartbeat.configure, [this._appMeasurementInfo, this._visitorApiInfo, configData]);
     };
 
     VideoHeartbeat.prototype.destroy = function() {
+        if (this._isDestroyed) return;
+
         this._heartbeat.destroy();
-        this._resetInternalState();
 
         // From this point on, we no longer accepts API requests.
         this._isDestroyed = true;
@@ -4962,489 +5351,489 @@ heartbeat.clock || (heartbeat.clock = {});
             return;
         }
 
+        // If there is already another tracking session in progress, terminate it.
+        if (this._isTrackingSessionActive) {
+            this._enqueueCall(this._hbWorkQueue, "heartbeat.videoUnload", this._heartbeat.videoUnload);
+        }
+
         // Reset the internal state variables.
         this._resetInternalState();
 
         this.log("#trackVideoLoad() > Querying the player delegate.");
+        var videoInfo = this._playerDelegate.getVideoInfo();
 
-        this._videoInfo = this._playerDelegate.getVideoInfo();
-
-        this.log(this, "#trackVideoLoad(" +
-              "playerName=" + this._videoInfo.playerName +
-            ", videoId=" + this._videoInfo.id +
-            ", name=" + this._videoInfo.name +
-            ", length=" + this._videoInfo.length +
-            ", playhead=" + this._videoInfo.playhead +
-            ", streamType=" + this._videoInfo.streamType +
-            ")");
-
-        if (this._isViewingSessionActive) { // There is already a main video loaded - terminate it.
-            this._completeViewingSession();
+        // Sanitize the input data
+        if (!this._inputDataSanitizer.sanitizeVideoInfo(videoInfo)) {
+            return;
         }
 
-        // Start the viewing session
-        this._startViewingSession();
+        this.log("#trackVideoLoad(" +
+            "playerName=" + videoInfo.playerName +
+            ", videoId=" + videoInfo.id +
+            ", name=" + videoInfo.name +
+            ", length=" + videoInfo.length +
+            ", playhead=" + videoInfo.playhead +
+            ", streamType=" + videoInfo.streamType +
+            ")");
 
-        // Start the QoSInfo timer.
-        var self = this;
-        this._pollQoSInfoTimer = setInterval(function() { self._updateQoSInfo.call(self); }, QOS_INFO_POLL_INTERVAL);
+        // Start the tracking session.
+        this._enqueueCall(this._scWorkQueue, "sc.open", this._executeSiteCatalystOpen, [videoInfo]);
+
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.videoLoad", this._heartbeat.videoLoad, [videoInfo]);
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.videoStart", this._heartbeat.videoStart);
+
+        // The tracking session is now started.
+        this._isTrackingSessionActive = true;
     };
 
     VideoHeartbeat.prototype.trackVideoUnload = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackVideoUnload() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
+        if (!this._checkCall("trackVideoUnload")) return;
 
-            return;
-        }
+        this.log("#trackVideoUnload() > Tracking a VIDEO_UNLOAD event.");
 
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackVideoUnload() > Unable to track: no active tracking session.");
-            return;
-        }
+        // Complete the tracking session.
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.videoUnload", this._heartbeat.videoUnload);
 
-        if (this._errorInfo) {
-            this.warn("#trackVideoUnload() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        this.log("#trackMainVideoClose() > Tracking a VIDEO_UNLOAD event.");
-
-        this._completeViewingSession();
-
-        // Stop the QoSInfo timer.
-        clearInterval(this._pollQoSInfoTimer);
-        this._pollQoSInfoTimer = null;
+        // The tracking session is now complete.
+        this._isTrackingSessionActive = false;
     };
 
     VideoHeartbeat.prototype.trackPlay = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackPlay() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackPlay() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackPlay() > Unable to track: in ERROR state.");
-            return;
-        }
+        if (!this._checkCall("trackPlay")) return;
 
         this.log("#trackPlay() > Tracking a PLAY event.");
 
-        // Resume playback.
-        this._startPlayback();
-
-        // We are no longer in the "paused" state.
+        // This was an explicit PLAY command: we are no longer in the "paused" state.
         this._isPaused = false;
+
+        this._resumePlaybackIfPossible();
     };
 
     VideoHeartbeat.prototype.trackPause = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackPause() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackPause() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackStop() > Unable to track: in ERROR state.");
-            return;
-        }
+        if (!this._checkCall("trackPause")) return;
 
         this.log("#trackPause() > Tracking a PAUSE event.");
 
-        // Stop the playback.
-        this._stopPlayback();
+        // Pause the playback.
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.pause", this._heartbeat.pause);
 
-        // We are now in the "paused" state.
+        // This was an explicit PAUSE command: we are now in the "paused" state.
         this._isPaused = true;
     };
 
     VideoHeartbeat.prototype.trackBufferStart = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackBufferStart() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackBufferStart() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackBufferStart() > Unable to track: in ERROR state.");
-            return;
-        }
+        if (!this._checkCall("trackBufferStart")) return;
 
         this.log("#trackBufferStart() > Tracking a BUFFER_START event.");
 
-        // Stop the playback.
-        this._stopPlayback();
-
         // Track the BUFFER_START event.
-        this._enqueueHeartbeatCall(this._heartbeat.bufferStart);
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.bufferStart", this._heartbeat.bufferStart);
+
+        this._isBuffering = true;
     };
 
     VideoHeartbeat.prototype.trackBufferComplete = function() {
-        if (this._isDestroyed) {
-            this.warn(this, "#trackBufferComplete() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackBufferComplete() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackBufferComplete() > Unable to track: in ERROR state.");
-            return;
-        }
+        if (!this._checkCall("trackBufferComplete")) return;
 
         this.log("#trackBufferComplete() > Tracking a BUFFER_COMPLETE event.");
 
-        // Resume playback.
-        this._startPlayback();
+        this._isBuffering = false;
+
+        this._resumePlaybackIfPossible();
     };
 
     VideoHeartbeat.prototype.trackSeekStart = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackSeekStart() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackSeekStart() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackSeekStart() > Unable to track: in ERROR state.");
-            return;
-        }
+        if (!this._checkCall("trackSeekStart")) return;
 
         this.log("#trackSeekStart() > Tracking a SEEK_START event.");
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.seekStart", this._heartbeat.seekStart);
 
-        // Stop the playback;
-        this._stopPlayback();
+        // Seek operations are async. Pause the playback until the seek completes.
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.pause", this._heartbeat.pause);
+
+        this._isSeeking = true;
     };
 
     VideoHeartbeat.prototype.trackSeekComplete = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackSeekComplete() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
+        if (!this._checkCall("trackSeekComplete")) return;
 
-            return;
-        }
+        this.log("#trackSeekComplete() > Tracking a SEEK_COMPLETE event.");
 
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackSeekComplete() > Unable to track: no active tracking session.");
-            return;
-        }
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.seekComplete", this._heartbeat.seekComplete);
 
-        if (this._errorInfo) {
-            this.warn("#trackSeekComplete() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        // The "seek" operation is now complete.
         this._isSeeking = false;
 
-        // We need to determine whether we are inside an ad or not.
-        //
-        // To this end we re-sync with the video player by querying
-        // the player delegate.
-        this._videoInfo = this._playerDelegate.getVideoInfo();
-        this._adInfo = this._playerDelegate.getAdInfo();
-
-        this.log("#trackSeekComplete() > Tracking a SEEK_COMPLETE event (inAd=" + this._inAd + ").");
-
-        // We only resume playback if the main video asset is open
-        // and we are not in the "paused" state.
-        if (this._isViewingSessionActive && !this._isPaused) {
-            // Resume playback.
-            this._startPlayback();
-        }
+        this._resumePlaybackIfPossible();
     };
 
     VideoHeartbeat.prototype.trackComplete = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackComplete() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
+        if (!this._checkCall("trackComplete")) return;
 
-            return;
-        }
+        this.log("#trackComplete() > Tracking a COMPLETE event.");
 
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackComplete() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackComplete() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        var id = this._videoInfo.id;
-        var playhead = this._videoInfo.length;
-
-        this.log("#trackComplete() > Tracking a COMPLETE event (asset=" + id + ", playhead=" + playhead + ").");
-
-        // Track the COMPLETE event.
-        this._enqueueHeartbeatCall(this._heartbeat.complete, [id, playhead]);
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.videoComplete", this._heartbeat.videoComplete);
     };
 
-    VideoHeartbeat.prototype.trackChapterStart = function() {
-        throw new Error("Not implemented.");
-    };
-
-    VideoHeartbeat.prototype.trackChapterComplete = function() {
-        throw new Error("Not implemented.");
-    };
-
+    /**
+     * @Deprecated
+     */
     VideoHeartbeat.prototype.trackAdBreakStart = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackAdBreakStart() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackAdBreakStart() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackAdBreakStart() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        this.log("#trackAdBreakStart() > Querying the player delegate.");
-        this._videoInfo = this._playerDelegate.getVideoInfo();
-        this._adBreakInfo = this._playerDelegate.getAdBreakInfo();
-
-        this.log("#trackAdBreakStart(" +
-              "playerName=" + this._adBreakInfo.playerName +
-            ", name=" + this._adBreakInfo.name +
-            ", position=" + this._adBreakInfo.position +
-            ")");
-
-        this._podId = MD5(this._videoInfo.id) + "_" + this._adBreakInfo.position;
-
-        // Track the AD_BREAK_START event.
-        this._enqueueHeartbeatCall(this._heartbeat.adBreakStart, [this._videoInfo.playhead]);
-
-        // Stop the playback of the main video.
-        this._stopVideoPlayback(false);
-
-        // We are now inside an ad-break.
-        this._inAdBreak = true;
+        this.warn("#trackAdBreakStart() > Deprecated.");
     };
 
+    /**
+     * @Deprecated
+     */
     VideoHeartbeat.prototype.trackAdBreakComplete = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackAdBreakComplete() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackAdBreakComplete() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackAdBreakComplete() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        this.log("#trackAdBreakComplete() > Tracking an AD_BREAK_COMPLETE event.");
-
-        // Track the AD_BREAK_COMPLETE event.
-        this._enqueueHeartbeatCall(this._heartbeat.adBreakEnd);
-
-        // Resume the playback of the main video if we are not in the "paused" state.
-        if (!this._isPaused) {
-            this._startVideoPlayback();
-        }
-
-        // We are no longer inside an ad-break.
-        this._inAdBreak = true;
-        this._adBreakInfo = null;
+        this.warn("#trackAdBreakComplete() > Deprecated.");
     };
 
     VideoHeartbeat.prototype.trackAdStart = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackAdStart() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackAdStart() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackAdStart() > Unable to track: in ERROR state.");
-            return;
-        }
+        if (!this._checkCall("trackAdStart")) return;
 
         this.log("#trackAdStart() > Querying the player delegate.");
-        this._adInfo = this._playerDelegate.getAdInfo();
+
+        // Query the player delegate to for the video info.
+        var videoInfo = this._playerDelegate.getVideoInfo();
+        // Sanitize the input data
+        if (!this._inputDataSanitizer.sanitizeVideoInfo(videoInfo)) {
+            return;
+        }
+
+        // Query the player delegate for teh ad-break info.
+        var adBreakInfo = this._playerDelegate.getAdBreakInfo();
+        // Sanitize the input data
+        if (!this._inputDataSanitizer.sanitizeAdBreakInfo(adBreakInfo, false)) {
+            return;
+        }
+
+        // The user of this API did not provide the start-time for this pod.
+        // We assume that the start-time is equal with the current playhead
+        // value inside the main content.
+        if (adBreakInfo.startTime == null || isNaN(adBreakInfo.startTime)) {
+            adBreakInfo.startTime = videoInfo.playhead;
+        }
+
+
+        // Query the player delegate to for the ad info.
+        var adInfo = this._playerDelegate.getAdInfo();
+        // Sanitize the input data
+        if (!this._inputDataSanitizer.sanitizeAdInfo(adInfo, false)) {
+            return;
+        }
 
         this.log("#trackAdStart(" +
-              "adId=" + this._adInfo.id +
-            ", name=" + this._adInfo.name +
-            ", length=" + this._adInfo.length +
-            ", playhead=" + this._adInfo.playhead +
-            ", position=" + this._adInfo.position +
-            ", cpm=" + this._adInfo.cpm +
+            "adId=" + adInfo.id +
+            ", name=" + adInfo.name +
+            ", length=" + adInfo.length +
+            ", playhead=" + adInfo.playhead +
+            ", position=" + adInfo.position +
+            ", cpm=" + adInfo.cpm +
             ")");
 
-        this._openAd();
+        // Start tracking the ad content.
+        this._enqueueCall(this._scWorkQueue, "sc.openAd", this._executeSiteCatalystOpenAd, [videoInfo, adBreakInfo, adInfo]);
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.adStart", this._heartbeat.adStart, [adInfo, adBreakInfo]);
 
-        // Start playback.
-        this.trackPlay();
-
-        // The ad is now playing.
-        this._isAdPlaying = true;
+        // Automatically start playback (we implement auto-playback for ad content).
+        this._resumePlaybackIfPossible();
     };
 
     VideoHeartbeat.prototype.trackAdComplete = function() {
-        if (this._isDestroyed) {
-            this.warn("#trackAdComplete() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn('#trackAdComplete() > Call to trackAdComplete() while session not active.');
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackAdComplete() > Unable to track: in ERROR state.");
-            return;
-        }
+        if (!this._checkCall("trackAdComplete")) return;
 
         this.log("#trackAdComplete() > Tracking an AD_COMPLETE event.");
 
-        // Stop the playback for the ad content.
-        this._stopAdPlayback(true);
+        // Track the completion of the ad content.
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.adComplete", this._heartbeat.adComplete);
 
-        // Close the ad content.
-        this._closeAd();
+        // If we are not in "paused" / "seeking" / "buffering" state, we inject a play event
+        this._resumePlaybackIfPossible();
+    };
+
+    VideoHeartbeat.prototype.trackChapterStart = function() {
+        if (!this._checkCall("trackChapterStart")) return;
+
+        this.log("#trackChapterStart() > Querying the player delegate.");
+
+        // Query the player delegate to for the chapter info.
+        var chapterInfo = this._playerDelegate.getChapterInfo();
+        // Sanitize the input data
+        if (!this._inputDataSanitizer.sanitizeChapterInfo(chapterInfo, false)) {
+            return;
+        }
+
+        this.log("#trackChapterStart(" +
+            "name=" + chapterInfo.name +
+            ", length=" + chapterInfo.length +
+            ", position=" + chapterInfo.position +
+            ", startTime=" + chapterInfo.startTime +
+            ")");
+
+        // Track the CHAPTER_START event.
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.chapterStart", this._heartbeat.chapterStart, [chapterInfo]);
+
+        // If we are not in "paused" / "seeking" / "buffering" state, we inject a play event
+        this._resumePlaybackIfPossible();
+    };
+
+    VideoHeartbeat.prototype.trackChapterComplete = function() {
+        if (!this._checkCall("trackChapterComplete")) return;
+
+        this.log("#trackChapterComplete() > Tracking a CHAPTER_COMPLETE event.");
+
+        // Track the completion of the chapter.
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.chapterComplete", this._heartbeat.chapterComplete);
+
+        // If we are not in "paused" / "seeking" / "buffering" state, we inject a play event
+        this._resumePlaybackIfPossible();
     };
 
     VideoHeartbeat.prototype.trackBitrateChange = function(bitrate) {
-        if (this._isDestroyed) {
-            this.warn("#trackBitrateChange() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
-
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackBitrateChange() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackBitrateChange() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        this.log("#trackBitrateChange() > Querying the player delegate.");
-        this._qosInfo = this._playerDelegate.getQoSInfo();
-
-        if (this._qosInfo.bitrate === undefined ||
-            this._qosInfo.bitrate === null ||
-            isNaN(this._qosInfo.bitrate)) {
-            this.warn("#trackBitrateChange() > Bitrate is NaN, null or undefined: doing nothing.");
-            return;
-        }
-
-        this.log("#trackBitrateChange() > Tracking a BITRATE_CHANGE event (bitrate=" + this._qosInfo.bitrate + ").");
+        if (!this._checkCall("trackBitrateChange")) return;
 
         // Track the BITRATE_CHANGE event.
-        this._enqueueHeartbeatCall(this._heartbeat.bitrateChange, [this._qosInfo.bitrate]);
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.bitrateChange", this._heartbeat.bitrateChange);
     };
 
     VideoHeartbeat.prototype.trackVideoPlayerError = function(errorId) {
-        if (this._isDestroyed) {
-            this.warn("#trackVideoPlayerError() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
+        if (!this._checkCall("trackVideoPlayerError")) return;
 
-            return;
-        }
+        this.log("#trackVideoPlayerError(errorId=" + errorId + ").");
 
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackVideoPlayerError() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackVideoPlayerError() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        this.log("#trackVideoPlayerError() > Tracking an PLAYER_ERROR event (" +
-              "errorId=" + errorId +
-            ", playhead=" + this._videoInfo.playhead +
-            ").");
-
-        // Track the error event.
-        this._enqueueHeartbeatCall(this._heartbeat.trackError, [ERROR_SOURCE_PLAYER, errorId, this._videoInfo.playhead]);
+        // Track the ERROR event.
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.trackError", this._heartbeat.trackError, [ERROR_SOURCE_PLAYER, errorId]);
     };
 
     VideoHeartbeat.prototype.trackApplicationError = function(errorId) {
-        if (this._isDestroyed) {
-            this.warn("#trackApplicationError() > Unable to track: instance previously destroyed.");
-            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
+        if (!this._checkCall("trackApplicationError")) return;
 
-            return;
-        }
-
-        if (!this._isViewingSessionActive) {
-            this.warn("#trackApplicationError() > Unable to track: no active tracking session.");
-            return;
-        }
-
-        if (this._errorInfo) {
-            this.warn("#trackApplicationError() > Unable to track: in ERROR state.");
-            return;
-        }
-
-        this.log(this, "#trackApplicationError() > Tracking an APPLICATION_ERROR event (" +
-              "errorId=" + errorId +
-            ", playhead=" + this._videoInfo.playhead +
-            ").");
+        this.log("#trackApplicationError(errorId=" + errorId + ").");
 
         // Track the ERROR event.
-        this._enqueueHeartbeatCall(this._heartbeat.trackError, [ERROR_SOURCE_APPLICATION, errorId, this._videoInfo.playhead]);
+        this._enqueueCall(this._hbWorkQueue, "heartbeat.trackError", this._heartbeat.trackError, [ERROR_SOURCE_APPLICATION, errorId]);
     };
+
+
+    //
+    //---------------------[ Private helper methods ]-----------------------
+    //
+    VideoHeartbeat.prototype._checkCall = function(methodName) {
+        if (this._errorInfo) {
+            this.warn("#" + methodName + "() > Unable to track: in ERROR state. " +
+                "Message: " + this._errorInfo.message +
+                " | Details: " + this._errorInfo.details);
+
+            return false;
+        }
+
+        if (this._isDestroyed) {
+            this.warn("#" + methodName + "() > Unable to track: instance previously destroyed.");
+            this._executeErrorCallback("Illegal operation.", "Instance previously destroyed.");
+
+            return false;
+        }
+
+        if (!this._isTrackingSessionActive) {
+            this.warn("#" + methodName + "() > Unable to track: no active tracking session.");
+            return false;
+        }
+
+        return true;
+    };
+
+    VideoHeartbeat.prototype._resumePlaybackIfPossible = function() {
+        // Only resume playback if we're neither "paused", "seeking" nor "buffering"
+        if (!this._isPaused && !this._isSeeking && !this._isBuffering) {
+            this._enqueueCall(this._hbWorkQueue, "heartbeat.play", this._heartbeat.play);
+        }
+    };
+
+    VideoHeartbeat.prototype._executeSiteCatalystOpen = function(videoInfo) {
+        this.log(this, "#_executeSiteCatalystOpen(" +
+              "id=" + videoInfo.id +
+            ", length=" + videoInfo.length +
+            ", streamType=" + videoInfo.streamType +
+            ", playerName=" + videoInfo.playerName +
+            ")");
+
+        // Make sure that SiteCatalyst start call is fired over the network.
+
+        this._resetAppMeasurementContextData();
+
+        this._appMeasurement.contextData["a.contentType"]           = SC_CONTENT_TYPE_VIDEO;
+
+        this._appMeasurement.contextData["a.media.name"]            = videoInfo.id;
+        this._appMeasurement.contextData["a.media.friendlyName"]    = videoInfo.name || "";
+        this._appMeasurement.contextData["a.media.length"]          = Math.floor(videoInfo.length);
+        this._appMeasurement.contextData["a.media.playerName"]      = videoInfo.playerName;
+        this._appMeasurement.contextData["a.media.channel"]         = this._configData.channel;
+        this._appMeasurement.contextData["a.media.view"]            = true;
+
+        this._appMeasurement.pev3 = SC_CONTENT_TYPE_VIDEO;
+        this._appMeasurement.pe   = this._configData.__primetime ? SC_START_PRIMETIME : SC_START;
+
+        this._appMeasurement.track();
+    };
+
+    VideoHeartbeat.prototype._executeSiteCatalystOpenAd = function(videoInfo, adBreakInfo, adInfo) {
+        var podId = MD5(videoInfo.id) + "_" + adBreakInfo.position;
+
+        this.log("#_executeSiteCatalystOpenAd(" +
+              "id=" + adInfo.id +
+            ", length=" + adInfo.length +
+            ", playerName=" + adBreakInfo.playerName +
+            ", parentId=" + videoInfo.id +
+            ", podId=" + podId +
+            ", parentPodPosition=" + adInfo.position +
+            ", podSecond=" + adBreakInfo.startTime +
+            ", cpm=" + adInfo.cpm +
+            ")");
+
+        this._resetAppMeasurementContextData();
+
+        this._appMeasurement.contextData["a.contentType"]               = SC_CONTENT_TYPE_AD;
+
+        this._appMeasurement.contextData["a.media.name"]                = videoInfo.id;
+        this._appMeasurement.contextData["a.media.channel"]             = this._configData.channel;
+
+        this._appMeasurement.contextData["a.media.ad.name"]             = adInfo.id;
+        this._appMeasurement.contextData["a.media.ad.friendlyName"]     = adInfo.name || "";
+        this._appMeasurement.contextData["a.media.ad.podFriendlyName"]  = adBreakInfo.name || "";
+        this._appMeasurement.contextData["a.media.ad.length"]           = Math.floor(adInfo.length);
+        this._appMeasurement.contextData["a.media.ad.playerName"]       = adBreakInfo.playerName;
+        this._appMeasurement.contextData["a.media.ad.pod"]              = podId;
+        this._appMeasurement.contextData["a.media.ad.podPosition"]      = Math.floor(adInfo.position);
+        this._appMeasurement.contextData["a.media.ad.podSecond"]        = Math.floor(adBreakInfo.startTime);
+        this._appMeasurement.contextData["a.media.ad.CPM"]              = adInfo.cpm;
+        this._appMeasurement.contextData["a.media.ad.view"]             = true;
+
+        this._appMeasurement.pev3 = SC_CONTENT_TYPE_AD;
+        this._appMeasurement.pe   = this._configData.__primetime ? SC_START_AD_PRIMETIME : SC_START_AD;
+
+        this._appMeasurement.track();
+    };
+
+    VideoHeartbeat.prototype._resetInternalState = function() {
+        this.log("#_resetInternalState() : Resetting internal state variables.");
+
+        this._errorInfo = null;
+
+        this._isTrackingSessionActive = false;
+        this._isPaused = false;
+        this._isSeeking = false;
+        this._isBuffering = false;
+    };
+
+    VideoHeartbeat.prototype._isVisitorIdAvailable = function() {
+        this.log("#_isVisitorIdAvailable() > VisitorID values: " +
+            "analyticsVisitorID=" + this._visitorApiInfo.analyticsVisitorID +
+            ", marketingCloudVisitorID=" + this._visitorApiInfo.marketingCloudVisitorID +
+            ")");
+
+        return (this._visitorApiInfo.analyticsVisitorID || this._visitorApiInfo.marketingCloudVisitorID);
+    };
+
+    VideoHeartbeat.prototype._enqueueCall = function(queue, name, fn, args) {
+        if (this._errorInfo) {
+            this.warn("#_enqueueHeartbeatCall() > Unable to track: in ERROR state.");
+            return;
+        }
+
+        args = (typeof args !== "undefined") ? args : null;
+
+        var ctx = queue == this._hbWorkQueue ? this._heartbeat : this;
+
+        if (!this._isVisitorIdAvailable()) {
+            this.log("#_enqueueCall() : " + name);
+            queue.addJob(name, fn, args, ctx);
+        } else {
+            if (!queue.isEmpty()) { // even if we have the visitor ID value(s),
+                                    // if there is pending work, we need to enqueue
+                this.log("#_enqueueCall() : " + name);
+                queue.addJob(name, fn, args, ctx);
+            } else {
+                if (queue == this._hbWorkQueue ) { // we can execute HB jobs immediately and bypass the work queue.
+                    fn.apply(ctx, args);
+                } else { // ...but we always need to defer the SC jobs.
+                    this._scWorkQueue.addJob(name, fn, args, this);
+                    this._scWorkQueue.drain();
+                }
+            }
+        }
+    };
+
+    VideoHeartbeat.prototype._retrieveVisitorId = function() {
+        var self = this;
+
+        this._hbWorkQueue = new WorkQueue();
+        this._scWorkQueue = new WorkQueue(2000);
+        this._handled = false;
+
+        if (this._appMeasurement.visitor && this._appMeasurement.visitor.isAllowed()) {
+            // Get marketing-cloud visitor-id.
+            this._visitorApiInfo.marketingCloudVisitorID = this._appMeasurement.visitor.getMarketingCloudVisitorID(function(id) {
+                self._visitorApiInfo.marketingCloudVisitorID = id;
+                self._onVisitorIdAvailable();
+            });
+
+            if (!this._visitorApiInfo.marketingCloudVisitorID) { // if we have the MID don't bother with the AID.
+                // Get analytics-cloud visitor-id.
+                this._visitorApiInfo.analyticsVisitorID = this._appMeasurement.visitor.getAnalyticsVisitorID(function(id) {
+                    self._visitorApiInfo.analyticsVisitorID = id;
+                    self._onVisitorIdAvailable();
+                });
+            }
+        }
+    };
+
+    VideoHeartbeat.prototype._onVisitorIdAvailable = function() {
+        if (this._handled) return;
+
+        // If we have an error, we just clear the work-queues and exit.
+        if (this._errorInfo) {
+            this.log("#_onVisitorIdAvailable() > Unable to track: in ERROR state.");
+            this._scWorkQueue.clear();
+            this._hbWorkQueue.clear();
+
+            return;
+        }
+
+        // Drain/flush all queues.
+        this._scWorkQueue.drain();
+        this._hbWorkQueue.flush();
+
+        this._handled = true;
+    };
+
+    VideoHeartbeat.prototype._executeErrorCallback = function(message, details) {
+        this.error("#_executeErrorCallback() > " + message + " - " + details);
+        this._errorInfo = new ErrorInfo(message, details);
+        this._playerDelegate.onError(this._errorInfo);
+    };
+
+    VideoHeartbeat.prototype._resetAppMeasurementContextData = function() {
+        delete this._appMeasurement.contextData["a.contentType"];
+
+        delete this._appMeasurement.contextData["a.media.name"];
+        delete this._appMeasurement.contextData["a.media.friendlyName"];
+        delete this._appMeasurement.contextData["a.media.length"];
+        delete this._appMeasurement.contextData["a.media.playerName"];
+        delete this._appMeasurement.contextData["a.media.channel"];
+        delete this._appMeasurement.contextData["a.media.view"];
+
+        delete this._appMeasurement.contextData["a.media.ad.name"];
+        delete this._appMeasurement.contextData["a.media.ad.friendlyName"];
+        delete this._appMeasurement.contextData["a.media.ad.podFriendlyName"];
+        delete this._appMeasurement.contextData["a.media.ad.length"];
+        delete this._appMeasurement.contextData["a.media.ad.playerName"];
+        delete this._appMeasurement.contextData["a.media.ad.pod"];
+        delete this._appMeasurement.contextData["a.media.ad.podPosition"];
+        delete this._appMeasurement.contextData["a.media.ad.podSecond"];
+        delete this._appMeasurement.contextData["a.media.ad.CPM"];
+        delete this._appMeasurement.contextData["a.media.ad.view"];
+    };
+
 
     // Export symbols.
     va.VideoHeartbeat = VideoHeartbeat;

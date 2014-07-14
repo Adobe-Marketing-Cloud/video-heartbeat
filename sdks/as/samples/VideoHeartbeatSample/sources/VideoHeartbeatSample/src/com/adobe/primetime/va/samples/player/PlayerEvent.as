@@ -10,6 +10,10 @@ package com.adobe.primetime.va.samples.player {
         public static const SEEK_COMPLETE:String     = "playerSeekComplete";
         public static const BUFFER_START:String      = "playerBufferStart";
         public static const BUFFER_COMPLETE:String   = "playerBufferComplete";
+        public static const AD_START:String   = "playerAdStart";
+        public static const AD_COMPLETE:String   = "playerAdComplete";
+        public static const CHAPTER_START:String   = "playerChapterStart";
+        public static const CHAPTER_COMPLETE:String   = "playerChapterComplete";
         public static const COMPLETE:String          = "playerComplete";
         
         public function PlayerEvent(type:String) {

@@ -3,7 +3,7 @@
   <component name="FlexBuildConfigurationManager" active="VideoHeartbeatSample">
     <configurations>
       <configuration name="VideoHeartbeatSample" pure-as="true" main-class="com.adobe.primetime.va.samples.VideoHeartbeatSample" output-file="VideoHeartbeatSample.swf" output-folder="$MODULE_DIR$/out/production/VideoHeartbeatSample" use-html-wrapper="true" wrapper-template-path="$MODULE_DIR$/../../sources/VideoHeartbeatSample/html-template">
-        <dependencies target-player="11.9">
+        <dependencies target-player="11.8">
           <entries>
             <entry library-id="173a36b3-9206-4c35-8c36-cf8c9a553837">
               <dependency linkage="Merged" />
