@@ -20,7 +20,7 @@
  */
 
 /*
- * video heartbeats - v1.2.0 - 2014-07-14
+ * video heartbeats - v1.2.0 - 2014-07-17
  * Copyright (c) 2014 Adobe Systems, Inc. All Rights Reserved.
  */
 (function(global) {
@@ -333,8 +333,8 @@ heartbeat.clock || (heartbeat.clock = {});
     var MAJOR = "1";
     var MINOR = "3";
     var MICRO = "1";
-    var PATCH = "0";
-    var BUILD = "33ea934";
+    var PATCH = "1";
+    var BUILD = "845cc96";
     var API_LEVEL = 1;
 
     /**
@@ -2122,7 +2122,7 @@ heartbeat.clock || (heartbeat.clock = {});
         this.longitude = this._createAccessor("_longitude", "longitude", null);
         this.analyticsVisitorId = this._createAccessor("_analyticsVisitorId", "aid", null);
         this.marketingCloudVisitorId = this._createAccessor("_marketingCloudVisitorId", "mid", null);
-        this.visitorId = this._createAccessor("_visitorId", "vid", null);
+        this.visitorId = this._createAccessor("_visitorId", "id", null);
 
         this.device(null);
         this.country(null);
@@ -5263,9 +5263,7 @@ heartbeat.clock || (heartbeat.clock = {});
         this._isSeeking = false;
         this._isBuffering = false;
         this._errorInfo = null;
-        this._hbWorkQueue = null;
-        this._scWorkQueue = null;
-        this._handled = false;
+        this._readyToTrack = false;
 
         if (!appMeasurement) {
             throw new Error("The reference to the AppMeasurement object cannot be NULL.");
@@ -5281,7 +5279,6 @@ heartbeat.clock || (heartbeat.clock = {});
 
 
         this._visitorApiInfo = new VisitorApiInfo();
-        this._visitorApiInfo.visitorID = this._appMeasurement.visitorID;
 
         if (!playerDelegate) {
             throw new Error("The reference to the PlayerDelegate implementation cannot be NULL.");
@@ -5299,8 +5296,12 @@ heartbeat.clock || (heartbeat.clock = {});
         // Activate logging for this class.
         this.enableLogging('[video-heartbeat::VideoHeartbeat] > ');
 
-        // Retrieve the Visitor-ID values.
-        this._retrieveVisitorId();
+        // Setup the Heartbeat and SiteCatalyst work queues
+        this._hbWorkQueue = new WorkQueue();
+        this._scWorkQueue = new WorkQueue(2000);
+
+        // Prepare AppMeasurement for tracking (fetch the Visitor IDs)
+        this._prepareAppMeasurement();
     }
 
 
@@ -5725,15 +5726,6 @@ heartbeat.clock || (heartbeat.clock = {});
         this._isBuffering = false;
     };
 
-    VideoHeartbeat.prototype._isVisitorIdAvailable = function() {
-        this.log("#_isVisitorIdAvailable() > VisitorID values: " +
-            "analyticsVisitorID=" + this._visitorApiInfo.analyticsVisitorID +
-            ", marketingCloudVisitorID=" + this._visitorApiInfo.marketingCloudVisitorID +
-            ")");
-
-        return (this._visitorApiInfo.analyticsVisitorID || this._visitorApiInfo.marketingCloudVisitorID);
-    };
-
     VideoHeartbeat.prototype._enqueueCall = function(queue, name, fn, args) {
         if (this._errorInfo) {
             this.warn("#_enqueueHeartbeatCall() > Unable to track: in ERROR state.");
@@ -5744,7 +5736,7 @@ heartbeat.clock || (heartbeat.clock = {});
 
         var ctx = queue == this._hbWorkQueue ? this._heartbeat : this;
 
-        if (!this._isVisitorIdAvailable()) {
+        if (!this._readyToTrack) {
             this.log("#_enqueueCall() : " + name);
             queue.addJob(name, fn, args, ctx);
         } else {
@@ -5763,47 +5755,33 @@ heartbeat.clock || (heartbeat.clock = {});
         }
     };
 
-    VideoHeartbeat.prototype._retrieveVisitorId = function() {
-        var self = this;
-
-        this._hbWorkQueue = new WorkQueue();
-        this._scWorkQueue = new WorkQueue(2000);
-        this._handled = false;
-
-        if (this._appMeasurement.visitor && this._appMeasurement.visitor.isAllowed()) {
-            // Get marketing-cloud visitor-id.
-            this._visitorApiInfo.marketingCloudVisitorID = this._appMeasurement.visitor.getMarketingCloudVisitorID(function(id) {
-                self._visitorApiInfo.marketingCloudVisitorID = id;
-                self._onVisitorIdAvailable();
-            });
-
-            if (!this._visitorApiInfo.marketingCloudVisitorID) { // if we have the MID don't bother with the AID.
-                // Get analytics-cloud visitor-id.
-                this._visitorApiInfo.analyticsVisitorID = this._appMeasurement.visitor.getAnalyticsVisitorID(function(id) {
-                    self._visitorApiInfo.analyticsVisitorID = id;
-                    self._onVisitorIdAvailable();
-                });
-            }
+    VideoHeartbeat.prototype._prepareAppMeasurement = function() {
+        if (this._appMeasurement.isReadyToTrack()) {
+            this._onAppMeasurementReady();
+        } else {
+            this._appMeasurement.callbackWhenReadyToTrack(this, this._onAppMeasurementReady);
         }
     };
 
-    VideoHeartbeat.prototype._onVisitorIdAvailable = function() {
-        if (this._handled) return;
-
+    VideoHeartbeat.prototype._onAppMeasurementReady = function() {
         // If we have an error, we just clear the work-queues and exit.
         if (this._errorInfo) {
-            this.log("#_onVisitorIdAvailable() > Unable to track: in ERROR state.");
+            this.log("#_onAppMeasurementReady() > Unable to track: in ERROR state.");
             this._scWorkQueue.clear();
             this._hbWorkQueue.clear();
 
             return;
         }
 
+        this._visitorApiInfo.analyticsVisitorID = this._appMeasurement.analyticsVisitorID;
+        this._visitorApiInfo.marketingCloudVisitorID = this._appMeasurement.marketingCloudVisitorID;
+        this._visitorApiInfo.visitorID = this._appMeasurement.visitorID;
+
+        this._readyToTrack = true;
+
         // Drain/flush all queues.
         this._scWorkQueue.drain();
         this._hbWorkQueue.flush();
-
-        this._handled = true;
     };
 
     VideoHeartbeat.prototype._executeErrorCallback = function(message, details) {

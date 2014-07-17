@@ -42,8 +42,8 @@
 - (void)trackChapterComplete;
 
 // -----------------[ Ad tracking ]---------------------
-- (void)trackAdBreakStart;
-- (void)trackAdBreakComplete;
+- (void)trackAdBreakStart __attribute__((deprecated));
+- (void)trackAdBreakComplete __attribute__((deprecated));
 - (void)trackAdStart;
 - (void)trackAdComplete;
 
