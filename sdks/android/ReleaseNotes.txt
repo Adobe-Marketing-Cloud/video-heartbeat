@@ -4,6 +4,24 @@ Release Notes for Android VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+1.3.1.0 (4 September, 2014)
+ 
+New features
+    - the chapter-tracking APIs are now available.
+    - API change: the AdBreakInfo now has an additional property called "startTime". This change is backwards-compatible with API v1.2.
+    - enhanced the PlayerDelegate interface to support graceful termination of the VideoHeartbeat library
+    - deprecated the trackAdBreakStart and trackAdBreakComplete methods.
+    - introduced the "API level" as part of the library's versioning system.
+    - implemented data sanitization for the information obtained via the player delegate interface.
+	- the podSecond parameter was added on the SiteCatalyst ad-start calls.
+ 
+Fixed issues
+    - fixed crashes during tear-down operations.
+    - the library now supports multiple active instances at the same time.
+    - trackComplete() will issue the COMPLETE event on the network while trackVideoUnload() will issue only the UNLOAD event on the network.
+
+------------------------
+
 1.2.0 (17 Apr, 2014)
 
 New features
