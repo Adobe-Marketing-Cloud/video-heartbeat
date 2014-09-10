@@ -1,7 +1,18 @@
+/*
+ * ADOBE SYSTEMS INCORPORATED
+ * Copyright 2014 Adobe Systems Incorporated
+ * All Rights Reserved.
+
+ * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
+ * terms of the Adobe license agreement accompanying it.  If you have received this file from a
+ * source other than Adobe, then your use, modification, or distribution of it requires the prior
+ * written permission of Adobe.
+ */
+
 (function($, ADB, Configuration) {
     'use strict';
 
-    var Event = ADB.core.Event;
+    var Event = ADB.core.radio.Event;
     var extend = ADB.core.extend;
 
     var VideoInfo = ADB.va.VideoInfo;
@@ -86,10 +97,6 @@
     };
 
     VideoPlayer.prototype.getAdInfo = function() {
-        if (this._adInfo) {
-            this._adInfo.playhead = this.getPlayhead() - AD_START_POS;
-        }
-
         return this._adInfo;
     };
 
@@ -115,29 +122,29 @@
             this._clock = setInterval(function() { self._onTick(); }, MONITOR_TIMER_INTERVAL);
         }
 
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.PLAY));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.PLAY));
     };
 
     VideoPlayer.prototype._onPause = function(e) {
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.PAUSE));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.PAUSE));
     };
 
     VideoPlayer.prototype._onSeekStart = function(e) {
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.SEEK_START));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.SEEK_START));
     };
 
     VideoPlayer.prototype._onSeekComplete = function(e) {
         this._doPostSeekComputations();
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.SEEK_COMPLETE));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.SEEK_COMPLETE));
     };
 
     VideoPlayer.prototype._onComplete = function(e) {
         // Complete the second chapter
         this._completeChapter();
 
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.COMPLETE));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.COMPLETE));
 
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.VIDEO_UNLOAD));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.VIDEO_UNLOAD));
 
         clearInterval(this._clock);
 
@@ -154,7 +161,7 @@
 
         this._videoLoaded = true;
 
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.VIDEO_LOAD));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.VIDEO_LOAD));
     };
 
     VideoPlayer.prototype._startChapter1 = function() {
@@ -165,7 +172,7 @@
         this._chapterInfo.position = 1;
         this._chapterInfo.name = "First chapter";
 
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.CHAPTER_START));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.CHAPTER_START));
     };
 
     VideoPlayer.prototype._startChapter2 = function() {
@@ -176,14 +183,14 @@
         this._chapterInfo.position = 2;
         this._chapterInfo.name = "Second chapter";
 
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.CHAPTER_START));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.CHAPTER_START));
     };
 
     VideoPlayer.prototype._completeChapter = function() {
         // Reset the chapter info.
         this._chapterInfo = null;
 
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.CHAPTER_COMPLETE));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.CHAPTER_COMPLETE));
     };
 
     VideoPlayer.prototype._startAd = function() {
@@ -201,15 +208,14 @@
         this._adInfo.length = AD_LENGTH;
         this._adInfo.position = 1;
         this._adInfo.cpm = "49750702676yfh075757";
-        this._adInfo.playhead = this.getPlayhead() - AD_START_POS;
 
         // Start the ad.
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.AD_START));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.AD_START));
     };
 
     VideoPlayer.prototype._completeAd = function() {
         // Complete the ad.
-        DefaultCommCenter().notificationCenter.dispatchEvent(new PlayerEvent(PlayerEvent.AD_COMPLETE));
+        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.AD_COMPLETE));
 
         // Clear the ad and ad-break info.
         this._adInfo = null;

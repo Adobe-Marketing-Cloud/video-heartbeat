@@ -1,3 +1,14 @@
+/*
+ * ADOBE SYSTEMS INCORPORATED
+ * Copyright 2014 Adobe Systems Incorporated
+ * All Rights Reserved.
+
+ * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
+ * terms of the Adobe license agreement accompanying it.  If you have received this file from a
+ * source other than Adobe, then your use, modification, or distribution of it requires the prior
+ * written permission of Adobe.
+ */
+
 jQuery( document ).ready(function($) {
 
     $('#pub-label').hide();
@@ -17,10 +28,10 @@ jQuery( document ).ready(function($) {
     // Create the VideoPlayer.
     var videoPlayer = new VideoPlayer('movie');
 
-    DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.AD_START, onEnterAd);
-    DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.AD_COMPLETE, onExitAd);
-    DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.SEEK_COMPLETE, onSeekComplete);
-    DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.VIDEO_UNLOAD, onExitAd);
+    DefaultCommCenter().on(PlayerEvent.AD_START, onEnterAd);
+    DefaultCommCenter().on(PlayerEvent.AD_COMPLETE, onExitAd);
+    DefaultCommCenter().on(PlayerEvent.SEEK_COMPLETE, onSeekComplete);
+    DefaultCommCenter().on(PlayerEvent.VIDEO_UNLOAD, onExitAd);
 
     // Create the Analytics provider
     var analyticsProvider = new VideoAnalyticsProvider(appMeasurement, videoPlayer);

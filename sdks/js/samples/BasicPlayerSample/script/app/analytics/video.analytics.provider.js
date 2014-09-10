@@ -1,7 +1,19 @@
+/*
+ * ADOBE SYSTEMS INCORPORATED
+ * Copyright 2014 Adobe Systems Incorporated
+ * All Rights Reserved.
+
+ * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
+ * terms of the Adobe license agreement accompanying it.  If you have received this file from a
+ * source other than Adobe, then your use, modification, or distribution of it requires the prior
+ * written permission of Adobe.
+ */
+
 (function(ADB, Configuration, VideoPlayerDelegate) {
     'use strict';
 
     var VideoHeartbeat = ADB.va.VideoHeartbeat;
+    var AdobeAnalyticsPlugin = ADB.va.plugins.AdobeAnalyticsPlugin;
     var ConfigData = ADB.va.ConfigData;
 
     function VideoAnalyticsProvider(appMeasurement, player) {
@@ -15,7 +27,10 @@
         this._player = player;
 
         this._playerDelegate  = new VideoPlayerDelegate(this._player, this);
-        this._videoHeartbeat = new VideoHeartbeat(appMeasurement, this._playerDelegate);
+        this._appMeasurement = appMeasurement;
+
+        var aaPlugin = new AdobeAnalyticsPlugin(appMeasurement);
+        this._videoHeartbeat = new VideoHeartbeat(this._playerDelegate, [aaPlugin]);
 
         this._setupVideoHeartbeat();
         this._installEventListeners();
@@ -27,7 +42,7 @@
             this._videoHeartbeat = null;
             this._playerDelegate = null;
 
-            DefaultCommCenter().notificationCenter.removeAllListeners(this);
+            this._uninstallEventListeners();
             this._player = null;
         }
     };
@@ -125,19 +140,36 @@
 
     VideoAnalyticsProvider.prototype._installEventListeners = function() {
         // We register as observers to various VideoPlayer events.
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.VIDEO_LOAD, this._onLoad, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.VIDEO_UNLOAD, this._onUnload, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.PLAY, this._onPlay, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.PAUSE, this._onPause, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.SEEK_START, this._onSeekStart, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.SEEK_COMPLETE, this._onSeekComplete, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.BUFFER_START, this._onBufferStart, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.BUFFER_COMPLETE, this._onBufferComplete, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.AD_START, this._onAdStart, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.AD_COMPLETE, this._onAdComplete, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.CHAPTER_START, this._onChapterStart, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.CHAPTER_COMPLETE, this._onChapterComplete, this);
-        DefaultCommCenter().notificationCenter.addEventListener(PlayerEvent.COMPLETE, this._onComplete, this);
+        DefaultCommCenter().on(PlayerEvent.VIDEO_LOAD, this._onLoad, this);
+        DefaultCommCenter().on(PlayerEvent.VIDEO_UNLOAD, this._onUnload, this);
+        DefaultCommCenter().on(PlayerEvent.PLAY, this._onPlay, this);
+        DefaultCommCenter().on(PlayerEvent.PAUSE, this._onPause, this);
+        DefaultCommCenter().on(PlayerEvent.SEEK_START, this._onSeekStart, this);
+        DefaultCommCenter().on(PlayerEvent.SEEK_COMPLETE, this._onSeekComplete, this);
+        DefaultCommCenter().on(PlayerEvent.BUFFER_START, this._onBufferStart, this);
+        DefaultCommCenter().on(PlayerEvent.BUFFER_COMPLETE, this._onBufferComplete, this);
+        DefaultCommCenter().on(PlayerEvent.AD_START, this._onAdStart, this);
+        DefaultCommCenter().on(PlayerEvent.AD_COMPLETE, this._onAdComplete, this);
+        DefaultCommCenter().on(PlayerEvent.CHAPTER_START, this._onChapterStart, this);
+        DefaultCommCenter().on(PlayerEvent.CHAPTER_COMPLETE, this._onChapterComplete, this);
+        DefaultCommCenter().on(PlayerEvent.COMPLETE, this._onComplete, this);
+    };
+
+    VideoAnalyticsProvider.prototype._uninstallEventListeners = function() {
+        // We register as observers to various VideoPlayer events.
+        DefaultCommCenter().off(PlayerEvent.VIDEO_LOAD, this._onLoad, this);
+        DefaultCommCenter().off(PlayerEvent.VIDEO_UNLOAD, this._onUnload, this);
+        DefaultCommCenter().off(PlayerEvent.PLAY, this._onPlay, this);
+        DefaultCommCenter().off(PlayerEvent.PAUSE, this._onPause, this);
+        DefaultCommCenter().off(PlayerEvent.SEEK_START, this._onSeekStart, this);
+        DefaultCommCenter().off(PlayerEvent.SEEK_COMPLETE, this._onSeekComplete, this);
+        DefaultCommCenter().off(PlayerEvent.BUFFER_START, this._onBufferStart, this);
+        DefaultCommCenter().off(PlayerEvent.BUFFER_COMPLETE, this._onBufferComplete, this);
+        DefaultCommCenter().off(PlayerEvent.AD_START, this._onAdStart, this);
+        DefaultCommCenter().off(PlayerEvent.AD_COMPLETE, this._onAdComplete, this);
+        DefaultCommCenter().off(PlayerEvent.CHAPTER_START, this._onChapterStart, this);
+        DefaultCommCenter().off(PlayerEvent.CHAPTER_COMPLETE, this._onChapterComplete, this);
+        DefaultCommCenter().off(PlayerEvent.COMPLETE, this._onComplete, this);
     };
 
 
