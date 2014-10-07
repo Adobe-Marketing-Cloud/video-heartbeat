@@ -1,0 +1,26 @@
+{
+    "version" : "1.0",
+    "analytics" : {
+        "rsids" : "test-rsid",
+        "server" : "example.com",
+        "charset" : "UTF-8",
+        "ssl" : false,
+		"offlineEnabled" : false,
+        "lifecycleTimeout" : 300,
+		"referrerTimeout" : 0,
+        "batchLimit" : 0,
+        "privacyDefault" : "optedin",
+		"poi" : []
+    },
+	"target" : {
+		"clientCode" : "amsdk",
+		"timeout" : 5
+	},
+	"audienceManager" : {
+		"server" : ""
+	},
+	"acquisition" : {
+		"server" : "",
+		"appid" : ""
+	}
+}
