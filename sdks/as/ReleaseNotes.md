@@ -4,6 +4,11 @@ Release Notes for Flash/AS3 VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.4.0.1 (23 Oct, 2014)
+
+Fixed issues
+- while in ERROR state, the output HTTP calls issued by the VHL are suppressed.
+
 ## 1.4.0.0 (10 Sep, 2014)
 
 _NOTE_: 1.4.0.0 breaks backward compatibility.
