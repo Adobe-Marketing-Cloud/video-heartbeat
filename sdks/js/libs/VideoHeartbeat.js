@@ -20,7 +20,7 @@
  */
 
 /*
- * video heartbeats - v1.4.0 - 2014-09-10
+ * video heartbeats - v1.4.0 - 2014-10-23
  * Copyright (c) 2014 Adobe Systems, Inc. All Rights Reserved.
  */
 (function(global) {
@@ -319,8 +319,8 @@ heartbeat.clock || (heartbeat.clock = {});
     var MAJOR = "1";
     var MINOR = "4";
     var MICRO = "0";
-    var PATCH = "0";
-    var BUILD = "0707bfa";
+    var PATCH = "1";
+    var BUILD = "6995d33";
     var API_LEVEL = 2;
 
     /**
@@ -5029,7 +5029,6 @@ heartbeat.clock || (heartbeat.clock = {});
     var Channel = core.radio.Channel;
     var CommandQueue = core.radio.CommandQueue;
     var Command = core.radio.Command;
-    var InputDataSanitizer = core.InputDataSanitizer;
 
     var ApiEvent = heartbeat.event.ApiEvent;
     var ClockEvent = heartbeat.event.ClockEvent;
@@ -5099,7 +5098,6 @@ heartbeat.clock || (heartbeat.clock = {});
         var channel = this._channel = this._radio.channel(CHANNEL_HEARTBEAT);
 
         this._workQueue = new CommandQueue(true);
-        this._inputDataSanitizer = new InputDataSanitizer(this._onInvalidInputData, this);
 
         this._clock = null;
         this._context = null;
@@ -5389,9 +5387,14 @@ heartbeat.clock || (heartbeat.clock = {});
         var eventData = {};
         eventData[EventKeyName.SOURCE] = ERROR_SOURCE_HEARTBEAT;
         eventData[EventKeyName.ERROR_ID] = errorInfo.message + "|" + errorInfo.details;
-
         this._channel.trigger(new ApiEvent(ApiEvent.API_TRACK_INTERNAL_ERROR, eventData));
-        
+
+        eventData = {};
+        eventData[EventKeyName.RESET] = true;
+        this._channel.trigger(new ClockEvent(ClockEvent.CLOCK_TRACKING_DISABLE, eventData));
+
+        this._workQueue.cancelAllCommands();
+
         this._trigger(PluginManager.ERROR, e.data);
     };
 
@@ -5796,6 +5799,9 @@ heartbeat.clock || (heartbeat.clock = {});
 
     var PRIMETIME_OVP = "primetime";
 
+    var STATE_PLUGIN = "state";
+    var ERROR_INFO = "error_info";
+
     core.mixin(VideoHeartbeat, core.logger);
 
     /**
@@ -5849,6 +5855,7 @@ heartbeat.clock || (heartbeat.clock = {});
     VideoHeartbeat.prototype.configure = function(configData) {
         if (!configData) {
             this.error("Configuration object cannot be NULL");
+            return;
         }
 
         // Configure the logging sub-system.
@@ -6026,10 +6033,11 @@ heartbeat.clock || (heartbeat.clock = {});
     //---------------------[ Private helper methods ]-----------------------
     //
     VideoHeartbeat.prototype._checkCall = function(methodName) {
-        if (this._errorInfo) {
+        var errorInfo = this._pluginManager.request(STATE_PLUGIN, ERROR_INFO);
+        if (errorInfo) {
             this.warn("#" + methodName + "() > Unable to track: in ERROR state. " +
-                "Message: " + this._errorInfo.message +
-                " | Details: " + this._errorInfo.details);
+                "Message: " + errorInfo.message +
+                " | Details: " + errorInfo.details);
 
             return false;
         }
@@ -6051,8 +6059,6 @@ heartbeat.clock || (heartbeat.clock = {});
 
     VideoHeartbeat.prototype._resetInternalState = function() {
         this.log("#_resetInternalState() : Resetting internal state variables.");
-
-        this._errorInfo = null;
 
         this._isTrackingSessionActive = false;
         this._isPaused = false;

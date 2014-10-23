@@ -20,7 +20,7 @@
  */
 
 /*
- * video heartbeats - v1.4.0 - 2014-09-10
+ * video heartbeats - v1.4.0 - 2014-10-23
  * Copyright (c) 2014 Adobe Systems, Inc. All Rights Reserved.
  */
 (function(global) {
