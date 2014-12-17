@@ -3,7 +3,14 @@ Release Notes for Android VideoHeartbeat SDK
 
 
 Included are notes from the latest major revision to current.
-## 1.4.0.0 (TBD)
+
+## 1.4.1.0 (17 December, 2014)
+
+New features
+- Added support for the Marketing Cloud Visitor ID
+- Added support for the latest SDK for Marketing Cloud Solutions (version 4.3.0)
+
+## 1.4.0.0 (7 October, 2014)
 
 _NOTE_: 1.4.0.0 breaks backward compatibility.
 

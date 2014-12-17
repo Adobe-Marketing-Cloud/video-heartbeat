@@ -1,8 +1,3 @@
-VideoHeartbeat for mobile
+video-heartbeat
 =================================
-
-Mobile versions of the VideoHeartbeat library.
-
-
-
-
+Video heartbeat SDK

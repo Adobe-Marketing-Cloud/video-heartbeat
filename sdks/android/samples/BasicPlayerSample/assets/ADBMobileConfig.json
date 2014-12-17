@@ -1,26 +1,24 @@
 {
     "version" : "1.0",
     "analytics" : {
-        "rsids" : "test-rsid",
+        "rsids" : "sample-account",
         "server" : "example.com",
         "charset" : "UTF-8",
         "ssl" : false,
-		"offlineEnabled" : false,
-        "lifecycleTimeout" : 300,
-		"referrerTimeout" : 0,
-        "batchLimit" : 0,
+        "offlineEnabled" : false,
+        "lifecycleTimeout" : 30,
+        "batchLimit" : 50,
         "privacyDefault" : "optedin",
-		"poi" : []
+        "poi" : []
     },
-	"target" : {
-		"clientCode" : "amsdk",
-		"timeout" : 5
+	"marketingCloud": {
+		"org": "sample-marketing-cloud-org-id"
 	},
-	"audienceManager" : {
-		"server" : ""
-	},
-	"acquisition" : {
-		"server" : "",
-		"appid" : ""
-	}
+    "target" : {
+        "clientCode" : "amsdk",
+        "timeout" : 5
+    },
+    "audienceManager" : {
+        "server" : ""
+    }
 }

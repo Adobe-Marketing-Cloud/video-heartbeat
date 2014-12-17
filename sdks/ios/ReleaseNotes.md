@@ -4,6 +4,12 @@ Release Notes for iOS VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.4.1.0 (17 December, 2014)
+
+New features
+- Added support for the Marketing Cloud Visitor ID
+- Added support for the latest SDK for Marketing Cloud Solutions (version 4.3.0)
+
 ## 1.4.0.0 (17 November, 2014)
 
 _NOTE_: This version introduces a couple of backwards-incompatible changes to the API. 

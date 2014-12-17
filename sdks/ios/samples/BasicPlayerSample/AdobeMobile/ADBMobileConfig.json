@@ -11,6 +11,9 @@
         "privacyDefault" : "optedin",
         "poi" : []
     },
+	"marketingCloud": {
+		"org": "sample-marketing-cloud-org-id"
+	},
     "target" : {
         "clientCode" : "amsdk",
         "timeout" : 5
