@@ -4,6 +4,11 @@ Release Notes for iOS VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.4.1.1 (12 January, 2015)
+
+Fixed issues
+- Removed VideoHeartbeat and AdobeMobile symbols from the AdobeAnalyticsPlugin library (linkage issue)
+
 ## 1.4.1.0 (17 December, 2014)
 
 New features
