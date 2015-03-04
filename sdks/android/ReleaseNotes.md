@@ -4,6 +4,13 @@ Release Notes for Android VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.4.1.1 (6 March, 2015)
+
+Fixed issues
+- Fixed multithreading issues
+- Enhanced input data validation
+
+
 ## 1.4.1.0 (17 December, 2014)
 
 New features
