@@ -21,8 +21,8 @@ package com.adobe.primetime.va.samples {
 
 
     [SWF (width=640, height=450, frameRate=24)]
-    public class VideoHeartbeatSample extends Sprite {
-        public function VideoHeartbeatSample() {
+    public class Main extends Sprite {
+        public function Main() {
             // Setup the VideoPlayer instance.
             _videoPlayer = new VideoPlayer();
             _videoPlayer.width = 640;
@@ -49,10 +49,10 @@ package com.adobe.primetime.va.samples {
             _adLabel.visible = false;
             addChild(_adLabel);
 
-            CommCenter.sharedChannel.on(PlayerEvent.AD_START, onEnterAd, this);
-            CommCenter.sharedChannel.on(PlayerEvent.AD_COMPLETE, onExitAd, this);
-            CommCenter.sharedChannel.on(PlayerEvent.SEEK_COMPLETE, onSeekComplete, this);
-            CommCenter.sharedChannel.on(PlayerEvent.VIDEO_UNLOAD, onExitAd, this);
+            _videoPlayer.addEventListener(PlayerEvent.AD_START, onEnterAd);
+            _videoPlayer.addEventListener(PlayerEvent.AD_COMPLETE, onExitAd);
+            _videoPlayer.addEventListener(PlayerEvent.SEEK_COMPLETE, onSeekComplete);
+            _videoPlayer.addEventListener(PlayerEvent.VIDEO_UNLOAD, onExitAd);
             
             function onEnterAd(event:PlayerEvent):void {
                 _adLabel.visible = true;
