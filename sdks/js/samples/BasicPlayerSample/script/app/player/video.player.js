@@ -9,36 +9,31 @@
  * written permission of Adobe.
  */
 
-(function($, ADB, Configuration) {
+(function() {
     'use strict';
 
-    var Event = ADB.core.radio.Event;
-    var extend = ADB.core.extend;
+    var AssetType = ADB.va.plugins.videoplayer.AssetType;
+    var VideoInfo = ADB.va.plugins.videoplayer.VideoInfo;
+    var AdBreakInfo = ADB.va.plugins.videoplayer.AdBreakInfo;
+    var AdInfo = ADB.va.plugins.videoplayer.AdInfo;
+    var ChapterInfo = ADB.va.plugins.videoplayer.ChapterInfo;
+    var QoSInfo = ADB.va.plugins.videoplayer.QoSInfo;
 
-    var VideoInfo = ADB.va.VideoInfo;
-    var AdBreakInfo = ADB.va.AdBreakInfo;
-    var AdInfo = ADB.va.AdInfo;
-    var ChapterInfo = ADB.va.ChapterInfo;
-
-    extend(PlayerEvent, Event);
-
-    function PlayerEvent(type, data) {
-        PlayerEvent.__super__.constructor.call(this, type, data);
-    }
-
-    PlayerEvent.VIDEO_LOAD = 'video_load';
-    PlayerEvent.VIDEO_UNLOAD = 'video_unload';
-    PlayerEvent.PLAY = 'play';
-    PlayerEvent.PAUSE = 'pause';
-    PlayerEvent.COMPLETE = 'COMPLETE';
-    PlayerEvent.BUFFER_START = 'buffer_start';
-    PlayerEvent.BUFFER_COMPLETE = 'buffer_complete';
-    PlayerEvent.SEEK_START = 'seek_start';
-    PlayerEvent.SEEK_COMPLETE = 'seek_complete';
-    PlayerEvent.AD_START = "ad_start";
-    PlayerEvent.AD_COMPLETE = "ad_complete";
-    PlayerEvent.CHAPTER_START = "chapter_start";
-    PlayerEvent.CHAPTER_COMPLETE = "chapter_complete";
+    var PlayerEvent = {
+        VIDEO_LOAD: 'video_load',
+        VIDEO_UNLOAD: 'video_unload',
+        PLAY: 'play',
+        PAUSE: 'pause',
+        COMPLETE: 'COMPLETE',
+        BUFFER_START: 'buffer_start',
+        BUFFER_COMPLETE: 'buffer_complete',
+        SEEK_START: 'seek_start',
+        SEEK_COMPLETE: 'seek_complete',
+        AD_START: "ad_start",
+        AD_COMPLETE: "ad_complete",
+        CHAPTER_START: "chapter_start",
+        CHAPTER_COMPLETE: "chapter_complete"
+    };
 
 
     // This sample VideoPlayer simulates a mid-roll ad at time 15:
@@ -56,15 +51,23 @@
     var MONITOR_TIMER_INTERVAL = 500;
 
     function VideoPlayer(id) {
-        this.playerName = Configuration.PLAYER.NAME;
-        this.videoId = Configuration.PLAYER.VIDEO_ID;
-        this.streamType = ADB.va.ASSET_TYPE_VOD;
+        this._playerName = Configuration.PLAYER.NAME;
+        this._videoId = Configuration.PLAYER.VIDEO_ID;
+        this._videoName = Configuration.VIDEO_NAME;
+        this._streamType = AssetType.ASSET_TYPE_VOD;
 
         this._videoLoaded = false;
+
         this._videoInfo = null;
         this._adBreakInfo = null;
         this._adInfo = null;
         this._chapterInfo = null;
+
+        // Build a static/hard-coded QoS info here.
+        this._qosInfo = new QoSInfo();
+        this._qosInfo.bitrate = 50000;
+        this._qosInfo.fps = 24;
+        this._qosInfo.droppedFrames = 10;
 
         this._clock = null;
 
@@ -72,17 +75,27 @@
 
         var self = this;
         if (this.$el) {
-            this.$el.on('play', function() { self._onPlay(); });
-            this.$el.on('seeking', function() { self._onSeekStart(); });
-            this.$el.on('seeked', function() { self._onSeekComplete(); });
-            this.$el.on('pause', function() { self._onPause(); });
-            this.$el.on('ended', function() { self._onComplete(); });
+            this.$el.on('play', function() {
+                self._onPlay();
+            });
+            this.$el.on('seeking', function() {
+                self._onSeekStart();
+            });
+            this.$el.on('seeked', function() {
+                self._onSeekComplete();
+            });
+            this.$el.on('pause', function() {
+                self._onPause();
+            });
+            this.$el.on('ended', function() {
+                self._onComplete();
+            });
         }
     }
 
     VideoPlayer.prototype.getVideoInfo = function() {
         if (this._adInfo) { // During ad playback the main video playhead remains
-                            // constant at where it was when the ad started
+            // constant at where it was when the ad started
             this._videoInfo.playhead = AD_START_POS;
         } else {
             var vTime = this.getPlayhead();
@@ -104,64 +117,91 @@
         return this._chapterInfo;
     };
 
-    VideoPlayer.prototype.getDuration = function () {
-        return this.$el.get(0).duration;
+    VideoPlayer.prototype.getQoSInfo = function() {
+        return this._qosInfo;
     };
 
-    VideoPlayer.prototype.getPlayhead = function () {
+    VideoPlayer.prototype.getDuration = function() {
+        return this.$el.get(0).duration - AD_LENGTH;
+    };
+
+    VideoPlayer.prototype.getPlayhead = function() {
         return this.$el.get(0).currentTime;
     };
 
     VideoPlayer.prototype._onPlay = function(e) {
-        if (!this._videoLoaded) {
-            this._startVideo();
-            this._startChapter1();
-
-            // Start the monitor timer.
-            var self = this;
-            this._clock = setInterval(function() { self._onTick(); }, MONITOR_TIMER_INTERVAL);
-        }
-
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.PLAY));
+        this._openVideoIfNecessary();
+        NotificationCenter().dispatchEvent(PlayerEvent.PLAY);
     };
 
     VideoPlayer.prototype._onPause = function(e) {
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.PAUSE));
+        NotificationCenter().dispatchEvent(PlayerEvent.PAUSE);
     };
 
     VideoPlayer.prototype._onSeekStart = function(e) {
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.SEEK_START));
+        this._openVideoIfNecessary();
+        NotificationCenter().dispatchEvent(PlayerEvent.SEEK_START);
     };
 
     VideoPlayer.prototype._onSeekComplete = function(e) {
         this._doPostSeekComputations();
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.SEEK_COMPLETE));
+        NotificationCenter().dispatchEvent(PlayerEvent.SEEK_COMPLETE);
     };
 
     VideoPlayer.prototype._onComplete = function(e) {
-        // Complete the second chapter
-        this._completeChapter();
+        this._completeVideo();
+    };
 
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.COMPLETE));
+    VideoPlayer.prototype._openVideoIfNecessary = function() {
+        if (!this._videoLoaded) {
+            this._resetInternalState();
 
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.VIDEO_UNLOAD));
+            this._startVideo();
 
+            // Start the monitor timer.
+            var self = this;
+            this._clock = setInterval(function() {
+                self._onTick();
+            }, MONITOR_TIMER_INTERVAL);
+        }
+    };
+
+    VideoPlayer.prototype._completeVideo = function() {
+        if (this._videoLoaded) {
+            // Complete the second chapter
+            this._completeChapter();
+
+            NotificationCenter().dispatchEvent(PlayerEvent.COMPLETE);
+
+            this._unloadVideo();
+        }
+    };
+
+    VideoPlayer.prototype._unloadVideo = function() {
+        NotificationCenter().dispatchEvent(PlayerEvent.VIDEO_UNLOAD);
         clearInterval(this._clock);
 
+        this._resetInternalState();
+    };
+
+    VideoPlayer.prototype._resetInternalState = function() {
         this._videoLoaded = false;
+        this._clock = null;
     };
 
     VideoPlayer.prototype._startVideo = function() {
+        // Prepare the main video info.
         this._videoInfo = new VideoInfo();
-        this._videoInfo.id = this.videoId;
-        this._videoInfo.playerName = this.playerName;
+        this._videoInfo.id = this._videoId;
+        this._videoInfo.name = this._videoName;
+        this._videoInfo.playerName = this._playerName;
         this._videoInfo.length = this.getDuration();
-        this._videoInfo.streamType = this.streamType;
+        this._videoInfo.streamType = this._streamType;
         this._videoInfo.playhead = this.getPlayhead();
 
         this._videoLoaded = true;
 
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.VIDEO_LOAD));
+        NotificationCenter().dispatchEvent(PlayerEvent.VIDEO_LOAD);
     };
 
     VideoPlayer.prototype._startChapter1 = function() {
@@ -172,7 +212,7 @@
         this._chapterInfo.position = 1;
         this._chapterInfo.name = "First chapter";
 
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.CHAPTER_START));
+        NotificationCenter().dispatchEvent(PlayerEvent.CHAPTER_START);
     };
 
     VideoPlayer.prototype._startChapter2 = function() {
@@ -183,14 +223,14 @@
         this._chapterInfo.position = 2;
         this._chapterInfo.name = "Second chapter";
 
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.CHAPTER_START));
+        NotificationCenter().dispatchEvent(PlayerEvent.CHAPTER_START);
     };
 
     VideoPlayer.prototype._completeChapter = function() {
         // Reset the chapter info.
         this._chapterInfo = null;
 
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.CHAPTER_COMPLETE));
+        NotificationCenter().dispatchEvent(PlayerEvent.CHAPTER_COMPLETE);
     };
 
     VideoPlayer.prototype._startAd = function() {
@@ -198,7 +238,7 @@
         this._adBreakInfo = new AdBreakInfo();
         this._adBreakInfo.name = "First Ad-Break";
         this._adBreakInfo.position = 1;
-        this._adBreakInfo.playerName = this.playerName;
+        this._adBreakInfo.playerName = this._playerName;
         this._adBreakInfo.startTime = AD_START_POS;
 
         // Prepare the ad info.
@@ -207,15 +247,14 @@
         this._adInfo.name = "Sample ad";
         this._adInfo.length = AD_LENGTH;
         this._adInfo.position = 1;
-        this._adInfo.cpm = "49750702676yfh075757";
 
         // Start the ad.
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.AD_START));
+        NotificationCenter().dispatchEvent(PlayerEvent.AD_START);
     };
 
     VideoPlayer.prototype._completeAd = function() {
         // Complete the ad.
-        DefaultCommCenter().trigger(new PlayerEvent(PlayerEvent.AD_COMPLETE));
+        NotificationCenter().dispatchEvent(PlayerEvent.AD_COMPLETE);
 
         // Clear the ad and ad-break info.
         this._adInfo = null;
@@ -317,6 +356,6 @@
     };
 
     // Export symbols.
-    window.VideoPlayer = VideoPlayer;
     window.PlayerEvent = PlayerEvent;
-})(jQuery, window.ADB, window.Configuration);
+    window.VideoPlayer = VideoPlayer;
+})();

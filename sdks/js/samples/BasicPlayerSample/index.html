@@ -2,7 +2,7 @@
 
 <html>
     <head>
-        <title>Video Samples: HTML5 Heartbeat Sample</title>
+        <title>BasicPlayerSample</title>
 
         <link rel="stylesheet" href="style/base.css" />
 
@@ -10,13 +10,16 @@
 
         <script src="script/lib/VisitorAPI.js"></script>
         <script src="script/lib/AppMeasurement.js"></script>
-        <script src="script/lib/VideoHeartbeat.js"></script>
-        <script src="script/lib/AdobeAnalyticsPlugin.js"></script>
 
-        <script src="script/app/default.comm.center.js"></script>
+        <script src="script/lib/VideoHeartbeat.min.js"></script>
+
+        <script src="script/app/notification.center.js"></script>
         <script src="script/app/configuration.js"></script>
         <script src="script/app/player/video.player.js"></script>
-        <script src="script/app/analytics/video.player.delegate.js"></script>
+        <script src="script/app/analytics/sample.heartbeat.delegate.js"></script>
+        <script src="script/app/analytics/sample.adobe.heartbeat.plugin.delegate.js"></script>
+        <script src="script/app/analytics/sample.adobe.analytics.plugin.delegate.js"></script>
+        <script src="script/app/analytics/sample.video.player.plugin.delegate.js"></script>
         <script src="script/app/analytics/video.analytics.provider.js"></script>
 
         <script src="script/main.js"></script>
@@ -24,7 +27,7 @@
 
     <body>
 
-    <h2>Heartbeat HTML5 Sample Player</h2>
+    <h2>VideoHeartbeat HTML5 Basic Sample Player</h2>
 
     <div class="container">
         <video id="movie" width="600" preload controls>
@@ -33,7 +36,7 @@
             <source src="vid/clickbaby.ogv" type='video/ogg; codes="theora, vorbis"'>
         </video>
 
-        <div class="overlay" id="pub-label" hidden="false">P</div>
+        <div class="overlay" id="pub-label" hidden>P</div>
     </div>
 
     <p>

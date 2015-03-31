@@ -9,32 +9,19 @@
  * written permission of Adobe.
  */
 
-jQuery( document ).ready(function($) {
-
-    $('#pub-label').hide();
-
-    // Set-up the VisitorAPI component.
-    var visitor = new Visitor(Configuration.VISITOR_API.MARKETING_CLOUD_ORG_ID, Configuration.VISITOR_API.NAMESPACE);
-    visitor.trackingServer = Configuration.VISITOR_API.TRACKING_SERVER;
-
-    // Set-up the AppMeasurement component.
-    var appMeasurement = new AppMeasurement();
-    appMeasurement.visitor = visitor;
-    appMeasurement.visitorNamespace = Configuration.VISITOR_API.NAMESPACE;
-    appMeasurement.trackingServer = Configuration.APP_MEASUREMENT.TRACKING_SERVER;
-    appMeasurement.account = Configuration.APP_MEASUREMENT.RSID;
-
+jQuery(document).ready(function($) {
 
     // Create the VideoPlayer.
     var videoPlayer = new VideoPlayer('movie');
 
-    DefaultCommCenter().on(PlayerEvent.AD_START, onEnterAd);
-    DefaultCommCenter().on(PlayerEvent.AD_COMPLETE, onExitAd);
-    DefaultCommCenter().on(PlayerEvent.SEEK_COMPLETE, onSeekComplete);
-    DefaultCommCenter().on(PlayerEvent.VIDEO_UNLOAD, onExitAd);
+    // Create the AnalyticsProvider instance and attach it to the VideoPlayer instance.
+    var analyticsProvider = new VideoAnalyticsProvider(videoPlayer);
 
-    // Create the Analytics provider
-    var analyticsProvider = new VideoAnalyticsProvider(appMeasurement, videoPlayer);
+    // Setup the ad label.
+    NotificationCenter().addEventListener(PlayerEvent.AD_START, onEnterAd);
+    NotificationCenter().addEventListener(PlayerEvent.AD_COMPLETE, onExitAd);
+    NotificationCenter().addEventListener(PlayerEvent.SEEK_COMPLETE, onSeekComplete);
+    NotificationCenter().addEventListener(PlayerEvent.VIDEO_UNLOAD, onExitAd);
 
     function onEnterAd() {
         $('#pub-label').show();

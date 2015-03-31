@@ -3,6 +3,24 @@
 
 Included are notes from the latest major revision to current.
 
+## 1.5.1.0 (31 Mar, 2015)
+What’s new :
+- Ability to send metadata with video start and/or video/ad/chapter start as context data. It is possible to correlate that data with all other video and non-video AA variables
+  * Metadata sent via Context Data key value pairs
+  * Customer will need to use processing rules to copy metadata into a variable (default video reports won’t show metadata)
+  * Metadata is sent same way regardless of platform (desktop & mobile)
+- Less network traffic; Heartbeats are fewer on average and smaller in size
+- Enabling/disabling logging per heartbeat plugin
+ 
+API changes :
+- the VHL plugins must now be instantiated & registered explicitly at the application level
+- the VideoPlayer plugin provides the trackSessionStart() API to allow for better tracking of the startup time
+- the integration code is now able to explicitly set the startup time value via the QoSInfo.startupTime property.
+- 1.5.x is not a drop-in replacement for v1.4 due to the various plugins that are now visible at the level of the public API. For more information about upgrading from a previous implementation see the upgrade section in the documentation file.
+- 1.5.x heartbeat data will not be available in the Primetime Player Monitoring (PPM) dashboard. Customers using PPM must not upgrade yet.
+- Some APIs were deprecated (onVideoUnloaded() & onError() on Player Delegate)
+
+
 ## 1.4.0.1 (23 Oct, 2014)
 
 Fixed issues
