@@ -4,6 +4,9 @@ Release Notes for Flash/AS3 VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.1.1 (1 Apr, 2015)
+Fixed documentation issues.
+
 ## 1.5.1.0 (19 Mar, 2015)
 What’s new :
 - Ability to send metadata with video start and/or video/ad/chapter start as context data. It is possible to correlate that data with all other video and non-video AA variables
