@@ -3,6 +3,11 @@
 
 Included are notes from the latest major revision to current.
 
+## 1.5.1.1 (6 Apr, 2015)
+
+Fixed issues
+- Fixed SSL related issues.
+
 ## 1.5.1.0 (31 Mar, 2015)
 What’s new :
 - Ability to send metadata with video start and/or video/ad/chapter start as context data. It is possible to correlate that data with all other video and non-video AA variables

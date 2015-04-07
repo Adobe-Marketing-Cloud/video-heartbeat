@@ -20,7 +20,7 @@
  */
 
 /*
- * video heartbeats - js-v1.5.1.0 - 2015-03-31
+ * video heartbeats - js-v1.5.1.1 - 2015-04-07
  * Copyright (c) 2015 Adobe Systems, Inc. All Rights Reserved.
  */
 
@@ -1245,8 +1245,8 @@ service.clock || (service.clock = {});
     var MAJOR = "1";
     var MINOR = "5";
     var MICRO = "1";
-    var PATCH = "0";
-    var BUILD = "b7926ea";
+    var PATCH = "1";
+    var BUILD = "bf08a7e";
     var API_LEVEL = 3;
 
     /**
@@ -4290,7 +4290,7 @@ ah.network || (ah.network = {});
     //
     //--------------------[ Private helper methods ]--------------------
     //
-    Network.prototype._updateRequestProtocol = function(url, useSSL) {
+    Network.prototype._updateRequestProtocol = function(url, useSsl) {
         var stripped = url;
 
         // Strip away the protocol (if exists).
@@ -4300,7 +4300,7 @@ ah.network || (ah.network = {});
             stripped = stripped.slice(8);
         }
 
-        return useSSL ? "https://" + stripped
+        return useSsl ? "https://" + stripped
                       : "http://" + stripped;
     };
 
@@ -4975,7 +4975,7 @@ ah.network || (ah.network = {});
 
         this._adobeAnalyticsData.reportSuiteId(data.rsid);
         this._adobeAnalyticsData.trackingServer(data.trackingServer);
-        this._adobeAnalyticsData.ssl(data.useSsl);
+        this._adobeAnalyticsData.ssl(Number(data.useSsl)); // convert Boolean to 0 or 1
 
         this._serviceProviderData.ovp(data.ovp);
         this._serviceProviderData.sdk(data.sdk);
@@ -6131,11 +6131,13 @@ ah.network || (ah.network = {});
             new ParamMapping(PLAYER_PLUGIN, "qos.droppedFrames", "droppedFrames"),
             new ParamMapping(PLAYER_PLUGIN, "qos.bitrate", "bitrate"),
             new ParamMapping(PLAYER_PLUGIN, "qos.startupTime", "startupTime"),
+
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "rsid", "rsid"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "tracking_server", "trackingServer"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "channel", "channel"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "meta.video.*", "metaVideo"),
-            new ParamMapping(ADOBE_HEARTBEAT_PLUGIN, "ssl", "useSSL"),
+            new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "ssl", "useSsl"),
+
             new ParamMapping(ADOBE_HEARTBEAT_PLUGIN, "publisher", "publisher"),
             new ParamMapping(ADOBE_HEARTBEAT_PLUGIN, "sdk", "sdk"),
             new ParamMapping(ADOBE_HEARTBEAT_PLUGIN, "ovp", "ovp"),
@@ -6177,6 +6179,7 @@ ah.network || (ah.network = {});
             new ParamMapping(PLAYER_PLUGIN, "qos.droppedFrames", "droppedFrames"),
             new ParamMapping(PLAYER_PLUGIN, "qos.bitrate", "bitrate"),
             new ParamMapping(PLAYER_PLUGIN, "qos.startupTime", "startupTime"),
+
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "meta.video.*", "metaVideo"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "meta.ad.*", "metaAd")
         ]);
@@ -6238,6 +6241,7 @@ ah.network || (ah.network = {});
             new ParamMapping(PLAYER_PLUGIN, "qos.droppedFrames", "droppedFrames"),
             new ParamMapping(PLAYER_PLUGIN, "qos.bitrate", "bitrate"),
             new ParamMapping(PLAYER_PLUGIN, "qos.startupTime", "startupTime"),
+
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "meta.video.*", "metaVideo"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "meta.chapter.*", "metaChapter")
         ]);
@@ -6275,6 +6279,7 @@ ah.network || (ah.network = {});
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "vid", "vid"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "aid", "aid"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "mid", "mid"),
+
             new ParamMapping(PLAYER_PLUGIN, "video.playhead", "playhead"),
             new ParamMapping(PLAYER_PLUGIN, "qos.fps", "fps"),
             new ParamMapping(PLAYER_PLUGIN, "qos.droppedFrames", "droppedFrames"),
@@ -6909,7 +6914,9 @@ if (typeof aa === 'undefined') {
         };
 
         fnMap["tracking_server"] = function() {
-            return self._appMeasurement.trackingServer;
+            return (self._appMeasurement.ssl && self._appMeasurement.trackingServerSecure)
+                   ? self._appMeasurement.trackingServerSecure
+                   : self._appMeasurement.trackingServer;
         };
 
         fnMap["ssl"] = function() {
