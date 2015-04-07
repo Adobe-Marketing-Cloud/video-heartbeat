@@ -4,6 +4,10 @@ Release Notes for Flash/AS3 VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.1.2 (6 Apr, 2015)
+Fixed issues
+- Fix SSL related issues.
+
 ## 1.5.1.1 (1 Apr, 2015)
 Fixed documentation issues.
 
