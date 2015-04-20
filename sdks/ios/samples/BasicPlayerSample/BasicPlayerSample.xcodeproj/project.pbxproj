@@ -7,14 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		09A8D3F61AC9F3AD000B7488 /* SampleAnalyticsPluginDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 09A8D3F51AC9F3AD000B7488 /* SampleAnalyticsPluginDelegate.m */; };
+		09A8D3FA1AC9F825000B7488 /* SampleHeartbeatPluginDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 09A8D3F91AC9F825000B7488 /* SampleHeartbeatPluginDelegate.m */; };
+		09A8D3FE1AC9F857000B7488 /* SampleHeartbeatDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 09A8D3FD1AC9F857000B7488 /* SampleHeartbeatDelegate.m */; };
 		220B935336C67D104DA2120E /* VideoPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 220B99EC8D9567F7B305991B /* VideoPlayer.m */; };
 		220B9846EE22DA1B20C7C1AC /* VideoPlayerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 220B9B7DC04CE47FDEA880F1 /* VideoPlayerDelegate.m */; };
 		220B9AB54F7BF11F7B4ED6FF /* VideoAnalyticsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 220B9DF3116B8DABAA210F18 /* VideoAnalyticsProvider.m */; };
 		220B9DE446C672E847CFF1C1 /* Configuration.m in Sources */ = {isa = PBXBuildFile; fileRef = 220B942C2BA1491D1C590F39 /* Configuration.m */; };
-		9C34A6E219F951F800533A81 /* VideoHeartbeat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C34A6E119F951F800533A81 /* VideoHeartbeat.a */; };
-		9C34A6E419F9520800533A81 /* AdobeAnalyticsPlugin.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C34A6E319F9520800533A81 /* AdobeAnalyticsPlugin.a */; };
-		9C73BB851A1A3E5A007E9A71 /* ADBMobileConfig.json in Resources */ = {isa = PBXBuildFile; fileRef = 9C73BB831A1A3E5A007E9A71 /* ADBMobileConfig.json */; };
-		9C73BB861A1A3E5A007E9A71 /* AdobeMobileLibrary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C73BB841A1A3E5A007E9A71 /* AdobeMobileLibrary.a */; };
 		C93A866E190A78AE006D2AF7 /* clickbaby.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = C93A866D190A78A4006D2AF7 /* clickbaby.mp4 */; };
 		C9606AEC18D9E22B00A8F275 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606AEB18D9E22B00A8F275 /* Foundation.framework */; };
 		C9606AEE18D9E22B00A8F275 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606AED18D9E22B00A8F275 /* CoreGraphics.framework */; };
@@ -29,9 +28,18 @@
 		C9606B3318D9E6E300A8F275 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B3218D9E6E300A8F275 /* MediaPlayer.framework */; };
 		C9606B3518D9E6EE00A8F275 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B3418D9E6EE00A8F275 /* SystemConfiguration.framework */; };
 		C9606B3718D9E6FF00A8F275 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9606B3618D9E6FF00A8F275 /* libsqlite3.dylib */; };
+		F79822131AE0338000CF4CA0 /* VideoHeartbeat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F79822121AE0338000CF4CA0 /* VideoHeartbeat.a */; };
+		F79822151AE033AF00CF4CA0 /* AdobeMobileLibrary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F79822141AE033AF00CF4CA0 /* AdobeMobileLibrary.a */; };
+		F798221B1AE0346700CF4CA0 /* ADBMobileConfig.json in Resources */ = {isa = PBXBuildFile; fileRef = F798221A1AE0346700CF4CA0 /* ADBMobileConfig.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		09A8D3F41AC9F39C000B7488 /* SampleAnalyticsPluginDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SampleAnalyticsPluginDelegate.h; sourceTree = "<group>"; };
+		09A8D3F51AC9F3AD000B7488 /* SampleAnalyticsPluginDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SampleAnalyticsPluginDelegate.m; sourceTree = "<group>"; };
+		09A8D3F91AC9F825000B7488 /* SampleHeartbeatPluginDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SampleHeartbeatPluginDelegate.m; sourceTree = "<group>"; };
+		09A8D3FB1AC9F834000B7488 /* SampleHeartbeatPluginDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SampleHeartbeatPluginDelegate.h; sourceTree = "<group>"; };
+		09A8D3FC1AC9F84C000B7488 /* SampleHeartbeatDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SampleHeartbeatDelegate.h; sourceTree = "<group>"; };
+		09A8D3FD1AC9F857000B7488 /* SampleHeartbeatDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SampleHeartbeatDelegate.m; sourceTree = "<group>"; };
 		220B90BF2703DE450CCEE4BF /* VideoPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoPlayer.h; sourceTree = "<group>"; };
 		220B942C2BA1491D1C590F39 /* Configuration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Configuration.m; sourceTree = "<group>"; };
 		220B961DECA15A6D1B9D88BD /* VideoAnalyticsProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoAnalyticsProvider.h; sourceTree = "<group>"; };
@@ -40,11 +48,6 @@
 		220B9AA0A59046C6562CC671 /* Configuration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Configuration.h; sourceTree = "<group>"; };
 		220B9B7DC04CE47FDEA880F1 /* VideoPlayerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoPlayerDelegate.m; sourceTree = "<group>"; };
 		220B9DF3116B8DABAA210F18 /* VideoAnalyticsProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoAnalyticsProvider.m; sourceTree = "<group>"; };
-		9C34A6E119F951F800533A81 /* VideoHeartbeat.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = VideoHeartbeat.a; path = VideoHeartbeat/VideoHeartbeat.a; sourceTree = "<group>"; };
-		9C34A6E319F9520800533A81 /* AdobeAnalyticsPlugin.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = AdobeAnalyticsPlugin.a; path = AdobeAnalyticsPlugin/AdobeAnalyticsPlugin.a; sourceTree = "<group>"; };
-		9C73BB821A1A3E5A007E9A71 /* ADBMobile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADBMobile.h; sourceTree = "<group>"; };
-		9C73BB831A1A3E5A007E9A71 /* ADBMobileConfig.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ADBMobileConfig.json; sourceTree = "<group>"; };
-		9C73BB841A1A3E5A007E9A71 /* AdobeMobileLibrary.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = AdobeMobileLibrary.a; sourceTree = "<group>"; };
 		C93A866D190A78A4006D2AF7 /* clickbaby.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = clickbaby.mp4; sourceTree = "<group>"; };
 		C9606AE818D9E22B00A8F275 /* BasicPlayerSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BasicPlayerSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9606AEB18D9E22B00A8F275 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -64,6 +67,33 @@
 		C9606B3218D9E6E300A8F275 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		C9606B3418D9E6EE00A8F275 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		C9606B3618D9E6FF00A8F275 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		F79822121AE0338000CF4CA0 /* VideoHeartbeat.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = VideoHeartbeat.a; path = libs/VideoHeartbeat/VideoHeartbeat.a; sourceTree = "<group>"; };
+		F79822141AE033AF00CF4CA0 /* AdobeMobileLibrary.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = AdobeMobileLibrary.a; path = libs/AdobeMobile/AdobeMobileLibrary.a; sourceTree = "<group>"; };
+		F79822191AE0346700CF4CA0 /* ADBMobile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ADBMobile.h; path = libs/AdobeMobile/ADBMobile.h; sourceTree = "<group>"; };
+		F798221A1AE0346700CF4CA0 /* ADBMobileConfig.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = ADBMobileConfig.json; path = libs/AdobeMobile/ADBMobileConfig.json; sourceTree = "<group>"; };
+		F798221D1AE0347300CF4CA0 /* ADB_HB_BasePlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_HB_BasePlugin.h; sourceTree = "<group>"; };
+		F798221F1AE0347300CF4CA0 /* ADB_HB_PluginConfigProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_HB_PluginConfigProtocol.h; sourceTree = "<group>"; };
+		F79822201AE0347300CF4CA0 /* ADB_HB_PluginProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_HB_PluginProtocol.h; sourceTree = "<group>"; };
+		F79822211AE0347300CF4CA0 /* ADB_VHB_AdBreakInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdBreakInfo.h; sourceTree = "<group>"; };
+		F79822221AE0347300CF4CA0 /* ADB_VHB_AdInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdInfo.h; sourceTree = "<group>"; };
+		F79822231AE0347300CF4CA0 /* ADB_VHB_AdobeAnalyticsPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdobeAnalyticsPlugin.h; sourceTree = "<group>"; };
+		F79822241AE0347300CF4CA0 /* ADB_VHB_AdobeAnalyticsPluginConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdobeAnalyticsPluginConfig.h; sourceTree = "<group>"; };
+		F79822251AE0347300CF4CA0 /* ADB_VHB_AdobeAnalyticsPluginDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdobeAnalyticsPluginDelegate.h; sourceTree = "<group>"; };
+		F79822261AE0347300CF4CA0 /* ADB_VHB_AdobeHeartbeatPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdobeHeartbeatPlugin.h; sourceTree = "<group>"; };
+		F79822271AE0347300CF4CA0 /* ADB_VHB_AdobeHeartbeatPluginConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdobeHeartbeatPluginConfig.h; sourceTree = "<group>"; };
+		F79822281AE0347300CF4CA0 /* ADB_VHB_AdobeHeartbeatPluginDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AdobeHeartbeatPluginDelegate.h; sourceTree = "<group>"; };
+		F79822291AE0347300CF4CA0 /* ADB_VHB_AssetType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_AssetType.h; sourceTree = "<group>"; };
+		F798222A1AE0347300CF4CA0 /* ADB_VHB_ChapterInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_ChapterInfo.h; sourceTree = "<group>"; };
+		F798222B1AE0347300CF4CA0 /* ADB_VHB_ErrorInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_ErrorInfo.h; sourceTree = "<group>"; };
+		F798222C1AE0347300CF4CA0 /* ADB_VHB_Heartbeat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_Heartbeat.h; sourceTree = "<group>"; };
+		F798222D1AE0347300CF4CA0 /* ADB_VHB_HeartbeatConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_HeartbeatConfig.h; sourceTree = "<group>"; };
+		F798222E1AE0347300CF4CA0 /* ADB_VHB_HeartbeatDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_HeartbeatDelegate.h; sourceTree = "<group>"; };
+		F798222F1AE0347300CF4CA0 /* ADB_VHB_QoSInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_QoSInfo.h; sourceTree = "<group>"; };
+		F79822301AE0347300CF4CA0 /* ADB_VHB_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_Version.h; sourceTree = "<group>"; };
+		F79822311AE0347300CF4CA0 /* ADB_VHB_VideoInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_VideoInfo.h; sourceTree = "<group>"; };
+		F79822321AE0347300CF4CA0 /* ADB_VHB_VideoPlayerPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_VideoPlayerPlugin.h; sourceTree = "<group>"; };
+		F79822331AE0347300CF4CA0 /* ADB_VHB_VideoPlayerPluginConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_VideoPlayerPluginConfig.h; sourceTree = "<group>"; };
+		F79822341AE0347300CF4CA0 /* ADB_VHB_VideoPlayerPluginDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADB_VHB_VideoPlayerPluginDelegate.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,15 +101,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F79822151AE033AF00CF4CA0 /* AdobeMobileLibrary.a in Frameworks */,
+				F79822131AE0338000CF4CA0 /* VideoHeartbeat.a in Frameworks */,
 				C9606B3718D9E6FF00A8F275 /* libsqlite3.dylib in Frameworks */,
 				C9606B3518D9E6EE00A8F275 /* SystemConfiguration.framework in Frameworks */,
 				C9606B3318D9E6E300A8F275 /* MediaPlayer.framework in Frameworks */,
 				C9606AEE18D9E22B00A8F275 /* CoreGraphics.framework in Frameworks */,
 				C9606AF018D9E22B00A8F275 /* UIKit.framework in Frameworks */,
 				C9606AEC18D9E22B00A8F275 /* Foundation.framework in Frameworks */,
-				9C34A6E219F951F800533A81 /* VideoHeartbeat.a in Frameworks */,
-				9C34A6E419F9520800533A81 /* AdobeAnalyticsPlugin.a in Frameworks */,
-				9C73BB861A1A3E5A007E9A71 /* AdobeMobileLibrary.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,18 +131,14 @@
 				220B9DF3116B8DABAA210F18 /* VideoAnalyticsProvider.m */,
 				220B96738039B7E84EA032F2 /* VideoPlayerDelegate.h */,
 				220B9B7DC04CE47FDEA880F1 /* VideoPlayerDelegate.m */,
+				09A8D3F41AC9F39C000B7488 /* SampleAnalyticsPluginDelegate.h */,
+				09A8D3F51AC9F3AD000B7488 /* SampleAnalyticsPluginDelegate.m */,
+				09A8D3FB1AC9F834000B7488 /* SampleHeartbeatPluginDelegate.h */,
+				09A8D3F91AC9F825000B7488 /* SampleHeartbeatPluginDelegate.m */,
+				09A8D3FC1AC9F84C000B7488 /* SampleHeartbeatDelegate.h */,
+				09A8D3FD1AC9F857000B7488 /* SampleHeartbeatDelegate.m */,
 			);
 			path = analytics;
-			sourceTree = "<group>";
-		};
-		9C73BB811A1A3E5A007E9A71 /* AdobeMobile */ = {
-			isa = PBXGroup;
-			children = (
-				9C73BB821A1A3E5A007E9A71 /* ADBMobile.h */,
-				9C73BB831A1A3E5A007E9A71 /* ADBMobileConfig.json */,
-				9C73BB841A1A3E5A007E9A71 /* AdobeMobileLibrary.a */,
-			);
-			path = AdobeMobile;
 			sourceTree = "<group>";
 		};
 		C93A866C190A78A4006D2AF7 /* video */ = {
@@ -129,6 +154,7 @@
 			children = (
 				C93A866C190A78A4006D2AF7 /* video */,
 				C9606AF118D9E22B00A8F275 /* BasicPlayerSample */,
+				F79822161AE0340B00CF4CA0 /* libs */,
 				C9606AEA18D9E22B00A8F275 /* Frameworks */,
 				C9606AE918D9E22B00A8F275 /* Products */,
 			);
@@ -145,15 +171,12 @@
 		C9606AEA18D9E22B00A8F275 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9C73BB811A1A3E5A007E9A71 /* AdobeMobile */,
 				C9606B3618D9E6FF00A8F275 /* libsqlite3.dylib */,
 				C9606B3418D9E6EE00A8F275 /* SystemConfiguration.framework */,
 				C9606B3218D9E6E300A8F275 /* MediaPlayer.framework */,
 				C9606AEB18D9E22B00A8F275 /* Foundation.framework */,
 				C9606AED18D9E22B00A8F275 /* CoreGraphics.framework */,
 				C9606AEF18D9E22B00A8F275 /* UIKit.framework */,
-				9C34A6E319F9520800533A81 /* AdobeAnalyticsPlugin.a */,
-				9C34A6E119F951F800533A81 /* VideoHeartbeat.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -186,6 +209,65 @@
 				C9606AF918D9E22B00A8F275 /* BasicPlayerSample-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		F79822161AE0340B00CF4CA0 /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				F79822181AE0343A00CF4CA0 /* AdobeMobile */,
+				F79822171AE0343000CF4CA0 /* VideoHeartbeat */,
+			);
+			name = libs;
+			sourceTree = "<group>";
+		};
+		F79822171AE0343000CF4CA0 /* VideoHeartbeat */ = {
+			isa = PBXGroup;
+			children = (
+				F798221C1AE0347300CF4CA0 /* Headers */,
+				F79822121AE0338000CF4CA0 /* VideoHeartbeat.a */,
+			);
+			name = VideoHeartbeat;
+			sourceTree = "<group>";
+		};
+		F79822181AE0343A00CF4CA0 /* AdobeMobile */ = {
+			isa = PBXGroup;
+			children = (
+				F79822191AE0346700CF4CA0 /* ADBMobile.h */,
+				F798221A1AE0346700CF4CA0 /* ADBMobileConfig.json */,
+				F79822141AE033AF00CF4CA0 /* AdobeMobileLibrary.a */,
+			);
+			name = AdobeMobile;
+			sourceTree = "<group>";
+		};
+		F798221C1AE0347300CF4CA0 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				F798221D1AE0347300CF4CA0 /* ADB_HB_BasePlugin.h */,
+				F798221F1AE0347300CF4CA0 /* ADB_HB_PluginConfigProtocol.h */,
+				F79822201AE0347300CF4CA0 /* ADB_HB_PluginProtocol.h */,
+				F79822211AE0347300CF4CA0 /* ADB_VHB_AdBreakInfo.h */,
+				F79822221AE0347300CF4CA0 /* ADB_VHB_AdInfo.h */,
+				F79822231AE0347300CF4CA0 /* ADB_VHB_AdobeAnalyticsPlugin.h */,
+				F79822241AE0347300CF4CA0 /* ADB_VHB_AdobeAnalyticsPluginConfig.h */,
+				F79822251AE0347300CF4CA0 /* ADB_VHB_AdobeAnalyticsPluginDelegate.h */,
+				F79822261AE0347300CF4CA0 /* ADB_VHB_AdobeHeartbeatPlugin.h */,
+				F79822271AE0347300CF4CA0 /* ADB_VHB_AdobeHeartbeatPluginConfig.h */,
+				F79822281AE0347300CF4CA0 /* ADB_VHB_AdobeHeartbeatPluginDelegate.h */,
+				F79822291AE0347300CF4CA0 /* ADB_VHB_AssetType.h */,
+				F798222A1AE0347300CF4CA0 /* ADB_VHB_ChapterInfo.h */,
+				F798222B1AE0347300CF4CA0 /* ADB_VHB_ErrorInfo.h */,
+				F798222C1AE0347300CF4CA0 /* ADB_VHB_Heartbeat.h */,
+				F798222D1AE0347300CF4CA0 /* ADB_VHB_HeartbeatConfig.h */,
+				F798222E1AE0347300CF4CA0 /* ADB_VHB_HeartbeatDelegate.h */,
+				F798222F1AE0347300CF4CA0 /* ADB_VHB_QoSInfo.h */,
+				F79822301AE0347300CF4CA0 /* ADB_VHB_Version.h */,
+				F79822311AE0347300CF4CA0 /* ADB_VHB_VideoInfo.h */,
+				F79822321AE0347300CF4CA0 /* ADB_VHB_VideoPlayerPlugin.h */,
+				F79822331AE0347300CF4CA0 /* ADB_VHB_VideoPlayerPluginConfig.h */,
+				F79822341AE0347300CF4CA0 /* ADB_VHB_VideoPlayerPluginDelegate.h */,
+			);
+			name = Headers;
+			path = libs/VideoHeartbeat/Headers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -241,7 +323,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C93A866E190A78AE006D2AF7 /* clickbaby.mp4 in Resources */,
-				9C73BB851A1A3E5A007E9A71 /* ADBMobileConfig.json in Resources */,
+				F798221B1AE0346700CF4CA0 /* ADBMobileConfig.json in Resources */,
 				C9606B0218D9E22B00A8F275 /* Main_iPad.storyboard in Resources */,
 				C9606B0718D9E22B00A8F275 /* Images.xcassets in Resources */,
 				C9606AFF18D9E22B00A8F275 /* Main_iPhone.storyboard in Resources */,
@@ -256,9 +338,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09A8D3F61AC9F3AD000B7488 /* SampleAnalyticsPluginDelegate.m in Sources */,
 				C9606B0518D9E22B00A8F275 /* ViewController.m in Sources */,
+				09A8D3FA1AC9F825000B7488 /* SampleHeartbeatPluginDelegate.m in Sources */,
 				C9606AFC18D9E22B00A8F275 /* AppDelegate.m in Sources */,
 				C9606AF818D9E22B00A8F275 /* main.m in Sources */,
+				09A8D3FE1AC9F857000B7488 /* SampleHeartbeatDelegate.m in Sources */,
 				220B935336C67D104DA2120E /* VideoPlayer.m in Sources */,
 				220B9AB54F7BF11F7B4ED6FF /* VideoAnalyticsProvider.m in Sources */,
 				220B9846EE22DA1B20C7C1AC /* VideoPlayerDelegate.m in Sources */,
@@ -333,6 +418,8 @@
 					"$(PROJECT_DIR)/VideoHeartbeat",
 					"$(PROJECT_DIR)/AdobeAnalyticsPlugin",
 					"$(PROJECT_DIR)/AdobeMobile",
+					"$(PROJECT_DIR)/ADBAdobeVideoPlayerPlugin",
+					"$(PROJECT_DIR)/AdobeHeartbeatPlugin",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				ONLY_ACTIVE_ARCH = YES;
@@ -376,6 +463,8 @@
 					"$(PROJECT_DIR)/VideoHeartbeat",
 					"$(PROJECT_DIR)/AdobeAnalyticsPlugin",
 					"$(PROJECT_DIR)/AdobeMobile",
+					"$(PROJECT_DIR)/ADBAdobeVideoPlayerPlugin",
+					"$(PROJECT_DIR)/AdobeHeartbeatPlugin",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				OTHER_LDFLAGS = (
@@ -394,14 +483,19 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_MODULES_AUTOLINK = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BasicPlayerSample/BasicPlayerSample-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)/**",
+					"$(PROJECT_DIR)/libs/AdobeMobile/",
+					"$(PROJECT_DIR)/libs/VideoHeartbeat/Headers/",
+				);
 				INFOPLIST_FILE = "BasicPlayerSample/BasicPlayerSample-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/VideoHeartbeat",
-					"$(PROJECT_DIR)/AdobeAnalyticsPlugin",
-					"$(PROJECT_DIR)/AdobeMobile",
+					"$(PROJECT_DIR)/libs/VideoHeartbeat",
+					"$(PROJECT_DIR)/libs/AdobeMobile",
 				);
 				PRODUCT_NAME = BasicPlayerSample;
 				WRAPPER_EXTENSION = app;
@@ -414,14 +508,19 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_MODULES_AUTOLINK = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "BasicPlayerSample/BasicPlayerSample-Prefix.pch";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)/**",
+					"$(PROJECT_DIR)/libs/AdobeMobile/",
+					"$(PROJECT_DIR)/libs/VideoHeartbeat/Headers/",
+				);
 				INFOPLIST_FILE = "BasicPlayerSample/BasicPlayerSample-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/VideoHeartbeat",
-					"$(PROJECT_DIR)/AdobeAnalyticsPlugin",
-					"$(PROJECT_DIR)/AdobeMobile",
+					"$(PROJECT_DIR)/libs/VideoHeartbeat",
+					"$(PROJECT_DIR)/libs/AdobeMobile",
 				);
 				PRODUCT_NAME = BasicPlayerSample;
 				WRAPPER_EXTENSION = app;

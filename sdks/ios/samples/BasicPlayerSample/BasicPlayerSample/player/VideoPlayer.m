@@ -1,6 +1,6 @@
 /*
  * ADOBE SYSTEMS INCORPORATED
- * Copyright 2014 Adobe Systems Incorporated
+ * Copyright 2015 Adobe Systems Incorporated
  * All Rights Reserved.
 
  * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
@@ -10,12 +10,13 @@
  */
 
 #import "VideoPlayer.h"
-#import "ADB_VHB_AssetType.h"
 #import "ADB_VHB_AdBreakInfo.h"
 #import "Configuration.h"
 #import "ADB_VHB_AdInfo.h"
 #import "ADB_VHB_VideoInfo.h"
 #import "ADB_VHB_ChapterInfo.h"
+#import "ADB_VHB_QoSInfo.h"
+#import "ADB_VHB_AssetType.h"
 
 NSString *const PLAYER_EVENT_VIDEO_LOAD = @"player_video_load";
 NSString *const PLAYER_EVENT_VIDEO_UNLOAD = @"player_video_unload";
@@ -66,10 +67,12 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
 @implementation VideoPlayer
 
 #pragma mark Initializer & dealloc
-- (instancetype)initWithContentURL:(NSURL *)url {
+- (instancetype)initWithContentURL:(NSURL *)url
+{
     self = [super initWithContentURL:url];
 
-    if (self) {
+    if (self)
+    {
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(onMediaStateChange:)
                                                      name:MPMoviePlayerPlaybackStateDidChangeNotification
@@ -87,24 +90,36 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
         _playerName = PLAYER_NAME;
         _videoId = VIDEO_ID;
         _videoName = VIDEO_NAME;
-        _streamType = ADB_VHB_AssetType.ASSET_TYPE_VOD;
+        _streamType = ASSET_TYPE_VOD;
+        
+        _qosInfo = [[ADB_VHB_QoSInfo alloc] init];
+        _qosInfo.bitrate = [NSNumber numberWithInt:50000];
+        _qosInfo.fps = [NSNumber numberWithInt:24];
+        _qosInfo.droppedFrames = [NSNumber numberWithInt:10];
+        _qosInfo.startupTime = [NSNumber numberWithInt:2];
     }
 
     return self;
 }
 
-- (void)dealloc {
+- (void)dealloc
+{
     [_monitorTimer invalidate];
 }
 
 
 #pragma mark Public property accessors
 
-- (ADB_VHB_VideoInfo *)videoInfo {
-    if (self.adInfo) { // During ad-playback the main video playhead remains
+- (ADB_VHB_VideoInfo *)videoInfo
+{
+    if (self.adInfo)
+    {
+        // During ad-playback the main video playhead remains
                        // constant at where it was when the ad started.
         _videoInfo.playhead = @(AD_START_POS);
-    } else {
+    }
+    else
+    {
         _videoInfo.playhead = (self.currentPlaybackTime < AD_START_POS)
                 ? @(self.currentPlaybackTime)
                 : @(self.currentPlaybackTime - AD_LENGTH);
@@ -116,7 +131,8 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
 
 #pragma mark Native VideoPlayer control notification handlers
 
-- (void)onMediaFinishedPlaying:(NSNotification *)notification {
+- (void)onMediaFinishedPlaying:(NSNotification *)notification
+{
     NSDictionary *dict = [notification userInfo];
     NSNumber *result = dict[MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
 
@@ -126,7 +142,8 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
 }
 
 - (void)onMediaStateChange:(NSNotification *)notification {
-    switch (self.playbackState) {
+    switch (self.playbackState)
+    {
         case MPMoviePlaybackStatePaused:
             [NSTimer scheduledTimerWithTimeInterval:0.5
                                              target:self
@@ -145,22 +162,20 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
         case MPMoviePlaybackStatePlaying:
             NSLog(@"Starting playback.");
             
-            if (self.isSeeking) {
+            if (self.isSeeking)
+            {
                 NSLog(@"Stop seeking.");
-
                 self.seeking = NO;
-                
                 [self _doPostSeekComputations];
                 
                 [[NSNotificationCenter defaultCenter] postNotificationName:PLAYER_EVENT_SEEK_COMPLETE
                                                                     object:self
                                                                   userInfo:nil];
-            } else {
+            } else
+            {
                 NSLog(@"Resume playback.");
-
                 [self _openVideoIfNecessary];
                 self.paused = NO;
-
                 [[NSNotificationCenter defaultCenter] postNotificationName:PLAYER_EVENT_PLAY
                                                                     object:self
                                                                   userInfo:nil];
@@ -184,8 +199,10 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
 
 #pragma mark Private helper methods
 
-- (void)_openVideoIfNecessary {
-    if (!self.videoLoaded) {
+- (void)_openVideoIfNecessary
+{
+    if (!self.videoLoaded)
+    {
         [self _resetInternalState];
         
         [self _startVideo];
@@ -199,15 +216,20 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
     }
 }
 
-- (void)_pauseIfSeekHasNotStarted {
-    if (!self.isSeeking) {
+- (void)_pauseIfSeekHasNotStarted
+{
+    if (!self.isSeeking)
+    {
         [self _pausePlayback];
-    } else {
+    }
+    else
+    {
         NSLog(@"This pause is caused by a seek operation. Skipping.");
     }
 }
 
-- (void)_pausePlayback {
+- (void)_pausePlayback
+{
     NSLog(@"Pausing playback.");
     
     self.paused = YES;
@@ -217,7 +239,8 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
                                                       userInfo:nil];
 }
 
-- (void)_startVideo {
+- (void)_startVideo
+{
     // Prepare the video info.
     self.videoInfo = [[ADB_VHB_VideoInfo alloc] init];
     self.videoInfo.id = self.videoId;
@@ -310,7 +333,6 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
     self.adInfo.name = @"Sample ad";
     self.adInfo.length = @(AD_LENGTH);
     self.adInfo.position = @1;
-    self.adInfo.cpm = @"49750702676yfh075757";
 
     // Start the ad.
     [[NSNotificationCenter defaultCenter] postNotificationName:PLAYER_EVENT_AD_START

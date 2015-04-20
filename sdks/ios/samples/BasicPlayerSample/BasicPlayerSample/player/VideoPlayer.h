@@ -1,6 +1,6 @@
 /*
  * ADOBE SYSTEMS INCORPORATED
- * Copyright 2014 Adobe Systems Incorporated
+ * Copyright 2015 Adobe Systems Incorporated
  * All Rights Reserved.
 
  * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
@@ -16,6 +16,7 @@
 @class ADB_VHB_AdInfo;
 @class ADB_VHB_VideoInfo;
 @class ADB_VHB_ChapterInfo;
+@class ADB_VHB_QoSInfo;
 
 FOUNDATION_EXPORT NSString *const PLAYER_EVENT_VIDEO_LOAD;
 FOUNDATION_EXPORT NSString *const PLAYER_EVENT_VIDEO_UNLOAD;
@@ -37,6 +38,7 @@ FOUNDATION_EXPORT NSString *const PLAYER_EVENT_CHAPTER_COMPLETE;
 @property(strong, nonatomic, readonly) ADB_VHB_AdBreakInfo *adBreakInfo;
 @property(strong, nonatomic, readonly) ADB_VHB_AdInfo *adInfo;
 @property(strong, nonatomic, readonly) ADB_VHB_ChapterInfo *chapterInfo;
+@property(strong, nonatomic, readonly) ADB_VHB_QoSInfo *qosInfo;
 
 #pragma mark Initializer
 - (instancetype)init NS_UNAVAILABLE;

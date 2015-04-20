@@ -1,6 +1,6 @@
 /*
  * ADOBE SYSTEMS INCORPORATED
- * Copyright 2014 Adobe Systems Incorporated
+ * Copyright 2015 Adobe Systems Incorporated
  * All Rights Reserved.
 
  * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
@@ -10,15 +10,11 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "ADB_VHB_PlayerDelegate.h"
-
+#import "ADB_VHB_VideoPlayerPluginDelegate.h"
 @class VideoPlayer;
-@class VideoAnalyticsProvider;
 
-@interface VideoPlayerDelegate : ADB_VHB_PlayerDelegate
+@interface VideoPlayerDelegate : ADB_VHB_VideoPlayerPluginDelegate
 
-#pragma mark Initializer
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithPlayer:(VideoPlayer *)player provider:(VideoAnalyticsProvider *)provider NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithPlayer:(VideoPlayer *)player NS_DESIGNATED_INITIALIZER;
 
 @end

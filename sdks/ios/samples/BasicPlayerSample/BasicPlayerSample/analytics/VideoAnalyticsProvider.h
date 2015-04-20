@@ -1,6 +1,6 @@
 /*
  * ADOBE SYSTEMS INCORPORATED
- * Copyright 2014 Adobe Systems Incorporated
+ * Copyright 2015 Adobe Systems Incorporated
  * All Rights Reserved.
 
  * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
@@ -12,7 +12,8 @@
 #import <Foundation/Foundation.h>
 
 @class VideoPlayer;
-@class ADB_VHB_VideoHeartbeat;
+@class ADB_VHB_Heartbeat;
+@class ADB_VHB_VideoPlayerPlugin;
 
 @interface VideoAnalyticsProvider : NSObject
 

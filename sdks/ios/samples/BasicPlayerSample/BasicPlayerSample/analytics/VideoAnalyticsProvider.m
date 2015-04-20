@@ -1,6 +1,6 @@
 /*
  * ADOBE SYSTEMS INCORPORATED
- * Copyright 2014 Adobe Systems Incorporated
+ * Copyright 2015 Adobe Systems Incorporated
  * All Rights Reserved.
 
  * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
@@ -12,19 +12,31 @@
 #import <MediaPlayer/MediaPlayer.h>
 
 #import "VideoAnalyticsProvider.h"
-#import "ADB_VHB_VideoHeartbeat.h"
 #import "VideoPlayer.h"
 #import "VideoPlayerDelegate.h"
 #import "Configuration.h"
-
+#import "ADB_VHB_VideoPlayerPlugin.h"
+#import "SampleAnalyticsPluginDelegate.h"
+#import "ADB_VHB_VideoPlayerPluginConfig.h"
+#import "SampleHeartbeatDelegate.h"
+#import "SampleHeartbeatPluginDelegate.h"
+#import "ADB_VHB_HeartbeatConfig.h"
+#import "ADB_VHB_AdobeAnalyticsPluginConfig.h"
+#import "ADB_VHB_AdobeHeartbeatPluginConfig.h"
 #import "ADB_VHB_AdobeAnalyticsPlugin.h"
-#import "ADB_VHB_ConfigData.h"
+#import "ADB_VHB_AdobeHeartbeatPlugin.h"
+#import "ADB_VHB_Heartbeat.h"
+#import "ADB_VHB_AdobeHeartbeatPluginConfig.h"
+
 
 @interface VideoAnalyticsProvider ()
 
 @property(weak, nonatomic) VideoPlayer *player;
-@property(strong, nonatomic) ADB_VHB_VideoHeartbeat *videoHeartbeat;
-@property(strong, nonatomic) VideoPlayerDelegate *playerDelegate;
+@property(strong, nonatomic) ADB_VHB_Heartbeat *videoHeartbeat;
+@property(strong, nonatomic) ADB_VHB_VideoPlayerPluginDelegate *playerDelegate;
+@property(strong,nonatomic) ADB_VHB_VideoPlayerPlugin *playerPlugin;
+@property(strong,nonatomic) ADB_VHB_AdobeAnalyticsPlugin *analyticsPlugin;
+@property(strong,nonatomic) ADB_VHB_AdobeHeartbeatPlugin *hbPlugin;
 
 @end
 
@@ -35,23 +47,53 @@
 - (instancetype)initWithPlayer:(VideoPlayer *)player {
     self = [super init];
 
-    if (self) {
-        if (!player) {
+    if (self)
+    {
+        if (!player)
+        {
             [NSException raise:@"Illegal argument." format:@"Player reference cannot be nil."];
         }
         
         _player = player;
+        
+        // VIDEO PLAYER PLUGIN
+        _playerDelegate = [[VideoPlayerDelegate alloc] initWithPlayer:player];
+        _playerPlugin = [[ADB_VHB_VideoPlayerPlugin alloc] initWithDelegate:_playerDelegate];
+        ADB_VHB_VideoPlayerPluginConfig *playerConfig = [[ADB_VHB_VideoPlayerPluginConfig alloc] init];
+        playerConfig.debugLogging = YES;
+        [_playerPlugin configure:playerConfig];
+
+        // ANALYTICS-PLUGIN
+        ADB_VHB_AdobeAnalyticsPluginConfig *analyticsPluginConfig = [[ADB_VHB_AdobeAnalyticsPluginConfig alloc] init];
+        analyticsPluginConfig.channel = @"test-channel";
+        analyticsPluginConfig.debugLogging = YES;
+        SampleAnalyticsPluginDelegate *analyticsDelegate = [[SampleAnalyticsPluginDelegate alloc] init];
+        _analyticsPlugin = [[ADB_VHB_AdobeAnalyticsPlugin alloc] initWithDelegate:analyticsDelegate];
+        
+        // HEARTBEAT-PLUGIN
+        SampleHeartbeatPluginDelegate *hbPluginDelegate = [[SampleHeartbeatPluginDelegate alloc] init];
+        _hbPlugin = [[ADB_VHB_AdobeHeartbeatPlugin alloc] initWithDelegate:hbPluginDelegate];
+        ADB_VHB_AdobeHeartbeatPluginConfig *hbConfig = [[ADB_VHB_AdobeHeartbeatPluginConfig alloc]
+                                                       initWithTrackingServer:@"http://metrics.adobeprimetime.com"
+                                                       publisher:@"TEST"];
+        hbConfig.ovp = @"test-ovp";
+        hbConfig.sdk = @"test-sdk";
+        hbConfig.ssl = NO;
+        hbConfig.debugLogging = YES;
+        hbConfig.quietMode = NO;
+        [_hbPlugin configure:hbConfig];
+        
+        // PLUGINS
+        NSArray *plugins = [NSArray arrayWithObjects:_playerPlugin,_analyticsPlugin,_hbPlugin,nil];
+        
+        // HB CORE
+        SampleHeartbeatDelegate *hbDelegate = [[SampleHeartbeatDelegate alloc] init];
+        _videoHeartbeat = [[ADB_VHB_Heartbeat alloc] initWithDelegate:hbDelegate plugins:plugins];
+        ADB_VHB_HeartbeatConfig *hbCoreConfig = [[ADB_VHB_HeartbeatConfig alloc] init];
+        hbCoreConfig.debugLogging = YES;
+        [_videoHeartbeat configure:hbCoreConfig];
+        
         [self setupPlayerNotifications];
-        
-        // Set the plugin list.
-        NSArray *plugins = @[[[ADB_VHB_AdobeAnalyticsPlugin alloc] init]];
-        
-        _playerDelegate = [[VideoPlayerDelegate alloc] initWithPlayer:player provider:self];
-        _videoHeartbeat = [[ADB_VHB_VideoHeartbeat alloc] initWithPlayerDelegate:_playerDelegate plugins:plugins];
-
-        
-
-        [self setupVideoHeartbeat];
         
     }
 
@@ -75,66 +117,96 @@
 
 #pragma mark VideoPlayer notification handlers
 
-- (void)onMainVideoLoaded:(NSNotification *)notification {
-    [self.videoHeartbeat trackVideoLoad];
+- (void)onMainVideoLoaded:(NSNotification *)notification
+{
+    NSLog (@"Player Event: VIDEO_LOAD");
+    
+    NSMutableDictionary *videoMetadata = [[NSMutableDictionary alloc] init];
+    [videoMetadata setObject:@"false" forKey:@"isUserLoggedIn"];
+    [videoMetadata setObject:@"Sample TV station" forKey:@"tvStation"];
+    [videoMetadata setObject:@"Sample programmer" forKey:@"programmer"];
+    
+    _analyticsPlugin.videoMetadata = videoMetadata;
+    [_playerPlugin trackVideoLoad];
+    
 }
 
-- (void)onMainVideoUnloaded:(NSNotification *)notification {
-    [self.videoHeartbeat trackVideoUnload];
+- (void)onMainVideoUnloaded:(NSNotification *)notification
+{
+    NSLog (@"Player Event: VIDEO_UNLOAD");
+    [_playerPlugin trackVideoUnload];
 }
 
-- (void)onPlay:(NSNotification *)notification {
-    [self.videoHeartbeat trackPlay];
+- (void)onPlay:(NSNotification *)notification
+{
+    NSLog (@"Player Event: VIDEO_PLAY");
+    [_playerPlugin trackPlay];
 }
 
-- (void)onStop:(NSNotification *)notification {
-    [self.videoHeartbeat trackPause];
+- (void)onStop:(NSNotification *)notification
+{
+    NSLog (@"Player Event: VIDEO_PAUSE");
+    [_playerPlugin trackPause];
 }
 
-- (void)onSeekStart:(NSNotification *)notification {
-    [self.videoHeartbeat trackSeekStart];
+- (void)onSeekStart:(NSNotification *)notification
+{
+    NSLog (@"Player Event: onSeekStart");
+    [_playerPlugin trackSeekStart];
 }
 
-- (void)onSeekComplete:(NSNotification *)notification {
-    [self.videoHeartbeat trackSeekComplete];
+- (void)onSeekComplete:(NSNotification *)notification
+{
+    NSLog (@"Player Event: onSeekComplete");
+    [_playerPlugin trackSeekComplete];
 }
 
-- (void)onComplete:(NSNotification *)notification {
-    [self.videoHeartbeat trackComplete];
+- (void)onComplete:(NSNotification *)notification
+{
+    NSLog (@"Player Event: onComplete");
+    
+    void (^trackCompleteHandler)(void) = ^ {
+        NSLog (@"The completion of the content has been tracked.");
+    };
+    
+    [_playerPlugin trackComplete:trackCompleteHandler];
 }
 
-- (void)onChapterStart:(NSNotification *)notification {
-    [self.videoHeartbeat trackChapterStart];
+- (void)onChapterStart:(NSNotification *)notification
+{
+    NSLog (@"Player Event: onChapterStart");
+
+    NSMutableDictionary *chapterDictionary = [[NSMutableDictionary alloc] init];
+    [chapterDictionary setObject:@"Sample segment type" forKey:@"segmentType"];
+    
+    _analyticsPlugin.chapterMetadata = chapterDictionary;
+    [_playerPlugin trackChapterStart];
 }
 
-- (void)onAdChapterComplete:(NSNotification *)notification {
-    [self.videoHeartbeat trackChapterComplete];
+- (void)onChapterComplete:(NSNotification *)notification
+{
+    NSLog (@"Player Event: onChapterComplete");
+    [_playerPlugin trackChapterComplete];
 }
 
-- (void)onAdStart:(NSNotification *)notification {
-    [self.videoHeartbeat trackAdStart];
+- (void)onAdStart:(NSNotification *)notification
+{
+    NSLog (@"Player Event: onAdStart");
+    NSMutableDictionary *adDictionary = [[NSMutableDictionary alloc] init];
+    [adDictionary setObject:@"Sample affiliate" forKey:@"affiliate"];
+    [adDictionary setObject:@"campaign" forKey:@"campaign"];
+    [_analyticsPlugin setAdMetadata:adDictionary];
+    
+    [_playerPlugin trackAdStart];
 }
 
-- (void)onAdComplete:(NSNotification *)notification {
-    [self.videoHeartbeat trackAdComplete];
+- (void)onAdComplete:(NSNotification *)notification
+{
+    NSLog (@"Player Event: onAdComplete");
+    [_playerPlugin trackAdComplete];
 }
 
 #pragma mark - Private helper methods
-
-- (void)setupVideoHeartbeat {
-    ADB_VHB_ConfigData *configData = [[ADB_VHB_ConfigData alloc] initWithTrackingServer:HEARTBEAT_TRACKING_SERVER
-                                                                                  jobId:HEARTBEAT_JOB_ID
-                                                                              publisher:HEARTBEAT_PUBLISHER];
-    
-    configData.ovp = HEARTBEAT_OVP;
-    configData.sdk = HEARTBEAT_SDK;
-    configData.channel = HEARTBEAT_CHANNEL;
-
-    // Set this to NO for production apps.
-    configData.debugLogging = YES;
-
-    [_videoHeartbeat configure:configData];
-}
 
 - (void)setupPlayerNotifications {
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -178,7 +250,7 @@
                                                object:self.player];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(onAdChapterComplete:)
+                                             selector:@selector(onChapterComplete:)
                                                  name:PLAYER_EVENT_CHAPTER_COMPLETE
                                                object:self.player];
 
