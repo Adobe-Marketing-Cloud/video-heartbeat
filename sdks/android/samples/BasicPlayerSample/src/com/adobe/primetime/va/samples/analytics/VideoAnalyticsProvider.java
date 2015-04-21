@@ -13,25 +13,30 @@ package com.adobe.primetime.va.samples.analytics;
 
 import android.util.Log;
 
+import com.adobe.mobile.Config;
+import com.adobe.primetime.core.ICallback;
 import com.adobe.primetime.core.plugin.IPlugin;
-import com.adobe.primetime.va.ConfigData;
-import com.adobe.primetime.va.VideoHeartbeat;
+import com.adobe.primetime.va.Heartbeat;
 import com.adobe.primetime.va.plugins.aa.AdobeAnalyticsPlugin;
+import com.adobe.primetime.va.plugins.aa.AdobeAnalyticsPluginConfig;
+import com.adobe.primetime.va.plugins.ah.AdobeHeartbeatPluginConfig;
+import com.adobe.primetime.va.plugins.videoplayer.VideoPlayerPlugin;
+import com.adobe.primetime.va.plugins.ah.AdobeHeartbeatPlugin;
+import com.adobe.primetime.va.plugins.videoplayer.VideoPlayerPluginConfig;
 import com.adobe.primetime.va.samples.Configuration;
 import com.adobe.primetime.va.samples.player.PlayerEvent;
 import com.adobe.primetime.va.samples.player.VideoPlayer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 public class VideoAnalyticsProvider implements Observer {
     private static final String LOG_TAG = "[VideoHeartbeatSample]::" + VideoAnalyticsProvider.class.getSimpleName();
 
     private VideoPlayer _player;
-    private VideoPlayerDelegate _playerDelegate;
-    private VideoHeartbeat _videoHeartbeat;
+    private VideoPlayerPlugin _playerPlugin;
+    private AdobeAnalyticsPlugin _aaPlugin;
+    private AdobeHeartbeatPlugin _ahPlugin;
+    private Heartbeat _heartbeat;
 
     public VideoAnalyticsProvider(VideoPlayer player) {
         if (player == null) {
@@ -43,21 +48,49 @@ public class VideoAnalyticsProvider implements Observer {
         // Set the plugin list.
         List<IPlugin> plugins = new ArrayList<IPlugin>();
 
-        // Add the AdobeAnalytics plugin.
-        plugins.add(new AdobeAnalyticsPlugin());
+        // Setup VideoPlayer plugin
+        _playerPlugin = new VideoPlayerPlugin(new SampleVideoPlayerPluginDelegate(_player));
+        VideoPlayerPluginConfig playerPluginConfig = new VideoPlayerPluginConfig();
+        playerPluginConfig.debugLogging = true; // set this to false for production apps.
+        _playerPlugin.configure(playerPluginConfig);
+        plugins.add(_playerPlugin);
 
-        _playerDelegate = new VideoPlayerDelegate(_player, this);
-        _videoHeartbeat = new VideoHeartbeat(_playerDelegate, plugins);
+        // Setup the visitor id - optional parameter to be set by the player.
+        Config.setUserIdentifier("test-vid");
 
-        _setupVideoHeartbeat();
+        // Setup AdobeAnalytics plugin
+        _aaPlugin = new AdobeAnalyticsPlugin(new SampleAdobeAnalyticsPluginDelegate());
+        AdobeAnalyticsPluginConfig aaPluginConfig = new AdobeAnalyticsPluginConfig();
+        aaPluginConfig.channel = Configuration.HEARTBEAT_CHANNEL;
+        aaPluginConfig.debugLogging = true; // set this to false for production apps.
+        _aaPlugin.configure(aaPluginConfig);
+        plugins.add(_aaPlugin);
+
+        // Setup AdobeHeartbeat plugin
+        _ahPlugin = new AdobeHeartbeatPlugin(new SampleAdobeHeartbeatPluginDelegate());
+        AdobeHeartbeatPluginConfig ahPluginConfig = new AdobeHeartbeatPluginConfig(
+                Configuration.HEARTBEAT_TRACKING_SERVER,
+                Configuration.HEARTBEAT_PUBLISHER
+        );
+        ahPluginConfig.ovp = Configuration.HEARTBEAT_OVP;
+        ahPluginConfig.sdk = Configuration.HEARTBEAT_SDK;
+        ahPluginConfig.debugLogging = true; // set this to false for production apps.
+        _ahPlugin.configure(ahPluginConfig);
+        plugins.add(_ahPlugin);
+
+        // Setup and configure Heartbeat lib
+        _heartbeat = new Heartbeat(new SampleHeartbeatDelegate(), plugins);
     }
 
     public void destroy() {
         if (_player != null) {
-            _videoHeartbeat.destroy();
-            _videoHeartbeat = null;
-            _playerDelegate = null;
+            _heartbeat.destroy();
+            _heartbeat = null;
+            _aaPlugin = null;
+            _playerPlugin = null;
+            _ahPlugin = null;
 
+            _player.destroy();
             _player.deleteObserver(this);
             _player = null;
         }
@@ -70,87 +103,96 @@ public class VideoAnalyticsProvider implements Observer {
         switch (playerEvent) {
             case VIDEO_LOAD:
                 Log.d(LOG_TAG, "Video loaded.");
-                _videoHeartbeat.trackVideoLoad();
+                HashMap<String, String> videoMetadata = new HashMap<String, String>();
+                videoMetadata.put("isUserLoggedIn", "false");
+                videoMetadata.put("tvStation", "Sample TV Station");
+                videoMetadata.put("programmer", "Sample programmer");
+                _aaPlugin.setVideoMetadata(videoMetadata);
+
+                _playerPlugin.trackVideoLoad();
                 break;
 
             case VIDEO_UNLOAD:
                 Log.d(LOG_TAG, "Video unloaded.");
-                _videoHeartbeat.trackVideoUnload();
+                _playerPlugin.trackVideoUnload();
                 break;
 
             case PLAY:
                 Log.d(LOG_TAG, "Playback started.");
-                _videoHeartbeat.trackPlay();
+                _playerPlugin.trackPlay();
                 break;
 
             case PAUSE:
                 Log.d(LOG_TAG, "Playback paused.");
-                _videoHeartbeat.trackPause();
+                _playerPlugin.trackPause();
                 break;
 
             case SEEK_START:
                 Log.d(LOG_TAG, "Seek started.");
-                _videoHeartbeat.trackSeekStart();
+                _playerPlugin.trackSeekStart();
                 break;
 
             case SEEK_COMPLETE:
                 Log.d(LOG_TAG, "Seek completed.");
-                _videoHeartbeat.trackSeekComplete();
+                _playerPlugin.trackSeekComplete();
                 break;
 
             case BUFFER_START:
                 Log.d(LOG_TAG, "Buffer started.");
-                _videoHeartbeat.trackBufferStart();
+                _playerPlugin.trackBufferStart();
                 break;
 
             case BUFFER_COMPLETE:
                 Log.d(LOG_TAG, "Buffer completed.");
-                _videoHeartbeat.trackBufferComplete();
+                _playerPlugin.trackBufferComplete();
                 break;
 
             case AD_START:
                 Log.d(LOG_TAG, "Ad started.");
-                _videoHeartbeat.trackAdStart();
+                HashMap<String, String> adMetadata = new HashMap<String, String>();
+                adMetadata.put("affiliate", "Sample affiliate");
+                adMetadata.put("campaign", "Sample ad campaign");
+                _aaPlugin.setAdMetadata(adMetadata);
+
+                _playerPlugin.trackAdStart();
                 break;
 
             case AD_COMPLETE:
                 Log.d(LOG_TAG, "Ad completed.");
-                _videoHeartbeat.trackAdComplete();
+                _playerPlugin.trackAdComplete();
                 break;
 
             case CHAPTER_START:
                 Log.d(LOG_TAG, "Chapter started.");
-                _videoHeartbeat.trackChapterStart();
+                HashMap<String, String> chapterMetadata = new HashMap<String, String>();
+                chapterMetadata.put("segmentType", "Sample Segment Type");
+                _aaPlugin.setChapterMetadata(chapterMetadata);
+
+                _playerPlugin.trackChapterStart();
                 break;
 
             case CHAPTER_COMPLETE:
                 Log.d(LOG_TAG, "Chapter completed.");
-                _videoHeartbeat.trackChapterComplete();
+                _playerPlugin.trackChapterComplete();
                 break;
 
             case COMPLETE:
                 Log.d(LOG_TAG, "Playback completed.");
-                _videoHeartbeat.trackComplete();
+
+                ICallback completeCallback = new ICallback() {
+                    @Override
+                    public Object call(Object param) {
+                        Log.d(LOG_TAG, "The completion of the content has been tracked.");
+                        return null;
+                    }
+                };
+
+                _playerPlugin.trackComplete(completeCallback);
                 break;
 
             default:
                 Log.d(LOG_TAG, "Unhandled player event: " + playerEvent.toString());
                 break;
         }
-    }
-
-    private void _setupVideoHeartbeat() {
-        ConfigData configData = new ConfigData(Configuration.HEARTBEAT_TRACKING_SERVER,
-                Configuration.HEARTBEAT_JOB_ID,
-                Configuration.HEARTBEAT_PUBLISHER);
-
-        configData.ovp = Configuration.HEARTBEAT_OVP;
-        configData.sdk = Configuration.HEARTBEAT_SDK;
-        configData.channel = Configuration.HEARTBEAT_CHANNEL;
-
-        // Set this to false for production apps.
-        configData.debugLogging = true;
-
-        _videoHeartbeat.configure(configData);
     }
 }

@@ -20,11 +20,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.MediaController;
 
-import com.adobe.primetime.va.AdBreakInfo;
-import com.adobe.primetime.va.AdInfo;
-import com.adobe.primetime.va.AssetType;
-import com.adobe.primetime.va.ChapterInfo;
-import com.adobe.primetime.va.VideoInfo;
+import com.adobe.primetime.va.plugins.videoplayer.*;
 import com.adobe.primetime.va.samples.Configuration;
 import com.adobe.primetime.va.samples.R;
 
@@ -50,15 +46,16 @@ public class VideoPlayer extends Observable {
     private final MediaController _mediaController;
     private final ObservableVideoView _videoView;
 
-    private Boolean _videoLoaded = false;
-    private Boolean _seeking = false;
-    private Boolean _buffering = false;
+    private boolean _videoLoaded = false;
+    private boolean _seeking = false;
+    private boolean _buffering = false;
     private Boolean _paused = true;
 
     private VideoInfo _videoInfo;
     private AdBreakInfo _adBreakInfo;
     private AdInfo _adInfo;
     private ChapterInfo _chapterInfo;
+    private QoSInfo _qosInfo;
 
     private Clock _clock;
 
@@ -85,6 +82,27 @@ public class VideoPlayer extends Observable {
         _videoId = Configuration.VIDEO_ID;
         _videoName = Configuration.VIDEO_NAME;
         _streamType = AssetType.ASSET_TYPE_VOD;
+
+        _videoInfo = null;
+        _adBreakInfo = null;
+        _adInfo = null;
+        _chapterInfo = null;
+
+        // Build a static/hard-coded QoS info here.
+        _qosInfo = new QoSInfo();
+        _qosInfo.bitrate = 50000L;
+        _qosInfo.fps = 24D;
+        _qosInfo.droppedFrames =10L;
+        _qosInfo.startupTime = 0D;
+
+        _clock = null;
+    }
+
+    public void destroy() {
+        if (_clock != null) {
+            _clock.quit();
+            _clock = null;
+        }
     }
 
     public VideoInfo getVideoInfo() {
@@ -93,7 +111,7 @@ public class VideoPlayer extends Observable {
             _videoInfo.playhead = AD_START_POS;
         } else {
             Double vTime = getPlayhead();
-            _videoInfo.playhead = (vTime < AD_START_POS) ? vTime : vTime - AD_LENGTH;
+            _videoInfo.playhead = (vTime <= AD_START_POS) ? vTime : vTime - AD_LENGTH;
         }
 
         return _videoInfo;
@@ -109,6 +127,10 @@ public class VideoPlayer extends Observable {
 
     public ChapterInfo getChapterInfo() {
         return _chapterInfo;
+    }
+
+    public QoSInfo getQosInfo() {
+        return _qosInfo;
     }
 
     public void loadContent(Uri uri) {
@@ -148,7 +170,7 @@ public class VideoPlayer extends Observable {
     }
 
     private Double getDuration() {
-        return (double) (_videoView.getDuration() / 1000);
+        return (double) (_videoView.getDuration() / 1000 - AD_LENGTH);
     }
 
     private Double getPlayhead() {
@@ -181,7 +203,7 @@ public class VideoPlayer extends Observable {
                     break;
 
                 default:
-                    Log.d(LOG_TAG, "#onInfo(what=" + what + ") - extra: " + extra);
+                    Log.d(LOG_TAG, "#onInfo(what=" + what + ", extra=" + extra + ")");
                     break;
             }
             return true;
@@ -260,7 +282,11 @@ public class VideoPlayer extends Observable {
         _seeking = false;
         _buffering = false;
         _paused = true;
-        _clock = null;
+
+        if (_clock != null) {
+            _clock.quit();
+            _clock = null;
+        }
     }
 
     private void _startVideo() {
@@ -299,6 +325,9 @@ public class VideoPlayer extends Observable {
         _chapterInfo.position = 2L;
         _chapterInfo.name = "Second chapter";
 
+        // Also change startupTime
+        _qosInfo.startupTime = 15D;
+
         setChanged();
         notifyObservers(PlayerEvent.CHAPTER_START);
     }
@@ -325,7 +354,6 @@ public class VideoPlayer extends Observable {
         _adInfo.name = "Sample ad";
         _adInfo.length = AD_LENGTH;
         _adInfo.position = 1L;
-        _adInfo.cpm = "49750702676yfh075757";
 
         // Start the ad.
         setChanged();
