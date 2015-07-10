@@ -34,6 +34,14 @@
         // Set-up the Visitor and AppMeasurement instances.
         var visitor = new Visitor(Configuration.VISITOR.MARKETING_CLOUD_ORG_ID);
         visitor.trackingServer = Configuration.VISITOR.TRACKING_SERVER;
+        visitor.setCustomerIDs({
+            "userId": {
+                "id": Configuration.VISITOR.DPID
+            },
+            "puuid": {
+                "id": Configuration.VISITOR.DPUUID
+            }
+        });
 
         // Set-up the AppMeasurement component.
         var appMeasurement = new AppMeasurement();

@@ -3,6 +3,9 @@
 
 Included are notes from the latest major revision to current.
 
+## 1.5.1.3 (10 July, 2015)
+- Customer declared IDs support.
+
 ## 1.5.1.1 (6 Apr, 2015)
 
 Fixed issues

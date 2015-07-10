@@ -20,7 +20,7 @@
  */
 
 /*
- * video heartbeats - js-v1.5.1.1 - 2015-04-07
+ * video heartbeats - js-v1.5.1.3 - 2015-07-11
  * Copyright (c) 2015 Adobe Systems, Inc. All Rights Reserved.
  */
 
@@ -1245,8 +1245,8 @@ service.clock || (service.clock = {});
     var MAJOR = "1";
     var MINOR = "5";
     var MICRO = "1";
-    var PATCH = "1";
-    var BUILD = "bf08a7e";
+    var PATCH = "3";
+    var BUILD = "af05607";
     var API_LEVEL = 3;
 
     /**
@@ -3822,8 +3822,10 @@ ah.network || (ah.network = {});
     ah.model.UserDao = UserDao;
 })(global.ADB.core, ah);
 
-(function(ah) {
+(function(utils, ah) {
     'use strict';
+
+    var ObjectUtils = utils.ObjectUtils;
 
     var EventDao = ah.model.EventDao;
     var AssetDao = ah.model.AssetDao;
@@ -3840,13 +3842,14 @@ ah.network || (ah.network = {});
         this.assetData = new AssetDao(context._assetData);
         this.streamData = new StreamDao(context._streamData);
         this.qosData = new QoSDao(context._qosData);
+        this.cuserData = ObjectUtils.clone(context._cuserData);
         this.meta = meta;
         this.callback = callback;
     }
 
     // Export symbols.
     ah.model.TrackItem = TrackItem;
-})(ah);
+})(global.ADB.va.utils, ah);
 
 (function(utils, ah) {
     'use strict';
@@ -3857,7 +3860,7 @@ ah.network || (ah.network = {});
     var AssetDao = ah.model.AssetDao;
     var StreamDao = ah.model.StreamDao;
     var QoSDao = ah.model.QoSDao;
-
+    var CUserDao = ah.model.CUserDao;
 
     function Report(adobeAnalyticsData, userData, serviceProviderData, sessionData, item) {
         this.adobeAnalyticsData = adobeAnalyticsData;
@@ -3869,6 +3872,7 @@ ah.network || (ah.network = {});
         this.assetData = new AssetDao(item.assetData);
         this.streamData = new StreamDao(item.streamData);
         this.qosData = new QoSDao(item.qosData);
+        this.cuserData = ObjectUtils.clone(item.cuserData);
         this.meta = ObjectUtils.clone(item.meta);
         this.callback = item.callback;
     }
@@ -3936,6 +3940,9 @@ ah.network || (ah.network = {});
         // Add the user data.
         result.push(this.serializeDao(report.userData));
 
+        // Add the cuser data.
+        result.push(this.serializeMap(report.cuserData, "cuser"));
+
         // Add the SP data.
         result.push(this.serializeDao(report.serviceProviderData));
 
@@ -3955,7 +3962,7 @@ ah.network || (ah.network = {});
         result.push(this.serializeDao(report.qosData));
 
         // Add the meta-data.
-        result.push(this.serializeMap(report.meta));
+        result.push(this.serializeMap(report.meta, "meta"));
 
         return {
             serializedOutput: result.filter(function(item) {
@@ -3974,12 +3981,13 @@ ah.network || (ah.network = {});
         }).join("&");
     };
 
-    QuerystringSerializer.prototype.serializeMap = function(map) {
+    QuerystringSerializer.prototype.serializeMap = function(map, name) {
         var result = [];
+        var prefix = name ? name : "meta";
 
         for (var key in map) {
             if (map.hasOwnProperty(key) && map[key]) {
-                result.push("s:meta:" + key + "=" + window["encodeURIComponent"](map[key]));
+                result.push("s:" + prefix + ":" + key + "=" + window["encodeURIComponent"](map[key]));
             }
         }
 
@@ -4843,6 +4851,7 @@ ah.network || (ah.network = {});
         this._streamData = null;
         this._qosData = null;
         this._sessionData = null;
+        this._cuserData = null;
 
         this._adobeAnalyticsData = new AdobeAnalyticsDao();
         this._serviceProviderData = new ServiceProviderDao();
@@ -4903,6 +4912,10 @@ ah.network || (ah.network = {});
         this._userData.analyticsVisitorId(data.aid);
         this._userData.marketingCloudVisitorId(data.mid);
 
+        if(data.customerIDs) {
+            this._cuserData = data.customerIDs;
+        }
+
         this._updateQoSInfo(data);
 
         // Send the AA_START event immediately (out-of-band).
@@ -4914,6 +4927,9 @@ ah.network || (ah.network = {});
         aaStartItem.assetData.adData(null);
         // >> and update the asset type.
         aaStartItem.assetData.type(AssetDao.TYPE_MAIN_CONTENT);
+
+        // Once AA_START event is done we no longer need _cuserData in the context
+        this._cuserData = null;
 
         this._sendHit(aaStartItem);
     };
@@ -5464,6 +5480,7 @@ ah.network || (ah.network = {});
         this._qosData = new QoSDao();
         this._sessionData = new SessionDao();
         this._assetData = new AssetDao();
+        this._cuserData = null;
 
         this._stashedAdData = null;
         this._stashedChapterData = null;
@@ -6279,7 +6296,8 @@ ah.network || (ah.network = {});
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "vid", "vid"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "aid", "aid"),
             new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "mid", "mid"),
-
+            new ParamMapping(ADOBE_ANALYTICS_PLUGIN, "customerIDs", "customerIDs"),
+            
             new ParamMapping(PLAYER_PLUGIN, "video.playhead", "playhead"),
             new ParamMapping(PLAYER_PLUGIN, "qos.fps", "fps"),
             new ParamMapping(PLAYER_PLUGIN, "qos.droppedFrames", "droppedFrames"),
@@ -6933,6 +6951,36 @@ if (typeof aa === 'undefined') {
 
         fnMap["mid"] = function() {
             return self._appMeasurement.marketingCloudVisitorID;
+        };
+
+        fnMap["customerIDs"] = function() {
+            var customerIDs = self._appMeasurement.visitor.getCustomerIDs();
+            var preparedCustomerIDs = {};
+
+            for(var key in customerIDs) {
+                if(customerIDs.hasOwnProperty(key)) {
+                    var customerID = customerIDs[key];
+                    //Check if customerID is an object or a String
+                    if(typeof customerID === 'object') {
+                        //If it is an object we loop through the value keys.
+                        for(var customerIDKey in customerID) {
+                            if(customerID.hasOwnProperty(customerIDKey)) {
+                                if(customerIDKey == "authState"){
+                                    preparedCustomerIDs[key + ".as"] = customerID[customerIDKey];
+                                } else{
+                                    preparedCustomerIDs[key + "." + customerIDKey] = customerID[customerIDKey];
+                                }
+                            }
+                        }
+                        //If authState is not defined we default it to 0 (Unknown)
+                        if(!preparedCustomerIDs[key + ".as"]) {
+                            preparedCustomerIDs[key + ".as"] = "0";
+                        }
+                    }
+                }
+            }
+
+            return preparedCustomerIDs;
         };
 
         fnMap["channel"] = function() {

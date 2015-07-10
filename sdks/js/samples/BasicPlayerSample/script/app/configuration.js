@@ -22,7 +22,9 @@
 
         VISITOR: {
             MARKETING_CLOUD_ORG_ID: 'sample-marketing-cloud-org-id',
-            TRACKING_SERVER: 'example.com'
+            TRACKING_SERVER: 'example.com',
+            DPID: 'sample-dpid',
+            DPUUID: 'sample-dpuuid'
         },
 
         APP_MEASUREMENT: {
