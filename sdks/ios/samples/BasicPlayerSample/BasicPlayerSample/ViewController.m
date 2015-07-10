@@ -40,6 +40,9 @@
 
     [ADBMobile setDebugLogging:YES];
     
+    // sample for setting AudienceManager dpid and dpuuid
+    // [ADBMobile audienceSetDpid:@"67312378756723456" dpuuid:@"550e8400-e29b-41d4-a716-446655440000"];
+
     _pubLabel.hidden = YES;
     
     // Setup the video player
@@ -51,33 +54,28 @@
     }
 
     NSURL *streamUrl = [NSURL fileURLWithPath:videoPath];
-    self.videoPlayer = [[VideoPlayer alloc] initWithContentURL:streamUrl];
-
-    [self.videoPlayer prepareToPlay];
-    [self.videoPlayer.view setFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
-    [self.view addSubview:self.videoPlayer.view];
-    self.videoPlayer.shouldAutoplay = NO;
-    [self.view bringSubviewToFront:_pubLabel];
-
-    [self _installNotificationHandlers];
+    if (!self.videoPlayer)
+    {
+        self.videoPlayer = [[VideoPlayer alloc] initWithContentURL:streamUrl];
+        
+        [self.videoPlayer prepareToPlay];
+        [self.videoPlayer.view setFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
+        [self.view addSubview:self.videoPlayer.view];
+        self.videoPlayer.shouldAutoplay = NO;
+        [self.view bringSubviewToFront:_pubLabel];
+        
+        [self _installNotificationHandlers];
+    }
     
     // Create the VideoAnalyticsProvider instance and attach it to the VideoPlayer instance.
-
-    if (self.videoAnalyticsProvider) {
-        [self.videoAnalyticsProvider destroy];
+    if (!self.videoAnalyticsProvider) {
+        // Setup video-tracking.
+        self.videoAnalyticsProvider = [[VideoAnalyticsProvider alloc] initWithPlayer:self.videoPlayer];
     }
-
-    // Setup video-tracking.    
-    self.videoAnalyticsProvider = [[VideoAnalyticsProvider alloc] initWithPlayer:self.videoPlayer];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-    // End the life-cycle of the VideoAnalytics provider.
-
-    // Release all allocated resources.
-    _videoAnalyticsProvider = nil;
-    _videoPlayer = nil;
-
+    // End the life-cycle of the VideoAnalytics provider. (or full screen)
     [super viewWillDisappear:animated];
 }
 

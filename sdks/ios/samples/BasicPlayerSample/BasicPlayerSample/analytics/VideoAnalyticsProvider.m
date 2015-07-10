@@ -69,6 +69,7 @@
         analyticsPluginConfig.debugLogging = YES;
         SampleAnalyticsPluginDelegate *analyticsDelegate = [[SampleAnalyticsPluginDelegate alloc] init];
         _analyticsPlugin = [[ADB_VHB_AdobeAnalyticsPlugin alloc] initWithDelegate:analyticsDelegate];
+        [_analyticsPlugin configure:analyticsPluginConfig];
         
         // HEARTBEAT-PLUGIN
         SampleHeartbeatPluginDelegate *hbPluginDelegate = [[SampleHeartbeatPluginDelegate alloc] init];

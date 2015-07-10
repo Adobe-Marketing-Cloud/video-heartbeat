@@ -4,6 +4,14 @@ Release Notes for iOS VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.1.3 (10 July, 2015)
+What’s new
+- Customer declared IDs support
+- VideoHeartbeat now respects user opt-out privacy status in Adobe mobile library
+
+Fixed issues
+- BasicPlayerSample bugs
+
 ## 1.5.1.0 (20 Apr, 2015)
 What’s new :
 - Ability to send metadata with video start and/or video/ad/chapter start as context data. It is possible to correlate that data with all other video and non-video AA variables
