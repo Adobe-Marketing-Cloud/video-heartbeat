@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 
+import com.adobe.mobile.AudienceManager;
 import com.adobe.mobile.Config;
 import com.adobe.primetime.va.samples.analytics.VideoAnalyticsProvider;
 import com.adobe.primetime.va.samples.player.PlayerEvent;
@@ -25,6 +26,9 @@ public class MainActivity extends Activity implements Observer {
 
         // Bootstrap the AppMeasurement library.
         Config.setContext(this.getApplicationContext());
+
+        // sample for setting AudienceManager dpid and dpuuid
+        AudienceManager.setDpidAndDpuuid("67312378756723456", "550e8400-e29b-41d4-a716-446655440000");
 
         // Create the VideoPlayer instance.
         _player = new VideoPlayer(this);
