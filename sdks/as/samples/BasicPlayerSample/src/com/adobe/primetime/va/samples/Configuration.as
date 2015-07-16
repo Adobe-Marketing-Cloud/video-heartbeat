@@ -18,6 +18,9 @@ package com.adobe.primetime.va.samples {
         public static const VISITOR_MARKETING_CLOUD_ORG_ID:String = "sample-marketing-cloud-org-id";
         public static const VISITOR_TRACKING_SERVER:String        = "example.com";
         
+        public static const DPID:String             = 'sample-dpid';
+        public static const DPUUID:String           = 'sample-dpuuid';
+
         public static const APP_MEASUREMENT_ACCOUNT:String         = "sample-account";
         public static const APP_MEASUREMENT_TRACKING_SERVER:String = "example.com";
         public static const APP_MEASUREMENT_PAGE_NAME:String       = "Sample Page Name";

@@ -36,6 +36,14 @@ public class VideoAnalyticsProvider {
         // Setup the Visitor and AppMeasurement instances.
         var visitor:Visitor = new Visitor(Configuration.VISITOR_MARKETING_CLOUD_ORG_ID);
         visitor.trackingServer = Configuration.VISITOR_TRACKING_SERVER;
+        visitor.setCustomerIDs({
+            "userId": {
+                "id": Configuration.DPID
+            },
+            "puuid": {
+                "id": Configuration.DPUUID
+            }
+         });
 
         var appMeasurement:AppMeasurement = new AppMeasurement();
         appMeasurement.visitor = visitor;
