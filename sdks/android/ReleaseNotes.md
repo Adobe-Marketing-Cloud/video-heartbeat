@@ -4,6 +4,10 @@ Release Notes for Android VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.2 (08 September, 2015)
+What’s new
+- Added support for Federated Analytics classification data
+
 ## 1.5.1.3 (15 July, 2015)
 What’s new
 - Customer declared IDs support
