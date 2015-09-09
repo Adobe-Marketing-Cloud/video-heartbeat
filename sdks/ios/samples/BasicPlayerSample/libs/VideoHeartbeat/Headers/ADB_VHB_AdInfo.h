@@ -26,7 +26,8 @@
 /**
  * Current ad's id, set empty by default
  */
-@property(copy, nonatomic) NSString *id;
+@property(copy, nonatomic) NSString *adId;
+@property(copy, nonatomic) NSString *id __deprecated_msg("Use adId instead.");
 
 /**
  * Current ad's name, set empty by default

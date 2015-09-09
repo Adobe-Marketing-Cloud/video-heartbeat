@@ -243,7 +243,7 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
 {
     // Prepare the video info.
     self.videoInfo = [[ADB_VHB_VideoInfo alloc] init];
-    self.videoInfo.id = self.videoId;
+    self.videoInfo.videoId = self.videoId;
     self.videoInfo.name = self.videoName;
     self.videoInfo.playerName = self.playerName;
     self.videoInfo.length = @(self.duration);
@@ -329,7 +329,7 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
 
     // Prepare the ad info.
     self.adInfo = [[ADB_VHB_AdInfo alloc] init];
-    self.adInfo.id = @"001";
+    self.adInfo.adId = @"001";
     self.adInfo.name = @"Sample ad";
     self.adInfo.length = @(AD_LENGTH);
     self.adInfo.position = @1;

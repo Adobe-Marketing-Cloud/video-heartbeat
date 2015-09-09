@@ -65,7 +65,7 @@
 
         // ANALYTICS-PLUGIN
         ADB_VHB_AdobeAnalyticsPluginConfig *analyticsPluginConfig = [[ADB_VHB_AdobeAnalyticsPluginConfig alloc] init];
-        analyticsPluginConfig.channel = @"test-channel";
+        analyticsPluginConfig.channel = HEARTBEAT_CHANNEL;
         analyticsPluginConfig.debugLogging = YES;
         SampleAnalyticsPluginDelegate *analyticsDelegate = [[SampleAnalyticsPluginDelegate alloc] init];
         _analyticsPlugin = [[ADB_VHB_AdobeAnalyticsPlugin alloc] initWithDelegate:analyticsDelegate];
@@ -75,10 +75,10 @@
         SampleHeartbeatPluginDelegate *hbPluginDelegate = [[SampleHeartbeatPluginDelegate alloc] init];
         _hbPlugin = [[ADB_VHB_AdobeHeartbeatPlugin alloc] initWithDelegate:hbPluginDelegate];
         ADB_VHB_AdobeHeartbeatPluginConfig *hbConfig = [[ADB_VHB_AdobeHeartbeatPluginConfig alloc]
-                                                       initWithTrackingServer:@"http://metrics.adobeprimetime.com"
-                                                       publisher:@"TEST"];
-        hbConfig.ovp = @"test-ovp";
-        hbConfig.sdk = @"test-sdk";
+                                                       initWithTrackingServer:HEARTBEAT_TRACKING_SERVER
+                                                       publisher:HEARTBEAT_PUBLISHER];
+        hbConfig.ovp = HEARTBEAT_OVP;
+        hbConfig.sdk = HEARTBEAT_SDK;
         hbConfig.ssl = NO;
         hbConfig.debugLogging = YES;
         hbConfig.quietMode = NO;

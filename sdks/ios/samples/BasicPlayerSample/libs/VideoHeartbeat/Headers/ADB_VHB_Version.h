@@ -33,7 +33,6 @@
  */
 + (NSString *)getVersion;
 
-
 /**
  * The major version.
  */

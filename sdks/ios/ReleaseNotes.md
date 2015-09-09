@@ -4,6 +4,11 @@ Release Notes for iOS VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.2 (8 September, 2015)
+What's new
+- Added support for Federated Analytics classification data
+- Enabled bitcode for iOS 9
+
 ## 1.5.1.3 (10 July, 2015)
 What’s new
 - Customer declared IDs support

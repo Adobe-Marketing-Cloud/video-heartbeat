@@ -31,7 +31,8 @@
 /**
  * Video id property, set empty by default
  */
-@property(copy, nonatomic) NSString *id;
+@property(copy, nonatomic) NSString *videoId;
+@property(copy, nonatomic) NSString *id __deprecated_msg("Use videoId instead.");
 
 /**
  * Video name property, set empty by default
