@@ -53,7 +53,7 @@
     function VideoPlayer(id) {
         this._playerName = Configuration.PLAYER.NAME;
         this._videoId = Configuration.PLAYER.VIDEO_ID;
-        this._videoName = Configuration.VIDEO_NAME;
+        this._videoName = Configuration.PLAYER.VIDEO_NAME;
         this._streamType = AssetType.ASSET_TYPE_VOD;
 
         this._videoLoaded = false;

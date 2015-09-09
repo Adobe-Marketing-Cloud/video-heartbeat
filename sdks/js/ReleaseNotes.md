@@ -3,6 +3,9 @@
 
 Included are notes from the latest major revision to current.
 
+## 1.5.2 (9 September, 2015)
+- Added support for Federated Analytics classification data
+
 ## 1.5.1.3 (10 July, 2015)
 - Customer declared IDs support.
 
