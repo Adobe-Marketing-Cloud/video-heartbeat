@@ -4,6 +4,11 @@ Release Notes for iOS VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.3 (17 November, 2015)
+What's new
+- New Feature: TvOS compatibility
+- Bug fixes
+
 ## 1.5.2 (8 September, 2015)
 What's new
 - Added support for Federated Analytics classification data
