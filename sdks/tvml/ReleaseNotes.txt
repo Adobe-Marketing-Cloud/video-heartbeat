@@ -1,0 +1,9 @@
+Release Notes for AppleTV VideoHeartbeat Library version 1.x:
+
+Included are notes from the latest major revision to current.
+
+For full SDK documentation, please refer to the pdf provided within the release package.
+For basic implementation steps and using sample player, please refer to the readme.txt file within the release package
+
+1.0.0 (20 November, 2015)
+- Initial Release to production of version 1.0.0

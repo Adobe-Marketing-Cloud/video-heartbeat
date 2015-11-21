@@ -1,0 +1,471 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7E79B85F1BC5CDFE0067CC0F /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E79B85E1BC5CDFE0067CC0F /* SystemConfiguration.framework */; };
+		7E79B8611BC5CE080067CC0F /* libsqlite3.0.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E79B8601BC5CE080067CC0F /* libsqlite3.0.tbd */; };
+		7EA3472E1BA382CE005A040D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7EA3472D1BA382CE005A040D /* main.m */; };
+		7EA347311BA382CE005A040D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7EA347301BA382CE005A040D /* AppDelegate.m */; };
+		7EA347391BA382CE005A040D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7EA347381BA382CE005A040D /* Assets.xcassets */; };
+		7EA347441BA382CE005A040D /* SampleAtvAppTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7EA347431BA382CE005A040D /* SampleAtvAppTests.m */; };
+		7EBE25CF1BCEF19700C0404C /* application.js in Resources */ = {isa = PBXBuildFile; fileRef = 7EBE25CD1BCEF19700C0404C /* application.js */; };
+		7EBE25D61BCF00A100C0404C /* libAdobeVHLTVMLBridge.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBE25D51BCF00A100C0404C /* libAdobeVHLTVMLBridge.a */; };
+		7EBE25DF1BCF31ED00C0404C /* VideoHeartbeat-tvml.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 7EBE25DE1BCF31ED00C0404C /* VideoHeartbeat-tvml.min.js */; };
+		7EBE25E61BD177FB00C0404C /* AdobeMobileLibrary_TV.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EBE25E41BD177FB00C0404C /* AdobeMobileLibrary_TV.a */; };
+		7EBE25E81BD1797100C0404C /* ADBMobileConfig.json in Resources */ = {isa = PBXBuildFile; fileRef = 7EBE25E71BD1797100C0404C /* ADBMobileConfig.json */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7EA347401BA382CE005A040D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7EA347211BA382CE005A040D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7EA347281BA382CE005A040D;
+			remoteInfo = SampleAtvApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		7E79B85E1BC5CDFE0067CC0F /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		7E79B8601BC5CE080067CC0F /* libsqlite3.0.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.0.tbd; path = usr/lib/libsqlite3.0.tbd; sourceTree = SDKROOT; };
+		7E9444991BC82EDA00ADF59D /* ADBMediaHeartbeatJSExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADBMediaHeartbeatJSExport.h; sourceTree = "<group>"; };
+		7E94449E1BC8328200ADF59D /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		7EA347291BA382CE005A040D /* SampleAtvApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleAtvApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7EA3472D1BA382CE005A040D /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		7EA3472F1BA382CE005A040D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		7EA347301BA382CE005A040D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		7EA347381BA382CE005A040D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7EA3473A1BA382CE005A040D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7EA3473F1BA382CE005A040D /* SampleAtvAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SampleAtvAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7EA347431BA382CE005A040D /* SampleAtvAppTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleAtvAppTests.m; sourceTree = "<group>"; };
+		7EA347451BA382CE005A040D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7EBE25CD1BCEF19700C0404C /* application.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = application.js; sourceTree = "<group>"; };
+		7EBE25D51BCF00A100C0404C /* libAdobeVHLTVMLBridge.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libAdobeVHLTVMLBridge.a; sourceTree = "<group>"; };
+		7EBE25DE1BCF31ED00C0404C /* VideoHeartbeat-tvml.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "VideoHeartbeat-tvml.min.js"; sourceTree = "<group>"; };
+		7EBE25E21BD177FB00C0404C /* ADBMobile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADBMobile.h; sourceTree = "<group>"; };
+		7EBE25E41BD177FB00C0404C /* AdobeMobileLibrary_TV.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = AdobeMobileLibrary_TV.a; sourceTree = "<group>"; };
+		7EBE25E71BD1797100C0404C /* ADBMobileConfig.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = ADBMobileConfig.json; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7EA347261BA382CE005A040D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E79B8611BC5CE080067CC0F /* libsqlite3.0.tbd in Frameworks */,
+				7E79B85F1BC5CDFE0067CC0F /* SystemConfiguration.framework in Frameworks */,
+				7EBE25D61BCF00A100C0404C /* libAdobeVHLTVMLBridge.a in Frameworks */,
+				7EBE25E61BD177FB00C0404C /* AdobeMobileLibrary_TV.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7EA3473C1BA382CE005A040D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7E9444981BC82EDA00ADF59D /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				7EBE25D51BCF00A100C0404C /* libAdobeVHLTVMLBridge.a */,
+				7E9444991BC82EDA00ADF59D /* ADBMediaHeartbeatJSExport.h */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
+		7E9444A21BCC04F200ADF59D /* ADBMobile-tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				7EBE25E71BD1797100C0404C /* ADBMobileConfig.json */,
+				7EBE25E21BD177FB00C0404C /* ADBMobile.h */,
+				7EBE25E41BD177FB00C0404C /* AdobeMobileLibrary_TV.a */,
+			);
+			path = "ADBMobile-tvOS";
+			sourceTree = "<group>";
+		};
+		7EA347201BA382CE005A040D = {
+			isa = PBXGroup;
+			children = (
+				7E9444A21BCC04F200ADF59D /* ADBMobile-tvOS */,
+				7EA3472B1BA382CE005A040D /* SampleAtvApp */,
+				7EA347421BA382CE005A040D /* SampleAtvAppTests */,
+				7EA3472A1BA382CE005A040D /* Products */,
+				7EBE25D21BCEF1FF00C0404C /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		7EA3472A1BA382CE005A040D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7EA347291BA382CE005A040D /* SampleAtvApp.app */,
+				7EA3473F1BA382CE005A040D /* SampleAtvAppTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7EA3472B1BA382CE005A040D /* SampleAtvApp */ = {
+			isa = PBXGroup;
+			children = (
+				7EBE25CB1BCEF19700C0404C /* js */,
+				7E9444981BC82EDA00ADF59D /* lib */,
+				7EA347301BA382CE005A040D /* AppDelegate.m */,
+				7EA3472F1BA382CE005A040D /* AppDelegate.h */,
+				7EA347381BA382CE005A040D /* Assets.xcassets */,
+				7EA3473A1BA382CE005A040D /* Info.plist */,
+				7EA3472C1BA382CE005A040D /* Supporting Files */,
+			);
+			path = SampleAtvApp;
+			sourceTree = "<group>";
+		};
+		7EA3472C1BA382CE005A040D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				7EA3472D1BA382CE005A040D /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		7EA347421BA382CE005A040D /* SampleAtvAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				7EA347431BA382CE005A040D /* SampleAtvAppTests.m */,
+				7EA347451BA382CE005A040D /* Info.plist */,
+			);
+			path = SampleAtvAppTests;
+			sourceTree = "<group>";
+		};
+		7EBE25CB1BCEF19700C0404C /* js */ = {
+			isa = PBXGroup;
+			children = (
+				7EBE25DE1BCF31ED00C0404C /* VideoHeartbeat-tvml.min.js */,
+				7EBE25CD1BCEF19700C0404C /* application.js */,
+			);
+			path = js;
+			sourceTree = "<group>";
+		};
+		7EBE25D21BCEF1FF00C0404C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7E94449E1BC8328200ADF59D /* JavaScriptCore.framework */,
+				7E79B8601BC5CE080067CC0F /* libsqlite3.0.tbd */,
+				7E79B85E1BC5CDFE0067CC0F /* SystemConfiguration.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7EA347281BA382CE005A040D /* SampleAtvApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7EA347481BA382CE005A040D /* Build configuration list for PBXNativeTarget "SampleAtvApp" */;
+			buildPhases = (
+				7EA347251BA382CE005A040D /* Sources */,
+				7EA347261BA382CE005A040D /* Frameworks */,
+				7EA347271BA382CE005A040D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SampleAtvApp;
+			productName = SampleAtvApp;
+			productReference = 7EA347291BA382CE005A040D /* SampleAtvApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		7EA3473E1BA382CE005A040D /* SampleAtvAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7EA3474B1BA382CE005A040D /* Build configuration list for PBXNativeTarget "SampleAtvAppTests" */;
+			buildPhases = (
+				7EA3473B1BA382CE005A040D /* Sources */,
+				7EA3473C1BA382CE005A040D /* Frameworks */,
+				7EA3473D1BA382CE005A040D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7EA347411BA382CE005A040D /* PBXTargetDependency */,
+			);
+			name = SampleAtvAppTests;
+			productName = SampleAtvAppTests;
+			productReference = 7EA3473F1BA382CE005A040D /* SampleAtvAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7EA347211BA382CE005A040D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0710;
+				ORGANIZATIONNAME = Adobe;
+				TargetAttributes = {
+					7EA347281BA382CE005A040D = {
+						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = 5ADVWSS2QT;
+					};
+					7EA3473E1BA382CE005A040D = {
+						CreatedOnToolsVersion = 7.1;
+						TestTargetID = 7EA347281BA382CE005A040D;
+					};
+				};
+			};
+			buildConfigurationList = 7EA347241BA382CE005A040D /* Build configuration list for PBXProject "SampleAtvApp" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 7EA347201BA382CE005A040D;
+			productRefGroup = 7EA3472A1BA382CE005A040D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7EA347281BA382CE005A040D /* SampleAtvApp */,
+				7EA3473E1BA382CE005A040D /* SampleAtvAppTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7EA347271BA382CE005A040D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7EBE25CF1BCEF19700C0404C /* application.js in Resources */,
+				7EBE25E81BD1797100C0404C /* ADBMobileConfig.json in Resources */,
+				7EBE25DF1BCF31ED00C0404C /* VideoHeartbeat-tvml.min.js in Resources */,
+				7EA347391BA382CE005A040D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7EA3473D1BA382CE005A040D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7EA347251BA382CE005A040D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7EA347311BA382CE005A040D /* AppDelegate.m in Sources */,
+				7EA3472E1BA382CE005A040D /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7EA3473B1BA382CE005A040D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7EA347441BA382CE005A040D /* SampleAtvAppTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7EA347411BA382CE005A040D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7EA347281BA382CE005A040D /* SampleAtvApp */;
+			targetProxy = 7EA347401BA382CE005A040D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		7EA347461BA382CE005A040D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+			};
+			name = Debug;
+		};
+		7EA347471BA382CE005A040D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7EA347491BA382CE005A040D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "iPhone Developer";
+				INFOPLIST_FILE = SampleAtvApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SampleAtvApp/ADBMobile-tvOS",
+					"$(PROJECT_DIR)/SampleAtvApp/lib",
+					"$(PROJECT_DIR)/ADBMobile-tvOS",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.SampleAtvApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+			};
+			name = Debug;
+		};
+		7EA3474A1BA382CE005A040D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "iPhone Developer";
+				INFOPLIST_FILE = SampleAtvApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/SampleAtvApp/ADBMobile-tvOS",
+					"$(PROJECT_DIR)/SampleAtvApp/lib",
+					"$(PROJECT_DIR)/ADBMobile-tvOS",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.SampleAtvApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+			};
+			name = Release;
+		};
+		7EA3474C1BA382CE005A040D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = SampleAtvAppTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.SampleAtvAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SampleAtvApp.app/SampleAtvApp";
+			};
+			name = Debug;
+		};
+		7EA3474D1BA382CE005A040D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				INFOPLIST_FILE = SampleAtvAppTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.SampleAtvAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SampleAtvApp.app/SampleAtvApp";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7EA347241BA382CE005A040D /* Build configuration list for PBXProject "SampleAtvApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7EA347461BA382CE005A040D /* Debug */,
+				7EA347471BA382CE005A040D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7EA347481BA382CE005A040D /* Build configuration list for PBXNativeTarget "SampleAtvApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7EA347491BA382CE005A040D /* Debug */,
+				7EA3474A1BA382CE005A040D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7EA3474B1BA382CE005A040D /* Build configuration list for PBXNativeTarget "SampleAtvAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7EA3474C1BA382CE005A040D /* Debug */,
+				7EA3474D1BA382CE005A040D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7EA347211BA382CE005A040D /* Project object */;
+}
