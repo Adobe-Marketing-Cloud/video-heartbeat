@@ -1,8 +1,11 @@
 Release Notes for iOS VideoHeartbeat SDK
 ==========================================
 
-
 Included are notes from the latest major revision to current.
+
+## 1.5.4 (15 January, 2016)
+What's new
+- Fixed memory leak issues
 
 ## 1.5.3 (17 November, 2015)
 What's new

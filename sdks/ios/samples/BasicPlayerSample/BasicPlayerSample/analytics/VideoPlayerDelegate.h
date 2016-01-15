@@ -15,6 +15,6 @@
 
 @interface VideoPlayerDelegate : ADB_VHB_VideoPlayerPluginDelegate
 
-- (instancetype)initWithPlayer:(VideoPlayer *)player NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithPlayer:(VideoPlayer *)player;
 
 @end

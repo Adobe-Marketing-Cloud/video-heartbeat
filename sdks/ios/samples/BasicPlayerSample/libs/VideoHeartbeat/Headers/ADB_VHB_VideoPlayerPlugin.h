@@ -18,6 +18,7 @@
  **************************************************************************/
 
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 #import "ADB_HB_BasePlugin.h"
 #import "ADB_VHB_VideoPlayerPluginDelegate.h"
 #import "ADB_HB_PluginProtocol.h"
@@ -106,6 +107,13 @@
  * triggers VIDEO_COMPLETE event and calls back the callback method.
  */
 - (void)trackComplete:(void (^)(void))callback;
+
+/**
+ * Video playback tracking method to track Timed Metadata
+ * triggers TIMED_METADATA event.
+ */
+
+- (void)trackTimedMetadata:(id)metadata;
 
 /**
  * Chapter playback tracking method to track Chapter Start
