@@ -497,6 +497,7 @@
 					"$(PROJECT_DIR)/libs/VideoHeartbeat",
 					"$(PROJECT_DIR)/libs/AdobeMobile",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.primetime.va.BasicPlayerSample;
 				PRODUCT_NAME = BasicPlayerSample;
 				WRAPPER_EXTENSION = app;
 			};
@@ -522,6 +523,7 @@
 					"$(PROJECT_DIR)/libs/VideoHeartbeat",
 					"$(PROJECT_DIR)/libs/AdobeMobile",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.primetime.va.BasicPlayerSample;
 				PRODUCT_NAME = BasicPlayerSample;
 				WRAPPER_EXTENSION = app;
 			};
