@@ -99,7 +99,13 @@
             this._videoInfo.playhead = AD_START_POS;
         } else {
             var vTime = this.getPlayhead();
-            this._videoInfo.playhead = (vTime < AD_START_POS) ? vTime : vTime - AD_LENGTH;
+            if (vTime < AD_START_POS) {
+                this._videoInfo.playhead = vTime;
+            } else if (vTime >= AD_START_POS && vTime < (AD_START_POS + AD_LENGTH)) {
+                this._videoInfo.playhead = this._adInfo ? vTime - AD_LENGTH : vTime;
+            } else {
+                this._videoInfo.playhead = vTime - AD_LENGTH;
+            }
         }
 
         return this._videoInfo;
