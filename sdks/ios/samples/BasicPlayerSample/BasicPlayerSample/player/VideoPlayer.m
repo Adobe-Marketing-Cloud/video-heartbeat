@@ -120,7 +120,7 @@ NSTimeInterval const MONITOR_TIMER_INTERVAL = 0.5; // 500 milliseconds
     }
     else
     {
-        _videoInfo.playhead = (self.currentPlaybackTime < AD_START_POS)
+        _videoInfo.playhead = (self.currentPlaybackTime < AD_END_POS)
                 ? @(self.currentPlaybackTime)
                 : @(self.currentPlaybackTime - AD_LENGTH);
     }

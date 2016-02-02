@@ -3,6 +3,9 @@ Release Notes for iOS VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.5 (2 February, 2016)
+- Fix for tracking playhead stalls before entering ad break.
+
 ## 1.5.4 (27 January, 2016)
 What's new
 - Fixed memory leak issues
