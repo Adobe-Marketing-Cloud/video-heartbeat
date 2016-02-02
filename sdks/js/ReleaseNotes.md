@@ -3,7 +3,10 @@
 
 Included are notes from the latest major revision to current.
 
-## 1.5.3
+## 1.5.4 (2 Feb, 2016)
+- Fix for tracking playhead stalls before entering ad break.
+
+## 1.5.3 (27 Jan, 2016)
 - Ability to auto pause for handling open session issues / issues with players that do not have buffering events / playhead stalling for any reason.
 - Ability to handle long timestamp gap for issues with content coming back to life without ever pausing the content.
 - Misc. fixes for handling multiple playback sessions with same heartbeat instance. 
