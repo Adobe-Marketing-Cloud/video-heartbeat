@@ -4,6 +4,12 @@ Release Notes for Android VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.3 (04 February, 2016)
+What’s new
+- Ability to auto pause for handling open session issues / issues with players that do not have buffering events / playhead stalling for any reason.
+- Ability to handle long timestamp gap for issues with content coming back to life without ever pausing the content.
+- Misc. fixes for handling multiple playback sessions with same heartbeat instance.
+
 ## 1.5.2 (08 September, 2015)
 What’s new
 - Added support for Federated Analytics classification data
