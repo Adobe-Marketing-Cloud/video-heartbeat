@@ -298,6 +298,7 @@ public class VideoPlayer extends Observable {
         _videoInfo.length = getDuration();
         _videoInfo.streamType = _streamType;
         _videoInfo.playhead = getPlayhead();
+//        _videoInfo.resumed = true;
 
         _videoLoaded = true;
 
