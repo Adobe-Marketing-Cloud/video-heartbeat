@@ -1,6 +1,6 @@
 /*
  * ADOBE SYSTEMS INCORPORATED
- * Copyright 2014 Adobe Systems Incorporated
+ * Copyright 2015 Adobe Systems Incorporated
  * All Rights Reserved.
 
  * NOTICE:  Adobe permits you to use, modify, and distribute this file in accordance with the
@@ -14,7 +14,6 @@
 NSString *const PLAYER_NAME = @"iOS basic media player";
 NSString *const VIDEO_ID = @"click-baby";
 NSString *const VIDEO_NAME = @"sample video click-baby";
-NSString *const VIDEO_URL = @"https://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/bipbop_4x3_variant.m3u8";
 
 NSString *const HEARTBEAT_TRACKING_SERVER = @"http://example.com";
 NSString *const HEARTBEAT_JOB_ID          = @"j2";

@@ -3,6 +3,14 @@ Release Notes for iOS VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.6 (29 April, 2016)
+What’s new :
+- Added pause tracking feature. Two new heartbeat events are now sent to track pause and stalling.
+- Automatic detection of IDLE state. VHL will automatically create a new video tracking session when resuming after a long pause/buffer/stall (after 30 minutes).
+- Added new resume heartbeat event. This event is sent to identify scenarios where the playback is a resumed video playback session (e.g.: when playback of a VOD content starts from where the user left it before).
+- API Change: VideoInfo object now has a "resumed" property. Set to true to send a resume heartbeat event with the video tracking session.
+- Fixed issues with stalling detection after a mid-roll ad.
+
 ## 1.5.5 (2 February, 2016)
 - Fix for tracking playhead stalls before entering ad break.
 
