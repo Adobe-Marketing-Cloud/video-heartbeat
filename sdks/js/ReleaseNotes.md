@@ -3,13 +3,22 @@
 
 Included are notes from the latest major revision to current.
 
+## 1.5.6 (29 April, 2016)
+What’s new :
+- Added pause tracking feature. Two new heartbeat events are now sent to track pause and stalling.
+- Automatic detection of IDLE state. VHL will automatically create a new video tracking session when resuming after a long pause/buffer/stall (after 30 minutes).
+- Added new resume heartbeat event. This event is sent to identify scenarios where the playback is a resumed video playback session (e.g.: when playback of a VOD content starts from where the user left it before).
+- API Change: VideoInfo object now has a "resumed" property. Set to true to send a resume heartbeat event with the video tracking session.
+- Support for Visitor API 1.5.4+ opt-out
+- Fixed issues with stalling detection after a mid-roll ad.
+
 ## 1.5.4 (2 Feb, 2016)
 - Fix for tracking playhead stalls before entering ad break.
 
 ## 1.5.3 (27 Jan, 2016)
 - Ability to auto pause for handling open session issues / issues with players that do not have buffering events / playhead stalling for any reason.
 - Ability to handle long timestamp gap for issues with content coming back to life without ever pausing the content.
-- Misc. fixes for handling multiple playback sessions with same heartbeat instance. 
+- Misc. fixes for handling multiple playback sessions with same heartbeat instance.
 
 ## 1.5.2 (9 September, 2015)
 - Added support for Federated Analytics classification data
@@ -30,7 +39,7 @@ What’s new :
   * Metadata is sent same way regardless of platform (desktop & mobile)
 - Less network traffic; Heartbeats are fewer on average and smaller in size
 - Enabling/disabling logging per heartbeat plugin
- 
+
 API changes :
 - the VHL plugins must now be instantiated & registered explicitly at the application level
 - the VideoPlayer plugin provides the trackSessionStart() API to allow for better tracking of the startup time
@@ -60,7 +69,7 @@ Fixed issues
 - the custom visitor id is now mapped on the s:user:id query param.
 
 ## 1.3.1.0 (14 July, 2014)
- 
+
 New features
 - the chapter-tracking APIs are now available.
 - API change: the AdBreakInfo now has an additional property called "startTime". This change is backwards-compatible with API v1.2.
@@ -68,7 +77,7 @@ New features
 - deprecated the trackAdBreakStart and trackAdBreakComplete methods.
 - introduced the "API level" as part of the library's versioning system.
 - implemented data sanitization for the information obtained via the player delegate interface.
- 
+
 Fixed issues
 - the library now supports multiple active instances at the same time.
 - trackComplete() will issue the COMPLETE event on the network while trackVideoUnload() will issue the UNLOAD event on the network.

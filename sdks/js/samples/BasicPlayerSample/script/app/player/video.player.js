@@ -204,6 +204,7 @@
         this._videoInfo.length = this.getDuration();
         this._videoInfo.streamType = this._streamType;
         this._videoInfo.playhead = this.getPlayhead();
+        //this._videoInfo.resumed = true;
 
         this._videoLoaded = true;
 
