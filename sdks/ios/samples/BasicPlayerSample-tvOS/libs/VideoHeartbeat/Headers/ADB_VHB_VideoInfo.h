@@ -54,4 +54,9 @@
  */
 @property(copy, nonatomic) NSString *streamType;
 
+/**
+* Video resumed property, set NO by default
+*/
+@property(nonatomic) BOOL resumed;
+
 @end
