@@ -27,6 +27,7 @@
 #import "ADB_VHB_AdobeHeartbeatPlugin.h"
 #import "ADB_VHB_Heartbeat.h"
 #import "ADB_VHB_AdobeHeartbeatPluginConfig.h"
+#import "ADB_VHB_StandardMetadataKeys.h"
 
 
 @interface VideoAnalyticsProvider ()
@@ -122,12 +123,28 @@
 {
     NSLog (@"Player Event: VIDEO_LOAD");
     
-    NSMutableDictionary *videoMetadata = [[NSMutableDictionary alloc] init];
-    [videoMetadata setObject:@"false" forKey:@"isUserLoggedIn"];
-    [videoMetadata setObject:@"Sample TV station" forKey:@"tvStation"];
-    [videoMetadata setObject:@"Sample programmer" forKey:@"programmer"];
+    NSMutableDictionary *contextData = [[NSMutableDictionary alloc] init];
     
-    _analyticsPlugin.videoMetadata = videoMetadata;
+    // setting Standard Video Metadata
+    contextData[ADBVideoMetadataKeySEASON] = @"sample season";
+    contextData[ADBVideoMetadataKeySHOW] = @"sample show";
+    contextData[ADBVideoMetadataKeyEPISODE] = @"sample episode";
+    contextData[ADBVideoMetadataKeyASSET_ID] = @"sample asset id";
+    contextData[ADBVideoMetadataKeyGENRE] = @"sample genre";
+    contextData[ADBVideoMetadataKeyFIRST_AIR_DATE] = @"sample air date";
+    contextData[ADBVideoMetadataKeyFIRST_DIGITAL_DATE] = @"sample digital date";
+    contextData[ADBVideoMetadataKeyRATING] = @"sample rating";
+    contextData[ADBVideoMetadataKeyORIGINATOR] = @"sample originator";
+    contextData[ADBVideoMetadataKeyNETWORK] = @"sample network";
+    contextData[ADBVideoMetadataKeySHOW_TYPE] = @"sample show type";
+    contextData[ADBVideoMetadataKeyAD_LOAD] = @"sample ad load";
+    contextData[ADBVideoMetadataKeyMVPD] = @"sample mvpd";
+    contextData[ADBVideoMetadataKeyAUTHORIZED] = @"true";
+    contextData[ADBVideoMetadataKeyDAY_PART] = @"sample day part";
+    contextData[ADBVideoMetadataKeyFEED] = @"sample feed";
+    contextData[ADBVideoMetadataKeySTREAM_FORMAT] = @"sample format";
+    
+    _analyticsPlugin.videoMetadata = contextData;
     [_playerPlugin trackVideoLoad];
     
 }
@@ -193,10 +210,17 @@
 - (void)onAdStart:(NSNotification *)notification
 {
     NSLog (@"Player Event: onAdStart");
-    NSMutableDictionary *adDictionary = [[NSMutableDictionary alloc] init];
-    [adDictionary setObject:@"Sample affiliate" forKey:@"affiliate"];
-    [adDictionary setObject:@"campaign" forKey:@"campaign"];
-    [_analyticsPlugin setAdMetadata:adDictionary];
+    NSMutableDictionary *contextData = [[NSMutableDictionary alloc] init];
+    
+    // setting Standard Ad Metadata
+    contextData[ADBAdMetadataKeyADVERTISER] = @"sample advertiser";
+    contextData[ADBAdMetadataKeyCAMPAIGN_ID] = @"sample campaign";
+    contextData[ADBAdMetadataKeyCREATIVE_ID] = @"sample creative";
+    contextData[ADBAdMetadataKeyCREATIVE_URL] = @"sample url";
+    contextData[ADBAdMetadataKeySITE_ID] = @"sample site";
+    contextData[ADBAdMetadataKeyPLACEMENT_ID] = @"sample placement";
+    
+    [_analyticsPlugin setAdMetadata:contextData];
     
     [_playerPlugin trackAdStart];
 }
