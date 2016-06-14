@@ -17,8 +17,10 @@ import com.adobe.mobile.Config;
 import com.adobe.primetime.core.ICallback;
 import com.adobe.primetime.core.plugin.IPlugin;
 import com.adobe.primetime.va.Heartbeat;
+import com.adobe.primetime.va.plugins.aa.AdMetadataKeys;
 import com.adobe.primetime.va.plugins.aa.AdobeAnalyticsPlugin;
 import com.adobe.primetime.va.plugins.aa.AdobeAnalyticsPluginConfig;
+import com.adobe.primetime.va.plugins.aa.VideoMetadataKeys;
 import com.adobe.primetime.va.plugins.ah.AdobeHeartbeatPluginConfig;
 import com.adobe.primetime.va.plugins.videoplayer.VideoPlayerPlugin;
 import com.adobe.primetime.va.plugins.ah.AdobeHeartbeatPlugin;
@@ -104,9 +106,23 @@ public class VideoAnalyticsProvider implements Observer {
             case VIDEO_LOAD:
                 Log.d(LOG_TAG, "Video loaded.");
                 HashMap<String, String> videoMetadata = new HashMap<String, String>();
-                videoMetadata.put("isUserLoggedIn", "false");
-                videoMetadata.put("tvStation", "Sample TV Station");
-                videoMetadata.put("programmer", "Sample programmer");
+                videoMetadata.put(VideoMetadataKeys.EPISODE, "Sample Episode");
+                videoMetadata.put(VideoMetadataKeys.SEASON, "Sample Season");
+                videoMetadata.put(VideoMetadataKeys.SHOW, "Sample Show");
+                videoMetadata.put(VideoMetadataKeys.ASSET_ID, "Sample Asset ID");
+                videoMetadata.put(VideoMetadataKeys.GENRE, "Sample Genre");
+                videoMetadata.put(VideoMetadataKeys.FIRST_AIR_DATE, "Sample air date");
+                videoMetadata.put(VideoMetadataKeys.FIRST_DIGITAL_DATE, "Sample digital date");
+                videoMetadata.put(VideoMetadataKeys.RATING, "Sample Rating");
+                videoMetadata.put(VideoMetadataKeys.ORIGINATOR, "Sample Originator");
+                videoMetadata.put(VideoMetadataKeys.SHOW_TYPE, "Sample Show Type");
+                videoMetadata.put(VideoMetadataKeys.AD_LOAD, "ad load");
+                videoMetadata.put(VideoMetadataKeys.MVPD, "sample mvpd");
+                videoMetadata.put(VideoMetadataKeys.AUTHORIZED, "false");
+                videoMetadata.put(VideoMetadataKeys.NETWORK, "Sample TV Network");
+                videoMetadata.put(VideoMetadataKeys.DAY_PART, "sample day part");
+                videoMetadata.put(VideoMetadataKeys.FEED, "sample feed type");
+                videoMetadata.put(VideoMetadataKeys.STREAM_FORMAT, "sample stream format");
                 _aaPlugin.setVideoMetadata(videoMetadata);
 
                 _playerPlugin.trackVideoLoad();
@@ -150,8 +166,12 @@ public class VideoAnalyticsProvider implements Observer {
             case AD_START:
                 Log.d(LOG_TAG, "Ad started.");
                 HashMap<String, String> adMetadata = new HashMap<String, String>();
-                adMetadata.put("affiliate", "Sample affiliate");
-                adMetadata.put("campaign", "Sample ad campaign");
+                adMetadata.put(AdMetadataKeys.CREATIVE_ID, "Sample creative id");
+                adMetadata.put(AdMetadataKeys.CAMPAIGN_ID, "Sample ad campaign");
+                adMetadata.put(AdMetadataKeys.ADVERTISER, "Sample advertiser");
+                adMetadata.put(AdMetadataKeys.CREATIVE_URL, "Sample creative url");
+                adMetadata.put(AdMetadataKeys.PLACEMENT_ID, "Sample placement");
+                adMetadata.put(AdMetadataKeys.SITE_ID, "Sample site");
                 _aaPlugin.setAdMetadata(adMetadata);
 
                 _playerPlugin.trackAdStart();
