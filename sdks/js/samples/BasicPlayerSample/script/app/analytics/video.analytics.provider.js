@@ -20,6 +20,8 @@
 
     var AdobeAnalyticsPlugin = ADB.va.plugins.aa.AdobeAnalyticsPlugin;
     var AdobeAnalyticsPluginConfig = ADB.va.plugins.aa.AdobeAnalyticsPluginConfig;
+    var VideoMetadataKeys = ADB.va.plugins.aa.VideoMetadataKeys;
+    var AdMetadataKeys = ADB.va.plugins.aa.AdMetadataKeys;
 
     var AdobeHeartbeatPlugin = ADB.va.plugins.ah.AdobeHeartbeatPlugin;
     var AdobeHeartbeatPluginConfig = ADB.va.plugins.ah.AdobeHeartbeatPluginConfig;
@@ -51,6 +53,7 @@
         appMeasurement.pageName = Configuration.APP_MEASUREMENT.PAGE_NAME;
         appMeasurement.charSet = "UTF-8";
         appMeasurement.visitorID = "test-vid";
+        appMeasurement.callback = 1;
 
         // Setup the video-player plugin
         this._playerPlugin = new VideoPlayerPlugin(new SampleVideoPlayerPluginDelegate(this._player));
@@ -103,11 +106,28 @@
 
     VideoAnalyticsProvider.prototype._onLoad = function() {
         console.log('Player event: VIDEO_LOAD');
-        this._aaPlugin.setVideoMetadata({
-            isUserLoggedIn: "false",
-            tvStation: "Sample TV station",
-            programmer: "Sample programmer"
-        });
+
+        var contextData = {};
+        // setting Standard Video Metadata
+        contextData[VideoMetadataKeys.SEASON] = "sample season";
+        contextData[VideoMetadataKeys.SHOW] = "sample show";
+        contextData[VideoMetadataKeys.EPISODE] = "sample episode";
+        contextData[VideoMetadataKeys.ASSET_ID] = "sample asset id";
+        contextData[VideoMetadataKeys.GENRE] = "sample genre";
+        contextData[VideoMetadataKeys.FIRST_AIR_DATE] = "sample air date";
+        contextData[VideoMetadataKeys.FIRST_DIGITAL_DATE] = "sample digital date";
+        contextData[VideoMetadataKeys.RATING] = "sample rating";
+        contextData[VideoMetadataKeys.ORIGINATOR] = "sample originator";
+        contextData[VideoMetadataKeys.NETWORK] = "sample network";
+        contextData[VideoMetadataKeys.SHOW_TYPE] = "sample show type";
+        contextData[VideoMetadataKeys.AD_LOAD] = "sample ad load";
+        contextData[VideoMetadataKeys.MVPD] = "sample mvpd";
+        contextData[VideoMetadataKeys.AUTHORIZED] = "true";
+        contextData[VideoMetadataKeys.DAY_PART] = "sample day part";
+        contextData[VideoMetadataKeys.FEED] = "sample feed";
+        contextData[VideoMetadataKeys.STREAM_FORMAT] = "sample format";
+
+        this._aaPlugin.setVideoMetadata(contextData);
         this._playerPlugin.trackVideoLoad();
     };
 
@@ -148,10 +168,17 @@
 
     VideoAnalyticsProvider.prototype._onAdStart = function() {
         console.log('Player event: AD_START');
-        this._aaPlugin.setAdMetadata({
-            affiliate: "Sample affiliate",
-            campaign: "Sample ad campaign"
-        });
+
+        var contextData = {};
+        // setting Standard Ad Metadata
+        contextData[AdMetadataKeys.ADVERTISER] = "sample advertiser";
+        contextData[AdMetadataKeys.CAMPAIGN_ID] = "sample campaign";
+        contextData[AdMetadataKeys.CREATIVE_ID] = "sample creative";
+        contextData[AdMetadataKeys.CREATIVE_URL] = "sample url";
+        contextData[AdMetadataKeys.SITE_ID] = "sample site";
+        contextData[AdMetadataKeys.PLACEMENT_ID] = "sample placement";
+
+        this._aaPlugin.setAdMetadata(contextData);
         this._playerPlugin.trackAdStart();
     };
 
