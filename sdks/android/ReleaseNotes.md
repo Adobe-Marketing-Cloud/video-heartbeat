@@ -4,6 +4,12 @@ Release Notes for Android VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.7 (13 June, 2016)
+What’s new :
+- Support for standard Video and Ad metadata.
+- API Change: Constants for Standard Video and Ad metadata are available in: com.adobe.primetime.va.plugins.aa.VideoMetadataKeys and com.adobe.primetime.va.plugins.aa.AdMetadataKeys classes.
+- Added video length and video name to the Ad Initiate Adobe Analytics call.
+
 ## 1.5.6 (29 April, 2016)
 What’s new :
 - Added pause tracking feature. Two new heartbeat events are now sent to track pause and stalling.
