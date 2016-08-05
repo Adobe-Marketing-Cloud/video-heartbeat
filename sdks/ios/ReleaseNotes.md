@@ -3,6 +3,10 @@ Release Notes for iOS VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.8 (5 Aug, 2016)
+What’s new :
+- Fixed concurrency issues.
+
 ## 1.5.7 (13 June, 2016)
 What’s new :
 - Support for standard Video and Ad metadata.
@@ -25,7 +29,7 @@ What's new
 - Fixed memory leak issues
 - Ability to auto pause for handling open session issues / issues with players that do not have buffering events / playhead stalling for any reason.
 - Ability to handle long timestamp gap for issues with content coming back to life without ever pausing the content.
-- Misc. fixes for handling multiple playback sessions with same heartbeat instance. 
+- Misc. fixes for handling multiple playback sessions with same heartbeat instance.
 
 ## 1.5.3 (17 November, 2015)
 What's new
@@ -53,7 +57,7 @@ What’s new :
   * Metadata is sent same way regardless of platform (desktop & mobile)
 - Less network traffic; Heartbeats are fewer on average and smaller in size
 - Enabling/disabling logging per heartbeat plugin
- 
+
 API changes :
 - the VHL plugins must now be instantiated & registered explicitly at the application level
 - the VideoPlayer plugin provides the trackSessionStart() API to allow for better tracking of the startup time
@@ -81,7 +85,7 @@ New features
 
 ## 1.4.0.0 (17 November, 2014)
 
-_NOTE_: This version introduces a couple of backwards-incompatible changes to the API. 
+_NOTE_: This version introduces a couple of backwards-incompatible changes to the API.
 A few modifications will be required to the integration code when upgrading from previous versions.
 Please refer to the "Transitioning from Version 1.3.x" section in the documentation for specific details.
 
@@ -95,13 +99,13 @@ Fixed issues
     - the custom visitor id is now mapped on the s:user:id query param.
 
 ## 1.3.1.1 (14 July, 2014)
- 
+
 New features
     - updated the documentation to reflect the latest API changes.
     - the podSecond parameter is also added on SiteCatalyst ad-start calls.
 
 ## 1.3.1.0 (1 July, 2014)
- 
+
 New features
     - the chapter-tracking APIs are now available.
     - API change: the AdBreakInfo now has an additional property called "startTime". This change is backwards-compatible with API v1.2.
@@ -109,7 +113,7 @@ New features
     - deprecated the trackAdBreakStart and trackAdBreakComplete methods.
     - introduced the "API level" as part of the library's versioning system.
     - implemented data sanitization for the information obtained via the player delegate interface.
- 
+
 Fixed issues
     - fixed memory leak issues
     - fixed crashes during tear-down operations
@@ -141,7 +145,7 @@ Known limitations
 ## 1.1.0 (20 Feb, 2014)
  - major re-factoring: the data-collection core logic is no longer part of the AppMeasurement lib. It is now inside the VideoHeartbeat lib.
  - all the Heartbeat configuration params that were previously inside the ADBMobileConfig.json config file are now available to be set at run-time via the video-heartbeat configuration object.
- - a new destroy selector is now part of the ADBVideoHeartbeat public interface. Since the data-collection core logic is no longer implemented as a singleton tear-down operations are now possible. 
+ - a new destroy selector is now part of the ADBVideoHeartbeat public interface. Since the data-collection core logic is no longer implemented as a singleton tear-down operations are now possible.
  - a new version static selector is now part of the ADBVideoHeartbeat public interface.
  - Works with version 4.0.2 of AppMeasurement iOS library.
 
