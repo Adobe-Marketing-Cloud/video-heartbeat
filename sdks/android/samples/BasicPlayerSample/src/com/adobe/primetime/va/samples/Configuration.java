@@ -13,11 +13,11 @@ package com.adobe.primetime.va.samples;
 public class Configuration {
     public static final String PLAYER_NAME = "Android basic media player";
     public static final String VIDEO_ID = "click-baby";
-    public static final String VIDEO_NAME = "sample video click-baby";
+    public static final String VIDEO_NAME = "click-baby";
 
-    public static final String HEARTBEAT_TRACKING_SERVER = "http://example.com";
-    public static final String HEARTBEAT_PUBLISHER       = "sample-publisher";
-    public static final String HEARTBEAT_CHANNEL         = "sample-channel";
-    public static final String HEARTBEAT_OVP             = "sample-ovp";
-    public static final String HEARTBEAT_SDK             = "sample-sdk";
+    public static final String HEARTBEAT_TRACKING_SERVER = "http://obumobile1.hb.omtrdc.net"; // To be replaced with: "http://example.com"
+    public static final String HEARTBEAT_PUBLISHER       = "TEST"; // To be replaced with: "test-publisher"
+    public static final String HEARTBEAT_CHANNEL         = "test-channel";
+    public static final String HEARTBEAT_OVP             = "test-ovp";
+    public static final String HEARTBEAT_SDK             = "VHL 1.x Sample Player";
 }

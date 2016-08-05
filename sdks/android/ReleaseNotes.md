@@ -4,6 +4,11 @@ Release Notes for Android VideoHeartbeat SDK
 
 Included are notes from the latest major revision to current.
 
+## 1.5.8 (05 August, 2016)
+What’s new :
+- Crash fix
+- Updated analytics configuration to test production configs
+
 ## 1.5.7 (13 June, 2016)
 What’s new :
 - Support for standard Video and Ad metadata.
