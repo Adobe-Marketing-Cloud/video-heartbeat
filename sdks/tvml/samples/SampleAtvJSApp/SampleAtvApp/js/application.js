@@ -31,7 +31,7 @@ function playVideo() {
     MediaHeartbeatConfig.publisher = "sample-publisher";
     MediaHeartbeatConfig.channel = "sample-channel";
     MediaHeartbeatConfig.sdkVersion = "test-sdk";
-    MediaHeartbeatConfig.ssl = false;
+    MediaHeartbeatConfig.ssl = true;
     MediaHeartbeatConfig.ovp = "test-ovp";
 
     //Set media delegate for responding with playhead and QoS updates

@@ -80,7 +80,7 @@
                                                        publisher:HEARTBEAT_PUBLISHER];
         hbConfig.ovp = HEARTBEAT_OVP;
         hbConfig.sdk = HEARTBEAT_SDK;
-        hbConfig.ssl = NO;
+        hbConfig.ssl = YES;
         hbConfig.debugLogging = YES;
         hbConfig.quietMode = NO;
         [_hbPlugin configure:hbConfig];
